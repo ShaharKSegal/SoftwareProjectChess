@@ -1,6 +1,7 @@
 #ifndef CHESSPARSER_H_
 #define CHESSPARSER_H_
 #include <stdbool.h>
+#include "ChessErrorHandler.h"
 
 //specify the maximum line length
 #define CMD_MAX_LINE_LENGTH 1024
@@ -43,6 +44,6 @@ typedef struct command_t {
  *          set to INVALID.
  *   arg - the arguments in case there should be one.
  */
-CmdCommand* parseLine(char* str, bool isSettings, bool* memFailure);
+CmdCommand* parseLine(char* str, bool isSettings);
 
 #endif

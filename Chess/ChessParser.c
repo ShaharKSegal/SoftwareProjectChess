@@ -1,6 +1,6 @@
-#include "ChessParser.h"
 #include <string.h>
 #include <stdlib.h>
+#include "ChessParser.h"
 
 #define DELI " \t\r\n"
 
@@ -59,7 +59,7 @@ bool isInt(const char* str) {
  * @return
  * true if the string represents a valid integer, and false otherwise.
  */
-char* tokenToCharPtr(bool* memFailure) {
+char* tokenToCharPtr() {
 	char* token = strtok(NULL, DELI);
 	if (token == NULL )
 		return NULL ;
@@ -68,7 +68,7 @@ char* tokenToCharPtr(bool* memFailure) {
 		return NULL ;
 	char* res = malloc(sizeof(char) * (len + 1));
 	if (res == NULL ) {
-		*memFailure = true;
+		hadMemoryFailure();
 		return NULL ;
 	}
 	strcpy(res, token);
@@ -89,7 +89,7 @@ bool hasMoreTokens() {
  * Handles memory failures and invalid cast of the token.
  *
  */
-void addIntArg(CmdCommand* command, bool* memFailure) {
+void addIntArg(CmdCommand* command) {
 	char* token = strtok(NULL, DELI);
 	if (!isInt(token)) {
 		command->cmd = CMD_INVALID;
@@ -97,7 +97,7 @@ void addIntArg(CmdCommand* command, bool* memFailure) {
 	}
 	int* res = malloc(sizeof(int));
 	if (res == NULL ) {
-		*memFailure = true;
+		hadMemoryFailure();
 		return;
 	}
 	*res = atoi(token);
@@ -109,9 +109,9 @@ void addIntArg(CmdCommand* command, bool* memFailure) {
  * Handles memory failures.
  *
  */
-void addStrArg(CmdCommand* command, bool* memFailure) {
-	char* res = tokenToCharPtr(memFailure);
-	if (*memFailure || res == NULL )
+void addStrArg(CmdCommand* command) {
+	char* res = tokenToCharPtr();
+	if (getHadMemoryFailure() || res == NULL )
 		return;
 	command->arg = res;
 }
@@ -122,10 +122,10 @@ void addStrArg(CmdCommand* command, bool* memFailure) {
  * Only relevant for MOVE command, so the format is always arg1 " to " arg2;
  * Handles memory failures.
  */
-void addMoveArg(CmdCommand* command, bool* memFailure) {
+void addMoveArg(CmdCommand* command) {
 	// Get first char pointer argument
-	char* res1 = tokenToCharPtr(memFailure);
-	if (*memFailure || res1 == NULL ) {
+	char* res1 = tokenToCharPtr();
+	if (getHadMemoryFailure() || res1 == NULL ) {
 		command->cmd = CMD_INVALID;
 		return;
 	}
@@ -137,8 +137,8 @@ void addMoveArg(CmdCommand* command, bool* memFailure) {
 		return;
 	}
 	// Get second char pointer argument
-	char* res2 = tokenToCharPtr(memFailure);
-	if (*memFailure || res2 == NULL ) {
+	char* res2 = tokenToCharPtr();
+	if (getHadMemoryFailure() || res2 == NULL ) {
 		command->cmd = CMD_INVALID;
 		free(res1);
 		return;
@@ -147,7 +147,7 @@ void addMoveArg(CmdCommand* command, bool* memFailure) {
 	char** res = malloc(sizeof(char*) * 2);
 	if (res == NULL ) {
 		command->cmd = CMD_INVALID;
-		*memFailure = true;
+		hadMemoryFailure();
 		free(res1);
 		free(res2);
 		return;
@@ -163,19 +163,19 @@ void addMoveArg(CmdCommand* command, bool* memFailure) {
  * If the argument is of the wrong type (e.g. non-integer), cmd is CMD_INVALID
  * and any memory allocated to arg is freed.
  */
-void parseSettingsCommand(char* cmdStr, CmdCommand* command, bool* memFailure) {
+void parseSettingsCommand(char* cmdStr, CmdCommand* command) {
 	if (!strcmp(cmdStr, GAME_MODE)) {
 		command->cmd = CMD_GAME_MODE;
-		addIntArg(command, memFailure);
+		addIntArg(command);
 	} else if (!strcmp(cmdStr, DIFFICULTY)) {
 		command->cmd = CMD_DIFFICULTY;
-		addIntArg(command, memFailure);
+		addIntArg(command);
 	} else if (!strcmp(cmdStr, USER_COLOR)) {
 		command->cmd = CMD_USER_COLOR;
-		addIntArg(command, memFailure);
+		addIntArg(command);
 	} else if (!strcmp(cmdStr, LOAD)) {
 		command->cmd = CMD_LOAD;
-		addStrArg(command, memFailure);
+		addStrArg(command);
 	} else if (!strcmp(cmdStr, DEFAULT))
 		command->cmd = CMD_DEFAULT;
 	else if (!strcmp(cmdStr, PRINT_SETTINGS))
@@ -192,16 +192,16 @@ void parseSettingsCommand(char* cmdStr, CmdCommand* command, bool* memFailure) {
  * If the argument is of the wrong type (e.g. non-integer), cmd is CMD_INVALID
  * and any memory allocated to arg is freed.
  */
-void parseGameCommand(char* cmdStr, CmdCommand* command, bool* memFailure) {
+void parseGameCommand(char* cmdStr, CmdCommand* command) {
 	if (!strcmp(cmdStr, MOVE)) {
 		command->cmd = CMD_MOVE;
-		addMoveArg(command, memFailure);
+		addMoveArg(command);
 	} else if (!strcmp(cmdStr, GET_MOVES)) {
 		command->cmd = CMD_GET_MOVES;
-		addStrArg(command, memFailure);
+		addStrArg(command);
 	} else if (!strcmp(cmdStr, SAVE)) {
 		command->cmd = CMD_SAVE;
-		addStrArg(command, memFailure);
+		addStrArg(command);
 	} else if (!strcmp(cmdStr, UNDO))
 		command->cmd = CMD_UNDO;
 	else if (!strcmp(cmdStr, RESET))
@@ -223,19 +223,19 @@ void parseGameCommand(char* cmdStr, CmdCommand* command, bool* memFailure) {
  *          set to INVALID.
  *   arg - the arguments in case there should be one.
  */
-CmdCommand* parseCommand(char* cmdStr, bool isSettings, bool* memFailure) {
+CmdCommand* parseCommand(char* cmdStr, bool isSettings) {
 	CmdCommand* command = malloc(sizeof(CmdCommand));
 	if (command == NULL ) {
-		*memFailure = true;
+		hadMemoryFailure();
 		return NULL ;
 	}
 	if (!strcmp(cmdStr, QUIT))
 		command->cmd = CMD_QUIT;
 	else if (isSettings)
-		parseSettingsCommand(cmdStr, command, memFailure);
+		parseSettingsCommand(cmdStr, command);
 	else
-		parseGameCommand(cmdStr, command, memFailure);
-	if (*memFailure) {
+		parseGameCommand(cmdStr, command);
+	if (getHadMemoryFailure()) {
 		free(command);
 		return NULL ;
 	}
@@ -255,15 +255,15 @@ CmdCommand* parseCommand(char* cmdStr, bool isSettings, bool* memFailure) {
  *          set to INVALID.
  *   arg - the arguments in case there should be one.
  */
-CmdCommand* parseLine(char* str, bool isSettings, bool* memFailure) {
+CmdCommand* parseLine(char* str, bool isSettings) {
 	char str2[CMD_MAX_LINE_LENGTH];
 	strcpy(str2, str);
 	char* token;
 	token = strtok(str2, DELI);
 	if (token == NULL )
 		return NULL ;
-	CmdCommand* command = parseCommand(token, isSettings, memFailure);
-	if (*memFailure) {
+	CmdCommand* command = parseCommand(token, isSettings);
+	if (getHadMemoryFailure()) {
 		return NULL ;
 	}
 	if (hasMoreTokens())
