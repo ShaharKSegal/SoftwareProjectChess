@@ -29,6 +29,7 @@ typedef enum {
 //a new type that is used to encapsulate a parsed line
 typedef struct command_t {
 	CMD_COMMAND cmd;
+	bool argTypeValid;
 	void* arg;
 } CmdCommand;
 
@@ -42,6 +43,7 @@ typedef struct command_t {
  * A parsed line such that:
  *   cmd  - contains the command type, if the line is invalid then this field is
  *          set to INVALID.
+ *   argTypeValid - tell whether the arg type is correct (e.g. integer)
  *   arg - the arguments in case there should be one.
  */
 CmdCommand* parseLine(char* str, bool isSettings);

@@ -1,6 +1,6 @@
 #include <string.h>
 #include <stdlib.h>
-#include "ChessParser.h"
+#include "ChessCmdParser.h"
 
 #define DELI " \t\r\n"
 
@@ -32,8 +32,7 @@
 #define MOVE_FORMAT_STR "to"
 
 /**
- * Checks if a specified string represents a valid integer. It is recommended
- * to use this function prior to calling the standard library function atoi.
+ * Checks if a specified string represents a valid integer.
  *
  * @return
  * true if the string represents a valid integer, and false otherwise.
@@ -53,11 +52,10 @@ bool isInt(const char* str) {
 }
 
 /**
- * Checks if a specified string represents a valid integer. It is recommended
- * to use this function prior to calling the standard library function atoi.
+ * Give the token a dynamically allocated memory to use as arg pointer.
  *
  * @return
- * true if the string represents a valid integer, and false otherwise.
+ * A pointer to the token's new allocated memory.
  */
 char* tokenToCharPtr() {
 	char* token = strtok(NULL, DELI);
@@ -77,7 +75,6 @@ char* tokenToCharPtr() {
 
 /**
  * Checks if there's another token in the current strtok.
- *
  */
 bool hasMoreTokens() {
 	char* token = strtok(NULL, DELI);
@@ -85,14 +82,21 @@ bool hasMoreTokens() {
 }
 
 /**
+ * Sets the command's argTypeValid field with the given isValid value;
+ */
+void setArgTypeValid(CmdCommand* command, bool isValid) {
+	command->argTypeValid = isValid;
+}
+
+/**
  * Populate arg with an integer pointer.
  * Handles memory failures and invalid cast of the token.
  *
  */
-void addIntArg(CmdCommand* command) {
+ void addIntArg(CmdCommand* command) {
 	char* token = strtok(NULL, DELI);
 	if (!isInt(token)) {
-		command->cmd = CMD_INVALID;
+		setArgTypeValid(command, false);
 		return;
 	}
 	int* res = malloc(sizeof(int));
@@ -111,8 +115,11 @@ void addIntArg(CmdCommand* command) {
  */
 void addStrArg(CmdCommand* command) {
 	char* res = tokenToCharPtr();
-	if (getHadMemoryFailure() || res == NULL )
+	if (getHadMemoryFailure() || res == NULL ) {
+		setArgTypeValid(command, false);
 		return;
+	}
+
 	command->arg = res;
 }
 
@@ -126,27 +133,27 @@ void addMoveArg(CmdCommand* command) {
 	// Get first char pointer argument
 	char* res1 = tokenToCharPtr();
 	if (getHadMemoryFailure() || res1 == NULL ) {
-		command->cmd = CMD_INVALID;
+		setArgTypeValid(command, false);
 		return;
 	}
 	// Check command format ("to" between the arguments)
 	char* token = strtok(NULL, DELI);
 	if (strcmp(token, MOVE_FORMAT_STR)) {
-		command->cmd = CMD_INVALID;
+		setArgTypeValid(command, false);
 		free(res1);
 		return;
 	}
 	// Get second char pointer argument
 	char* res2 = tokenToCharPtr();
 	if (getHadMemoryFailure() || res2 == NULL ) {
-		command->cmd = CMD_INVALID;
+		setArgTypeValid(command, false);
 		free(res1);
 		return;
 	}
 	// Allocate and populate arg with the two pointers
 	char** res = malloc(sizeof(char*) * 2);
 	if (res == NULL ) {
-		command->cmd = CMD_INVALID;
+		setArgTypeValid(command, false);
 		hadMemoryFailure();
 		free(res1);
 		free(res2);
@@ -221,6 +228,7 @@ void parseGameCommand(char* cmdStr, CmdCommand* command) {
  * A parsed line such that:
  *   cmd  - contains the command type, if the line is invalid then this field is
  *          set to INVALID.
+ *   argTypeValid - tell whether the arg type is correct (e.g. integer)
  *   arg - the arguments in case there should be one.
  */
 CmdCommand* parseCommand(char* cmdStr, bool isSettings) {
@@ -229,6 +237,7 @@ CmdCommand* parseCommand(char* cmdStr, bool isSettings) {
 		hadMemoryFailure();
 		return NULL ;
 	}
+	setArgTypeValid(command, true);
 	if (!strcmp(cmdStr, QUIT))
 		command->cmd = CMD_QUIT;
 	else if (isSettings)
@@ -253,6 +262,7 @@ CmdCommand* parseCommand(char* cmdStr, bool isSettings) {
  * A parsed line such that:
  *   cmd  - contains the command type, if the line is invalid then this field is
  *          set to INVALID.
+ *   argTypeValid - tell whether the arg type is correct (e.g. integer)
  *   arg - the arguments in case there should be one.
  */
 CmdCommand* parseLine(char* str, bool isSettings) {
@@ -267,6 +277,6 @@ CmdCommand* parseLine(char* str, bool isSettings) {
 		return NULL ;
 	}
 	if (hasMoreTokens())
-		command->cmd = CMD_INVALID;
+		setArgTypeValid(command, false);
 	return command;
 }

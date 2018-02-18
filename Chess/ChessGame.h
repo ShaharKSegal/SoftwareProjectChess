@@ -1,0 +1,156 @@
+#ifndef CHESSGAME_H_
+#define CHESSGAME_H_
+#include "ChessGameCommon.h"
+#include "ArrayList.h"
+
+/**
+ * ChessGame Summary:
+ *
+ * A container that represents a classic chess game, a two players or one player.
+ * The container supports the following functions.
+ *
+ * chessGameCreate           - Creates a new game board
+ * chessGameCopy             - Copies a game board
+ * chessGameDestroy          - Frees all memory resources associated with a game
+ * chessGameSetMove          - Sets a move on a game board
+ * chessGameGetMoves         - Gets all valid moves by a specified piece.
+ * chessGameIsValidMove      - Checks if a move is valid
+ * chessGameUndoMove         - Undoes previous move made by the last player
+ * chessGamePrintBoard       - Prints the current board
+ * chessGameGetCurrentPlayer - Returns the current player
+ *
+ */
+
+typedef struct chess_game_t {
+	ChessGameBoard gameBoard;
+	char currentPlayer;
+	int historySize;
+	unsigned int maxDepth;
+	ArrayList* history;
+} ChessGame;
+
+/**
+ * Type used for returning error codes from game functions
+ */
+typedef enum chess_game_message_t {
+	CHESS_GAME_INVALID_POSITION,
+	CHESS_GAME_INVALID_MOVE,
+	CHESS_GAME_MOVE_THREATEN_KING,
+	CHESS_GAME_UNRESOLVED_THREATENED_KING,
+	CHESS_GAME_EMPTY_HISTORY,
+	CHESS_GAME_SUCCESS,
+} CHESS_GAME_MESSAGE;
+
+/**
+ * Creates a new game with a specified history size. The history size is a
+ * parameter which specifies the number of previous moves to store. If the number
+ * of moves played so far exceeds this parameter, then first moves stored will
+ * be discarded in order for new moves to be stored.
+ *
+ * @historySize - The total number of moves to undo,
+ *                a player can undo at most historySizeMoves turns.
+ * @return
+ * NULL if either a memory allocation failure occurs or historySize <= 0.
+ * Otherwise, a new game instant is returned.
+ */
+ChessGame* chessGameCreate(int historySize);
+
+/**
+ *	Creates a copy of a given game.
+ *	The new copy has the same status as the src game.
+ *
+ *	@param src - the source game which will be copied
+ *	@return
+ *	NULL if either src is NULL or a memory allocation failure occurred.
+ *	Otherwise, an new copy of the source game is returned.
+ *
+ */
+ChessGame* chessGameCopy(ChessGame* src);
+
+/**
+ * Frees all memory allocation associated with a given game. If src==NULL
+ * the function does nothing.
+ *
+ * @param src - the source game
+ */
+void chessGameDestroy(ChessGame* src);
+
+/**
+ * Sets the next move in a given game by specifying ChessPiecePosition.
+ *
+ * @param game - The source game. Assumes not NULL.
+ * @param cur_pos - The piece's position on board. Assumes not NULL.
+ * @param next_pos - The specified position. Assumes not NULL.
+ *
+ * @return
+ * CHESS_GAME_INVALID_POSITION - if cur_pos or next_pos are out-of-range.
+ * CHESS_GAME_INVALID_MOVE - if the given next_pos is illegal for this piece.
+ * CHESS_GAME_MOVE_THREATEN_KING - if the move will cause your king to be threatened.
+ * CHESS_GAME_UNRESOLVED_THREATENED_KING - if the move doesn't resolve the threatened king.
+ * CHESS_GAME_SUCCESS - otherwise
+ */
+CHESS_GAME_MESSAGE chessGameSetMove(ChessGame* game,
+		ChessPiecePosition cur_pos, ChessPiecePosition next_pos);
+
+/**
+ * Checks if a piece can be put in the specified position.
+ *
+ * @param game - The source game. Assumes not NULL.
+ * @param cur_pos - The piece's position on board. Assumes not NULL.
+ * @param next_pos - The specified position. Assumes not NULL.
+ *
+ * @return
+ * CHESS_GAME_INVALID_POSITION - if cur_pos or next_pos are out-of-range.
+ * CHESS_GAME_INVALID_MOVE - if the given next_pos is illegal for this piece.
+ * CHESS_GAME_MOVE_THREATEN_KING - if the move will cause your king to be threatened.
+ * CHESS_GAME_UNRESOLVED_THREATENED_KING - if the move doesn't resolve the threatened king.
+ * CHESS_GAME_SUCCESS - otherwise
+ */
+CHESS_GAME_MESSAGE chessGameIsValidMove(ChessGame* game,
+		ChessPiecePosition cur_pos, ChessPiecePosition next_pos);
+
+/**
+ * Undo the last move on the board and changes the current player's turn.
+ * If the user invoked this command more than historySize times in a row, an error occurs.
+ *
+ * @param src - The source game, assumes not NULL.
+ * @return
+ * CHESS_GAME_EMPTY_HISTORY    - if the user invoked this function more then
+ *                               historySize in a row.
+ * CHESS_GAME_SUCCESS          - On success. The last move on the board is removed,
+ * 								 and the current player is changed.
+ */
+CHESS_GAME_MESSAGE chessGameUndoMove(ChessGame* game);
+
+/**
+ * On success, the function prints the board game,
+ * by the defined representation of each piece.
+ *
+ * @param game - Assumes not NULL.
+ */
+void chessGamePrintBoard(ChessGame* game);
+
+/**
+ * Returns the current player of the specified game.
+ * @param game - Assume not null
+ * @return
+ * game->currentPlayer
+ */
+char chessGameGetCurrentPlayer(ChessGame* src);
+
+/**
+ * Checks if there's a winner in the specified game status. The function returns either
+ * CHESS_GAME_PLAYER_1_SYMBOL or CHESS_GAME_PLAYER_2_SYMBOL in case there's a winner, where
+ * the value returned is the symbol of the winner. If the game is over and there's a tie
+ * then the value CHESS_GAME_TIE_SYMBOL is returned. in any other case the null characters
+ * is returned.
+ * @param src - the source game
+ * @return
+ * CHESS_GAME_PLAYER_1_SYMBOL - if player 1 won
+ * CHESS_GAME_PLAYER_2_SYMBOL - if player 2 won
+ * CHESS_GAME_TIE_SYMBOL - If the game is over and there's a tie
+ * null character - otherwise
+ */
+char chessCheckWinner(ChessGame* src);
+
+#endif
