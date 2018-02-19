@@ -21,7 +21,7 @@ ArrayList* arrayListCreate(int maxSize) {
 
 	list->maxSize = maxSize;
 	list->actualSize = 0;
-	list->elements = malloc(maxSize * sizeof(int));
+	list->elements = malloc(maxSize * sizeof(ChessMove));
 	if (list->elements == NULL ) {
 		arrayListDestroy(list);
 		hadMemoryFailure();
@@ -42,9 +42,8 @@ ArrayList* arrayListCopy(ArrayList* src) {
 	if (src == NULL )
 		return NULL ;
 	ArrayList* list = arrayListCreate(src->maxSize);
-	if (list == NULL ) {
+	if (list == NULL )
 		return NULL ;
-	}
 	list->actualSize = src->actualSize;
 	for (int i = 0; i < list->actualSize; i++)
 		list->elements[i] = src->elements[i];
@@ -70,14 +69,14 @@ void arrayListDestroy(ArrayList* src) {
  * not affected.
  * @param src - the source array list
  * @return
- * SP_ARRAY_LIST_INVALID_ARGUMENT if src == NULL
- * SP_ARRAY_LIST_SUCCESS otherwise
+ * ARRAY_LIST_INVALID_ARGUMENT if src == NULL
+ * ARRAY_LIST_SUCCESS otherwise
  */
 ARRAY_LIST_MESSAGE arrayListClear(ArrayList* src) {
 	if (src == NULL )
-		return SP_ARRAY_LIST_INVALID_ARGUMENT;
+		return ARRAY_LIST_INVALID_ARGUMENT;
 	src->actualSize = 0;
-	return SP_ARRAY_LIST_SUCCESS;
+	return ARRAY_LIST_SUCCESS;
 }
 
 /**
@@ -90,21 +89,21 @@ ARRAY_LIST_MESSAGE arrayListClear(ArrayList* src) {
  * @param index - the index where the new element will be placed. The index is
  *                0-based.
  * @return
- * SP_ARRAY_LIST_INVALID_ARGUMENT - if src == NULL or the index is out of bound
- * SP_ARRAY_LIST_FULL - if the source array list reached its maximum capacity
- * SP_ARRAY_LIST_SUCCESS - otherwise
+ * ARRAY_LIST_INVALID_ARGUMENT - if src == NULL or the index is out of bound
+ * ARRAY_LIST_FULL - if the source array list reached its maximum capacity
+ * ARRAY_LIST_SUCCESS - otherwise
  */
 ARRAY_LIST_MESSAGE arrayListAddAt(ArrayList* src, ChessMove elem, int index) {
 	if (src == NULL || src->actualSize < index)
-		return SP_ARRAY_LIST_INVALID_ARGUMENT;
+		return ARRAY_LIST_INVALID_ARGUMENT;
 	if (src->actualSize == src->maxSize)
-		return SP_ARRAY_LIST_FULL;
+		return ARRAY_LIST_FULL;
 	for (int i = src->actualSize - 1; i >= index; i--) {
 		src->elements[i] = src->elements[i + 1];
 	}
 	src->elements[index] = elem;
 	src->actualSize++;
-	return SP_ARRAY_LIST_SUCCESS;
+	return ARRAY_LIST_SUCCESS;
 
 }
 
@@ -116,9 +115,9 @@ ARRAY_LIST_MESSAGE arrayListAddAt(ArrayList* src, ChessMove elem, int index) {
  * @param src   - the source array list
  * @param elem  - the new element to be inserted
  * @return
- * SP_ARRAY_LIST_INVALID_ARGUMENT - if src == NULL or the index is out of bound
- * SP_ARRAY_LIST_FULL - if the source array list reached its maximum capacity
- * SP_ARRAY_LIST_SUCCESS - otherwise
+ * ARRAY_LIST_INVALID_ARGUMENT - if src == NULL or the index is out of bound
+ * ARRAY_LIST_FULL - if the source array list reached its maximum capacity
+ * ARRAY_LIST_SUCCESS - otherwise
  */
 ARRAY_LIST_MESSAGE arrayListAddFirst(ArrayList* src, ChessMove elem) {
 	return arrayListAddAt(src, elem, 0);
@@ -131,9 +130,9 @@ ARRAY_LIST_MESSAGE arrayListAddFirst(ArrayList* src, ChessMove elem) {
  * @param src   - the source array list
  * @param elem  - the new element to be inserted
  * @return
- * SP_ARRAY_LIST_INVALID_ARGUMENT - if src == NULL or the index is out of bound
- * SP_ARRAY_LIST_FULL - if the source array list reached its maximum capacity
- * SP_ARRAY_LIST_SUCCESS - otherwise
+ * ARRAY_LIST_INVALID_ARGUMENT - if src == NULL or the index is out of bound
+ * ARRAY_LIST_FULL - if the source array list reached its maximum capacity
+ * ARRAY_LIST_SUCCESS - otherwise
  */
 ARRAY_LIST_MESSAGE arrayListAddLast(ArrayList* src, ChessMove elem) {
 	return arrayListAddAt(src, elem, src->actualSize);
@@ -148,20 +147,20 @@ ARRAY_LIST_MESSAGE arrayListAddLast(ArrayList* src, ChessMove elem) {
  * @param index - The index from where the element will be removed.
  *                The index is 0-based.
  * @return
- * SP_ARRAY_LIST_INVALID_ARGUMENT - if src == NULL or the index is out of bound
- * SP_ARRAY_LIST_EMPTY - if the source array list is empty
- * SP_ARRAY_LIST_SUCCESS - otherwise
+ * ARRAY_LIST_INVALID_ARGUMENT - if src == NULL or the index is out of bound
+ * ARRAY_LIST_EMPTY - if the source array list is empty
+ * ARRAY_LIST_SUCCESS - otherwise
  */
 ARRAY_LIST_MESSAGE arrayListRemoveAt(ArrayList* src, int index) {
 	if (src == NULL || src->actualSize <= index)
-		return SP_ARRAY_LIST_INVALID_ARGUMENT;
+		return ARRAY_LIST_INVALID_ARGUMENT;
 	if (src->actualSize == 0)
-		return SP_ARRAY_LIST_EMPTY;
+		return ARRAY_LIST_EMPTY;
 	for (int i = index; i < src->actualSize - 1; i++) {
 		src->elements[i] = src->elements[i + 1];
 	}
 	src->actualSize--;
-	return SP_ARRAY_LIST_SUCCESS;
+	return ARRAY_LIST_SUCCESS;
 }
 
 /**
@@ -172,9 +171,9 @@ ARRAY_LIST_MESSAGE arrayListRemoveAt(ArrayList* src, int index) {
  * @param src   - The source array list
  * @param elem  - The new element to be inserted
  * @return
- * SP_ARRAY_LIST_INVALID_ARGUMENT - if src == NULL
- * SP_ARRAY_LIST_EMPTY - if the source array list is empty
- * SP_ARRAY_LIST_SUCCESS - otherwise
+ * ARRAY_LIST_INVALID_ARGUMENT - if src == NULL
+ * ARRAY_LIST_EMPTY - if the source array list is empty
+ * ARRAY_LIST_SUCCESS - otherwise
  */
 ARRAY_LIST_MESSAGE arrayListRemoveFirst(ArrayList* src) {
 	return arrayListRemoveAt(src, 0);
@@ -188,9 +187,9 @@ ARRAY_LIST_MESSAGE arrayListRemoveFirst(ArrayList* src) {
  * @param src   - The source array list
  * @param elem  - The new element to be inserted
  * @return
- * SP_ARRAY_LIST_INVALID_ARGUMENT - if src == NULL
- * SP_ARRAY_LIST_EMPTY - if the source array list is empty
- * SP_ARRAY_LIST_SUCCESS - otherwise.
+ * ARRAY_LIST_INVALID_ARGUMENT - if src == NULL
+ * ARRAY_LIST_EMPTY - if the source array list is empty
+ * ARRAY_LIST_SUCCESS - otherwise.
  */
 ARRAY_LIST_MESSAGE arrayListRemoveLast(ArrayList* src) {
 	return arrayListRemoveAt(src, src->actualSize - 1);

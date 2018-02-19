@@ -39,14 +39,8 @@
  */
 
 /**
- * type for the elements in the ArrayList
+ * Type for an array list of chess moves
  */
-typedef struct array_list_element_t {
-	ChessPiecePosition previousPosition;
-	ChessPiecePosition currentPosition;
-	ChessPiece capturedPiece;
-} ChessMove;
-
 typedef struct array_list_t {
 	ChessMove* elements;
 	int actualSize;
@@ -57,10 +51,10 @@ typedef struct array_list_t {
  * A type used for errors
  */
 typedef enum array_list_message_t {
-	SP_ARRAY_LIST_SUCCESS,
-	SP_ARRAY_LIST_INVALID_ARGUMENT,
-	SP_ARRAY_LIST_FULL,
-	SP_ARRAY_LIST_EMPTY
+	ARRAY_LIST_SUCCESS,
+	ARRAY_LIST_INVALID_ARGUMENT,
+	ARRAY_LIST_FULL,
+	ARRAY_LIST_EMPTY
 } ARRAY_LIST_MESSAGE;
 
 /**
@@ -95,8 +89,8 @@ void arrayListDestroy(ArrayList* src);
  * not affected.
  * @param src - the source array list
  * @return
- * SP_ARRAY_LIST_INVALID_ARGUMENT if src == NULL
- * SP_ARRAY_LIST_SUCCESS otherwise
+ * ARRAY_LIST_INVALID_ARGUMENT if src == NULL
+ * ARRAY_LIST_SUCCESS otherwise
  */
 ARRAY_LIST_MESSAGE arrayListClear(ArrayList* src);
 
@@ -110,9 +104,9 @@ ARRAY_LIST_MESSAGE arrayListClear(ArrayList* src);
  * @param index - the index where the new element will be placed. The index is
  *                0-based.
  * @return
- * SP_ARRAY_LIST_INVALID_ARGUMENT - if src == NULL or the index is out of bound
- * SP_ARRAY_LIST_FULL - if the source array list reached its maximum capacity
- * SP_ARRAY_LIST_SUCCESS - otherwise
+ * ARRAY_LIST_INVALID_ARGUMENT - if src == NULL or the index is out of bound
+ * ARRAY_LIST_FULL - if the source array list reached its maximum capacity
+ * ARRAY_LIST_SUCCESS - otherwise
  */
 ARRAY_LIST_MESSAGE arrayListAddAt(ArrayList* src, ChessMove elem, int index);
 
@@ -124,9 +118,9 @@ ARRAY_LIST_MESSAGE arrayListAddAt(ArrayList* src, ChessMove elem, int index);
  * @param src   - the source array list
  * @param elem  - the new element to be inserted
  * @return
- * SP_ARRAY_LIST_INVALID_ARGUMENT - if src == NULL or the index is out of bound
- * SP_ARRAY_LIST_FULL - if the source array list reached its maximum capacity
- * SP_ARRAY_LIST_SUCCESS - otherwise
+ * ARRAY_LIST_INVALID_ARGUMENT - if src == NULL or the index is out of bound
+ * ARRAY_LIST_FULL - if the source array list reached its maximum capacity
+ * ARRAY_LIST_SUCCESS - otherwise
  */
  ARRAY_LIST_MESSAGE arrayListAddFirst(ArrayList* src, ChessMove elem);
 
@@ -137,9 +131,9 @@ ARRAY_LIST_MESSAGE arrayListAddAt(ArrayList* src, ChessMove elem, int index);
  * @param src   - the source array list
  * @param elem  - the new element to be inserted
  * @return
- * SP_ARRAY_LIST_INVALID_ARGUMENT - if src == NULL or the index is out of bound
- * SP_ARRAY_LIST_FULL - if the source array list reached its maximum capacity
- * SP_ARRAY_LIST_SUCCESS - otherwise
+ * ARRAY_LIST_INVALID_ARGUMENT - if src == NULL or the index is out of bound
+ * ARRAY_LIST_FULL - if the source array list reached its maximum capacity
+ * ARRAY_LIST_SUCCESS - otherwise
  */
 ARRAY_LIST_MESSAGE arrayListAddLast(ArrayList* src, ChessMove elem);
 
@@ -152,9 +146,9 @@ ARRAY_LIST_MESSAGE arrayListAddLast(ArrayList* src, ChessMove elem);
  * @param index - The index from where the element will be removed.
  *                The index is 0-based.
  * @return
- * SP_ARRAY_LIST_INVALID_ARGUMENT - if src == NULL or the index is out of bound
- * SP_ARRAY_LIST_EMPTY - if the source array list is empty
- * SP_ARRAY_LIST_SUCCESS - otherwise
+ * ARRAY_LIST_INVALID_ARGUMENT - if src == NULL or the index is out of bound
+ * ARRAY_LIST_EMPTY - if the source array list is empty
+ * ARRAY_LIST_SUCCESS - otherwise
  */
 ARRAY_LIST_MESSAGE arrayListRemoveAt(ArrayList* src, int index);
 
@@ -166,9 +160,9 @@ ARRAY_LIST_MESSAGE arrayListRemoveAt(ArrayList* src, int index);
  * @param src   - The source array list
  * @param elem  - The new element to be inserted
  * @return
- * SP_ARRAY_LIST_INVALID_ARGUMENT - if src == NULL
- * SP_ARRAY_LIST_EMPTY - if the source array list is empty
- * SP_ARRAY_LIST_SUCCESS - otherwise
+ * ARRAY_LIST_INVALID_ARGUMENT - if src == NULL
+ * ARRAY_LIST_EMPTY - if the source array list is empty
+ * ARRAY_LIST_SUCCESS - otherwise
  */
 ARRAY_LIST_MESSAGE arrayListRemoveFirst(ArrayList* src);
 
@@ -180,9 +174,9 @@ ARRAY_LIST_MESSAGE arrayListRemoveFirst(ArrayList* src);
  * @param src   - The source array list
  * @param elem  - The new element to be inserted
  * @return
- * SP_ARRAY_LIST_INVALID_ARGUMENT - if src == NULL
- * SP_ARRAY_LIST_EMPTY - if the source array list is empty
- * SP_ARRAY_LIST_SUCCESS - otherwise.
+ * ARRAY_LIST_INVALID_ARGUMENT - if src == NULL
+ * ARRAY_LIST_EMPTY - if the source array list is empty
+ * ARRAY_LIST_SUCCESS - otherwise.
  */
 ARRAY_LIST_MESSAGE arrayListRemoveLast(ArrayList* src);
 

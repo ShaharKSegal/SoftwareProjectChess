@@ -22,11 +22,15 @@
  */
 
 typedef struct chess_game_t {
-	ChessGameBoard gameBoard;
+	ChessBoard gameBoard;
 	char currentPlayer;
 	int historySize;
 	unsigned int maxDepth;
 	ArrayList* history;
+	ChessPiecePosition whiteKingPosition;
+	ChessPiecePosition blackKingPosition;
+	bool isThreatened;
+
 } ChessGame;
 
 /**
@@ -42,18 +46,13 @@ typedef enum chess_game_message_t {
 } CHESS_GAME_MESSAGE;
 
 /**
- * Creates a new game with a specified history size. The history size is a
- * parameter which specifies the number of previous moves to store. If the number
- * of moves played so far exceeds this parameter, then first moves stored will
- * be discarded in order for new moves to be stored.
+ * Creates a new game.
  *
- * @historySize - The total number of moves to undo,
- *                a player can undo at most historySizeMoves turns.
  * @return
- * NULL if either a memory allocation failure occurs or historySize <= 0.
- * Otherwise, a new game instant is returned.
+ * NULL if a memory allocation failure occurs.
+ * Otherwise, a new game instance is returned.
  */
-ChessGame* chessGameCreate(int historySize);
+ChessGame* chessGameCreate();
 
 /**
  *	Creates a copy of a given game.
@@ -92,22 +91,7 @@ void chessGameDestroy(ChessGame* src);
 CHESS_GAME_MESSAGE chessGameSetMove(ChessGame* game,
 		ChessPiecePosition cur_pos, ChessPiecePosition next_pos);
 
-/**
- * Checks if a piece can be put in the specified position.
- *
- * @param game - The source game. Assumes not NULL.
- * @param cur_pos - The piece's position on board. Assumes not NULL.
- * @param next_pos - The specified position. Assumes not NULL.
- *
- * @return
- * CHESS_GAME_INVALID_POSITION - if cur_pos or next_pos are out-of-range.
- * CHESS_GAME_INVALID_MOVE - if the given next_pos is illegal for this piece.
- * CHESS_GAME_MOVE_THREATEN_KING - if the move will cause your king to be threatened.
- * CHESS_GAME_UNRESOLVED_THREATENED_KING - if the move doesn't resolve the threatened king.
- * CHESS_GAME_SUCCESS - otherwise
- */
-CHESS_GAME_MESSAGE chessGameIsValidMove(ChessGame* game,
-		ChessPiecePosition cur_pos, ChessPiecePosition next_pos);
+ArrayList* chessGameGetMoves(ChessGame* game, ChessPiecePosition pos);
 
 /**
  * Undo the last move on the board and changes the current player's turn.
@@ -128,6 +112,7 @@ CHESS_GAME_MESSAGE chessGameUndoMove(ChessGame* game);
  *
  * @param game - Assumes not NULL.
  */
+// TODO: move to different location since it's only for console.
 void chessGamePrintBoard(ChessGame* game);
 
 /**
@@ -136,7 +121,7 @@ void chessGamePrintBoard(ChessGame* game);
  * @return
  * game->currentPlayer
  */
-char chessGameGetCurrentPlayer(ChessGame* src);
+short chessGameGetCurrentPlayer(ChessGame* src);
 
 /**
  * Checks if there's a winner in the specified game status. The function returns either
