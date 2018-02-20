@@ -84,7 +84,7 @@ const static ChessPiece EMPTY_ENTRY = { .type = CHESS_PIECE_EMPTY, .player = -1,
  * Sets the the given piece in the given position of the game's board.
  * Updates king position field if piece is king.
  */
-void chessGameSetPieceInPosition(ChessGame* game, ChessPiecePosition pos,
+static void setPieceInPosition(ChessGame* game, ChessPiecePosition pos,
 		ChessPiece piece) {
 	if (piece.type == CHESS_PIECE_KING) {
 		if (game->currentPlayer == CHESS_WHITE_PLAYER)
@@ -95,61 +95,34 @@ void chessGameSetPieceInPosition(ChessGame* game, ChessPiecePosition pos,
 	game->gameBoard.position[pos.row][pos.column] = piece;
 }
 
-ChessPiecePosition chessGameGetPlayerKingPosition(ChessGame* game) {
-	return game->currentPlayer == CHESS_WHITE_PLAYER ?
-			game->whiteKingPosition : game->blackKingPosition;
-}
-
-bool chessGameIsPlayerKingPosition(ChessGame* game, ChessPiecePosition pos) {
-	return chessGameIsPositionEquals(pos, chessGameGetPlayerKingPosition(game));
-}
-
-ChessPiecePosition chessGameGetOpponentKingPosition(ChessGame* game) {
-	return game->currentPlayer == CHESS_WHITE_PLAYER ?
-			game->blackKingPosition : game->whiteKingPosition;
-}
-
-bool chessGameCheckPositionsForThreat(ChessGame* game, bool currentPlayer) {
+static bool isPositionThreatened(ChessGame* game, ChessPiecePosition pos) {
 	ChessPiecePosition threatPos;
-	ChessPiece threatPiece;
-	ChessPiecePosition kingPos =
-			currentPlayer ?
-					chessGameGetPlayerKingPosition(game) :
-					chessGameGetOpponentKingPosition(game);
-	int player = chessGameGetPieceByPosition(&(game->gameBoard), kingPos).player;
 	for (int i = 0; i < CHESS_N_ROWS; i++)
 		for (int j = 0; j < CHESS_N_COLUMNS; j++) {
 			threatPos = (ChessPiecePosition ) { .row = i, .column = j };
-			threatPiece = chessGameGetPieceByPosition(&(game->gameBoard),
-					threatPos);
-			if (threatPiece.type == CHESS_PIECE_EMPTY
-					|| threatPiece.player == player)
-				continue;
-			if (chessMoveIsValidMove(&(game->gameBoard), threatPos, kingPos))
+			if (chessMoveIsValidMove(&(game->gameBoard), threatPos, pos))
 				return true;
 		}
 	return false;
 }
 
-/**
- * Changes game->currentPlayer to the other player.
- */
-void chessGameChangePlayer(ChessGame* game) {
-	char currentPlayer = chessGameGetCurrentPlayer(game);
-	if (!currentPlayer)
-		return;
-	if (currentPlayer == CHESS_WHITE_PLAYER)
-		game->currentPlayer = CHESS_BLACK_PLAYER;
-	else
-		game->currentPlayer = CHESS_WHITE_PLAYER;
+static bool isKingThreatened(ChessGame* game, int player) {
+	ChessPiecePosition kingPos =
+			player == CHESS_WHITE_PLAYER ?
+					game->whiteKingPosition : game->blackKingPosition;
+	return isPositionThreatened(game, kingPos);
+}
+
+static short getCurrentOpponent(ChessGame* game) {
+	return chessGameGetCurrentPlayer(game) == CHESS_WHITE_PLAYER ?
+			CHESS_BLACK_PLAYER : CHESS_WHITE_PLAYER;
 }
 
 /**
- * Gets the opposite of game->currentPlayer.
+ * Changes game->currentPlayer to the other player.
  */
-short chessGameGetOpponent(ChessGame* game) {
-	return chessGameGetCurrentPlayer(game) == CHESS_WHITE_PLAYER ?
-			CHESS_BLACK_PLAYER : CHESS_WHITE_PLAYER;
+static void changePlayer(ChessGame* game) {
+	game->currentPlayer = getCurrentOpponent(game);
 }
 
 /**
@@ -159,7 +132,7 @@ short chessGameGetOpponent(ChessGame* game) {
  * NULL if a memory allocation failure occurred.
  * Otherwise, a new board instance is returned.
  */
-ChessBoard chessBoardCreate() {
+static ChessBoard chessBoardCreate() {
 	ChessBoard board;
 	ChessPiece piece;
 	for (int i = 0; i < CHESS_N_ROWS; i++)
@@ -275,6 +248,7 @@ void chessGameDestroy(ChessGame* game) {
 
 /**
  * Checks if a piece can be put in the specified position.
+ * NOTE: Does NOT validate threats made to the king.
  *
  * @param game - The source game. Assumes not NULL.
  * @param cur_pos - The piece's position on board. Assumes not NULL.
@@ -289,10 +263,11 @@ CHESS_GAME_MESSAGE chessGameIsValidMove(ChessGame* game,
 		ChessPiecePosition cur_pos, ChessPiecePosition next_pos) {
 	// Checks if positions are valid
 	if (!chessGameIsValidPosition(cur_pos)
-			|| !chessGameIsValidPosition(next_pos))
+			|| !chessGameIsValidPosition(next_pos)
+			|| chessGameGetPieceByPosition(cur_pos).type == CHESS_PIECE_EMPTY)
 		return CHESS_GAME_INVALID_POSITION;
 
-	// Checks moves validity (without validating threats made to the king)
+	// Checks moves validity (without validating threats)
 	if (!chessMoveIsValidMove(&(game->gameBoard), cur_pos, next_pos))
 		return CHESS_GAME_INVALID_MOVE;
 	return CHESS_GAME_SUCCESS;
@@ -305,12 +280,41 @@ CHESS_GAME_MESSAGE chessGameIsValidMove(ChessGame* game,
  * @param pos - The piece's position on board. Assumes not NULL.
  *
  * @return
- * CHESS_GAME_INVALID_POSITION - if cur_pos or next_pos are out-of-range.
- * CHESS_GAME_INVALID_MOVE - if the given next_pos is illegal for this piece.
- * CHESS_GAME_SUCCESS - otherwise
+ * ArrayList with all possible moves
  */
 ArrayList* chessGameGetMoves(ChessGame* game, ChessPiecePosition pos) {
-	return chessMoveGetMoves(&(game->gameBoard), pos);
+	ArrayList* arr = chessMoveGetMoves(&(game->gameBoard), pos);
+	ChessPiece piece = chessGameGetPieceByPosition(&(game->gameBoard), pos);
+	if (arr == NULL )
+		return NULL ;
+	ChessPiece piece = chessGameGetPieceByPosition(&(game->gameBoard), pos);
+	ChessPiece capturedPiece;
+	ChessPiecePosition nextPos;
+	for (int i = 0; i < arr->actualSize; i++) {
+		ChessMove move = arrayListGetAt(arr, i);
+		capturedPiece = move.capturedPiece;
+		nextPos = move.currentPosition;
+
+		// Change board to test for threats
+		setPieceInPosition(game, nextPos, piece);
+		setPieceInPosition(game, pos, EMPTY_ENTRY);
+
+		// Remove moves that threatens the king
+		if(isKingThreatened(game, piece.player)) {
+			arrayListRemoveAt(arr, i);
+			i--;
+		}
+		else if (isPositionThreatened(game, nextPos)) {
+			return NULL; //TODO: implement update isThreatened
+		}
+
+		// Undo changes to board
+		setPieceInPosition(game, pos, piece);
+		setPieceInPosition(game, nextPos, capturedPiece);
+
+	}
+
+	return arr;
 }
 
 /**
@@ -334,34 +338,35 @@ CHESS_GAME_MESSAGE chessGameSetMove(ChessGame* game, ChessPiecePosition cur_pos,
 		return res;
 
 	// Update current player
-	chessGameChangePlayer(game);
+	changePlayer(game);
 
-	// Update history
-	ArrayList* history = game->history;
+	// Update board
 	ChessPiece piece = chessGameGetPieceByPosition(&(game->gameBoard), cur_pos);
-	ChessMove move = { .previousPosition = cur_pos, .currentPosition = next_pos,
-			.capturedPiece = chessGameGetPieceByPosition(&(game->gameBoard),
-					next_pos) };
-	ChessMove deletedMove;
-	if (arrayListIsFull(history)) {
-		deletedMove = arrayListGetFirst(history);
-		arrayListRemoveFirst(history);
-	}
-	arrayListAddLast(history, move);
-	chessGameSetPieceInPosition(game, next_pos, piece);
-	chessGameSetPieceInPosition(game, cur_pos, EMPTY_ENTRY);
+	ChessPiece capturedPiece = chessGameGetPieceByPosition(&(game->gameBoard),
+			next_pos);
+	setPieceInPosition(game, next_pos, piece);
+	setPieceInPosition(game, cur_pos, EMPTY_ENTRY);
 
-	// Checks if after we made our move, our king is threatened
-	if (chessGameCheckPositionsForThreat(game, true)) {
-		chessGameUndoMove(game); //Undo the move we made
-		if (arrayListIsFull(history)) // Adds deletedMove to history if exists
-			arrayListAddFirst(history, deletedMove);
+	// Checks if after we made our move, our king is threatened. If so, undo.
+	if (isKingThreatened(game, chessGameGetCurrentPlayer(game))) {
+		setPieceInPosition(game, cur_pos, piece);
+		setPieceInPosition(game, next_pos, capturedPiece);
 		return game->isThreatened ?
 				CHESS_GAME_UNRESOLVED_THREATENED_KING :
 				CHESS_GAME_MOVE_THREATEN_KING;
 	}
+
+	// Update history
+	ArrayList* history = game->history;
+	ChessMove move = { .previousPosition = cur_pos, .currentPosition = next_pos,
+			.capturedPiece = capturedPiece };
+	ChessMove deletedMove = arrayListGetFirst(history);
+	if (arrayListIsFull(history))
+		arrayListRemoveFirst(history);
+	arrayListAddLast(history, move);
+
 	// Update threatening position.
-	game->isThreatened = chessGameCheckPositionsForThreat(game, false);
+	game->isThreatened = isKingThreatened(game, getCurrentOpponent(game));
 	return res;
 }
 
@@ -383,10 +388,10 @@ CHESS_GAME_MESSAGE chessGameUndoMove(ChessGame* game) {
 	ChessMove move = arrayListGetLast(history);
 	ChessPiece currPiece = chessGameGetPieceByPosition(&(game->gameBoard),
 			move.currentPosition);
-	chessGameSetPieceInPosition(game, move.previousPosition, currPiece);
-	chessGameSetPieceInPosition(game, move.currentPosition, move.capturedPiece);
+	setPieceInPosition(game, move.previousPosition, currPiece);
+	setPieceInPosition(game, move.currentPosition, move.capturedPiece);
 	arrayListRemoveLast(history);
-	chessGameChangePlayer(game);
+	changePlayer(game);
 	return CHESS_GAME_SUCCESS;
 }
 
@@ -438,6 +443,6 @@ short chessGameGetCurrentPlayer(ChessGame* game) {
  * null character - otherwise
  */
 char chessCheckWinner(ChessGame* src) {
-	// TODO: implement check winner.
+// TODO: implement check winner.
 	return 0;
 }

@@ -36,22 +36,14 @@ typedef struct chess_piece_position_t {
 } ChessPiecePosition;
 
 /**
- * Forward declaration of the board, move and piece types
- */
-typedef struct chess_game_piece_t ChessPiece;
-typedef struct chess_game_board_t ChessBoard;
-typedef struct chess_game_move_t ChessMove;
-typedef struct array_list_t ArrayList;
-
-/**
  * Struct used for general information about a chess piece.
  * Without any context to a specific game.
  */
-struct chess_game_piece_t {
+typedef struct chess_game_piece_t {
 	CHESS_PIECE_TYPE type;
 	int player;
 	char consoleRepresentation;
-};
+} ChessPiece;
 
 /**
  * Type for the chess board
@@ -59,15 +51,6 @@ struct chess_game_piece_t {
 typedef struct chess_game_board_t {
 	ChessPiece position[CHESS_N_ROWS][CHESS_N_COLUMNS];
 } ChessBoard;
-
-/**
- * Type for chess moves
- */
-typedef struct chess_game_move_t {
-	ChessPiecePosition previousPosition;
-	ChessPiecePosition currentPosition;
-	ChessPiece capturedPiece;
-} ChessMove;
 
 /**
  *	Checks if the given chess position is valid.
@@ -96,7 +79,7 @@ ChessPiece chessGameGetPieceByPosition(ChessBoard* board,
  *	@param pos2 - the second position.
  *	@return
  *	Returns true if both positions are valid and equals, false otherwise.
- */bool chessGameIsPositionEquals(ChessPiecePosition pos1,
-		ChessPiecePosition pos2);
+ */
+bool chessGameIsPositionEquals(ChessPiecePosition pos1, ChessPiecePosition pos2);
 
 #endif

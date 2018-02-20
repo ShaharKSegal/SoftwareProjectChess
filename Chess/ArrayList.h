@@ -39,6 +39,16 @@
  */
 
 /**
+ * Type for chess moves
+ */
+typedef struct chess_game_move_t {
+	ChessPiecePosition previousPosition;
+	ChessPiecePosition currentPosition;
+	ChessPiece capturedPiece;
+	bool isThreatened;
+} ChessMove;
+
+/**
  * Type for an array list of chess moves
  */
 typedef struct array_list_t {

@@ -91,6 +91,15 @@ void chessGameDestroy(ChessGame* src);
 CHESS_GAME_MESSAGE chessGameSetMove(ChessGame* game,
 		ChessPiecePosition cur_pos, ChessPiecePosition next_pos);
 
+/**
+ * Gets all valid moves for the specified position.
+ *
+ * @param game - The game. Assumes not NULL.
+ * @param pos - The piece's position on board. Assumes not NULL.
+ *
+ * @return
+ * ArrayList with all possible moves
+ */
 ArrayList* chessGameGetMoves(ChessGame* game, ChessPiecePosition pos);
 
 /**
