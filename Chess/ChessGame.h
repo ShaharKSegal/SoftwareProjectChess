@@ -30,7 +30,6 @@ typedef struct chess_game_t {
 	ChessPiecePosition whiteKingPosition;
 	ChessPiecePosition blackKingPosition;
 	bool isThreatened;
-
 } ChessGame;
 
 /**
@@ -38,6 +37,7 @@ typedef struct chess_game_t {
  */
 typedef enum chess_game_message_t {
 	CHESS_GAME_INVALID_POSITION,
+	CHESS_GAME_NO_PIECE_FOUND,
 	CHESS_GAME_INVALID_MOVE,
 	CHESS_GAME_MOVE_THREATEN_KING,
 	CHESS_GAME_UNRESOLVED_THREATENED_KING,

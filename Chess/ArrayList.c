@@ -4,6 +4,12 @@
 #include "ChessErrorHandler.h"
 
 /**
+ * Basic check if arr is not null and index not out of bound
+ */
+bool isValidIndex(ArrayList* arr, int index) {
+	return arr == NULL || index < 0 || arr->actualSize < index;
+}
+/**
  *  Creates an empty array list with the specified maximum capacity.
  *  @param maxSize - the maximum capacity of the target array list.
  *  @return
@@ -94,12 +100,12 @@ ARRAY_LIST_MESSAGE arrayListClear(ArrayList* src) {
  * ARRAY_LIST_SUCCESS - otherwise
  */
 ARRAY_LIST_MESSAGE arrayListAddAt(ArrayList* src, ChessMove elem, int index) {
-	if (src == NULL || src->actualSize < index)
+	if (isValidIndex(src, index))
 		return ARRAY_LIST_INVALID_ARGUMENT;
 	if (src->actualSize == src->maxSize)
 		return ARRAY_LIST_FULL;
 	for (int i = src->actualSize - 1; i >= index; i--) {
-		src->elements[i] = src->elements[i + 1];
+		src->elements[i + 1] = src->elements[i];
 	}
 	src->elements[index] = elem;
 	src->actualSize++;
@@ -152,7 +158,7 @@ ARRAY_LIST_MESSAGE arrayListAddLast(ArrayList* src, ChessMove elem) {
  * ARRAY_LIST_SUCCESS - otherwise
  */
 ARRAY_LIST_MESSAGE arrayListRemoveAt(ArrayList* src, int index) {
-	if (src == NULL || src->actualSize <= index)
+	if (isValidIndex(src, index))
 		return ARRAY_LIST_INVALID_ARGUMENT;
 	if (src->actualSize == 0)
 		return ARRAY_LIST_EMPTY;
@@ -276,8 +282,7 @@ int arrayListSize(ArrayList* src) {
  * false if either src == NULL or the number of elements in the list is less
  * than its maximum capacity.
  * Otherwise, true is returned.
- */
-bool arrayListIsFull(ArrayList* src) {
+ */bool arrayListIsFull(ArrayList* src) {
 	return src != NULL && src->actualSize == src->maxSize;
 }
 
@@ -288,7 +293,24 @@ bool arrayListIsFull(ArrayList* src) {
  * @return
  * false if either src == NULL or the number of elements in the list is not zero.
  * Otherwise, true is returned.
- */
-bool arrayListIsEmpty(ArrayList* src) {
+ */bool arrayListIsEmpty(ArrayList* src) {
 	return src != NULL && src->actualSize == 0;
+}
+
+/**
+ * Update isThreatened of element in index.
+ * @param arr   		- The source array list
+ * @param index 		- The element's index
+ * @param isThreatened - update value
+ * @return
+ * ARRAY_LIST_INVALID_ARGUMENT - if arr == NULL or index out of bound
+ * ARRAY_LIST_SUCCESS - otherwise.
+ */
+ARRAY_LIST_MESSAGE arrayListIsThreatened(ArrayList* arr, int index,
+		bool isThreatened) {
+	if (isValidIndex(arr, index))
+		return ARRAY_LIST_INVALID_ARGUMENT;
+	arr->elements[index].isThreatened = isThreatened;
+	return ARRAY_LIST_SUCCESS;
+
 }

@@ -4,7 +4,7 @@
 #include "ChessErrorHandler.h"
 
 //specify the maximum line length
-#define CMD_MAX_LINE_LENGTH 1024
+#define CMD_MAX_LINE_LENGTH 2048
 
 //a type used to represent a command
 typedef enum {

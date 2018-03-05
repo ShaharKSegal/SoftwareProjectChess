@@ -10,9 +10,9 @@
  *	If pos is NULL or the position is not valid, returns false.
  */
 bool chessGameIsValidPosition(ChessPiecePosition pos) {
-	if (pos.row < 0 || pos.row > CHESS_N_ROWS)
+	if (pos.row < 0 || pos.row >= CHESS_N_ROWS)
 		return false;
-	if (pos.column < 0 || pos.column > CHESS_N_COLUMNS)
+	if (pos.column < 0 || pos.column >= CHESS_N_COLUMNS)
 		return false;
 	return true;
 }
@@ -40,7 +40,8 @@ ChessPiece chessGameGetPieceByPosition(ChessBoard* board,
  *	@param pos2 - the second position.
  *	@return
  *	Returns true if both positions are valid and equals, false otherwise.
- */bool chessGameIsPositionEquals(ChessPiecePosition pos1,
+ */
+bool chessGameIsPositionEquals(ChessPiecePosition pos1,
 		ChessPiecePosition pos2) {
 	return chessGameIsValidPosition(pos1) && chessGameIsValidPosition(pos2)
 			&& pos1.row == pos2.row && pos1.column == pos2.column;

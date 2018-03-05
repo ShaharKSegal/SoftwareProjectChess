@@ -71,7 +71,7 @@ static bool chessParserCheckParseLine() {
 	ASSERT_TRUE(cmd->cmd == CMD_MOVE && !cmd->argTypeValid);
 	return true;
 }
-int main() {
+int main123() {
 	RUN_TEST(chessParserCheckParseLine);
 	return 0;
 }

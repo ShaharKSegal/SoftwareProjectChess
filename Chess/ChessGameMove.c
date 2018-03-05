@@ -28,8 +28,21 @@ static bool isEmptyPosition(ChessBoard* board, ChessPiecePosition pos) {
 static void createAndAddMove(ArrayList* arr, ChessBoard* board,
 		ChessPiecePosition pos, ChessPiecePosition newPos) {
 	ChessMove move = { .previousPosition = pos, .currentPosition = newPos,
-			.capturedPiece = chessGameGetPieceByPosition(board, newPos) };
+			.capturedPiece = chessGameGetPieceByPosition(board, newPos),
+			.isThreatened = false };
 	arrayListAddLast(arr, move);
+}
+
+static bool tryMoveToPosition(ChessBoard* board, ChessPiecePosition pos,
+		ChessPiecePosition newPos, int vDirection, int hDirection) {
+	while (!chessGameIsPositionEquals(pos, newPos)) {
+		pos.row += vDirection;
+		pos.column += hDirection;
+		if (!isEmptyPosition(board, pos)
+				&& !chessGameIsPositionEquals(pos, newPos))
+			return false;
+	}
+	return true;
 }
 
 static void tryAddRelativePosition(ArrayList* arr, ChessBoard* board,
@@ -50,7 +63,7 @@ static void addMovesInDirection(ArrayList* arr, ChessBoard* board,
 		if (chessGameIsValidPosition(newPos)
 				&& player != chessGameGetPieceByPosition(board, newPos).player)
 			createAndAddMove(arr, board, pos, newPos);
-	} while (isEmptyPosition(board, newPos));
+	} while (chessGameIsValidPosition(newPos) && isEmptyPosition(board, newPos));
 }
 
 static int getArraySizeByPieceType(ChessPiece piece) {
@@ -84,6 +97,7 @@ static bool isValidMovePawn(ChessBoard* board, ChessPiecePosition pos,
 		ChessPiecePosition newPos, int rowDiff, int colDiff) {
 	ChessPiece piece = chessGameGetPieceByPosition(board, pos);
 	ChessPiece newPosPiece = chessGameGetPieceByPosition(board, newPos);
+	rowDiff *= piece.player == CHESS_WHITE_PLAYER ? 1 : -1;
 	if (rowDiff == 1) {
 		if (!colDiff && isEmptyPosition(board, newPos)) // regular move
 			return true;
@@ -102,16 +116,10 @@ static bool isValidMoveBishop(ChessBoard* board, ChessPiecePosition pos,
 	if (rowDiff * rowDiff != colDiff * colDiff)
 		return false;
 
-	// Get diagonal direction
-	int verticalDirection = rowDiff > 0 ? 1 : -1;
-	int horizontalDirection = colDiff > 0 ? 1 : -1;
-	while (!chessGameIsPositionEquals(pos, newPos)) {
-		pos.row += verticalDirection;
-		pos.column += horizontalDirection;
-		if (!isEmptyPosition(board, pos))
-			return false;
-	}
-	return true;
+	// Check diagonal direction
+	int vDirection = rowDiff > 0 ? 1 : -1;
+	int hDirection = colDiff > 0 ? 1 : -1;
+	return tryMoveToPosition(board, pos, newPos, vDirection, hDirection);
 }
 
 static bool isValidMoveKnight(ChessBoard* board, ChessPiecePosition pos,
@@ -136,18 +144,12 @@ static bool isValidMoveRook(ChessBoard* board, ChessPiecePosition pos,
 		return false;
 
 	// Get diagonal direction
-	int verticalDirection = 0, horizontalDirection = 0;
+	int vDirection = 0, hDirection = 0;
 	if (rowDiff)
-		verticalDirection = rowDiff > 0 ? 1 : -1;
+		vDirection = rowDiff > 0 ? 1 : -1;
 	else
-		horizontalDirection = colDiff > 0 ? 1 : -1;
-	while (!chessGameIsPositionEquals(pos, newPos)) {
-		pos.row += verticalDirection;
-		pos.column += horizontalDirection;
-		if (!isEmptyPosition(board, pos))
-			return false;
-	}
-	return true;
+		hDirection = colDiff > 0 ? 1 : -1;
+	return tryMoveToPosition(board, pos, newPos, vDirection, hDirection);
 }
 
 static bool isValidMoveQueen(ChessBoard* board, ChessPiecePosition pos,
@@ -159,19 +161,22 @@ static bool isValidMoveQueen(ChessBoard* board, ChessPiecePosition pos,
 static bool isValidMoveKing(ChessBoard* board, ChessPiecePosition pos,
 		ChessPiecePosition newPos, int rowDiff, int colDiff) {
 	// Checks if each axis step is at most 1
-	return rowDiff * rowDiff > 1 || colDiff * colDiff > 1;
+	return (rowDiff * rowDiff) <= 1 && (colDiff * colDiff) <= 1;
 }
 
 static void addMovesPawn(ArrayList* arr, ChessBoard* board,
 		ChessPiecePosition pos) {
+	int vDir =
+			chessGameGetPieceByPosition(board, pos).player == CHESS_WHITE_PLAYER ?
+					1 : -1;
 	// Check all possible pawn moves
 	// regular move
-	tryAddRelativePosition(arr, board, pos, 1, 0);
+	tryAddRelativePosition(arr, board, pos, vDir, 0);
 	// capture on left and right side
-	tryAddRelativePosition(arr, board, pos, 1, -1);
-	tryAddRelativePosition(arr, board, pos, 1, 1);
+	tryAddRelativePosition(arr, board, pos, vDir, -1);
+	tryAddRelativePosition(arr, board, pos, vDir, 1);
 	// special move at start
-	tryAddRelativePosition(arr, board, pos, 2, 0);
+	tryAddRelativePosition(arr, board, pos, 2 * vDir, 0);
 }
 
 static void addMovesBishop(ArrayList* arr, ChessBoard* board,
@@ -228,7 +233,6 @@ bool chessMoveIsValidMove(ChessBoard* board, ChessPiecePosition pos,
 
 	ChessPiece piece = chessGameGetPieceByPosition(board, pos);
 	ChessPiece newPosPiece = chessGameGetPieceByPosition(board, newPos);
-
 	// Can't move to the same position or a position with a piece you own.
 	if (chessGameIsPositionEquals(pos, newPos)
 			|| piece.player == newPosPiece.player)

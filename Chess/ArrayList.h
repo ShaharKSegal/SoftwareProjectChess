@@ -32,10 +32,11 @@
  * arrayListGetAt        - Accesses the element at the specified index.
  * arrayListGetFirst     - Accesses the first element of the array list.
  * arrayListGetLast      - Accesses the last element of the array list.
- * arrayListMaxCapcity   - Returns the maximum capcity of the array list.
+ * arrayListMaxCapcity   - Returns the maximum capacity of the array list.
  * arrayListSize         - Returns the number of elements in that array list.
  * arrayListIsFull       - Returns if the array list reached its max capacity.
  * arrayListIsEmpty      - Returns true if the array list contains no elements.
+ * arrayListIsThreatened - Updates isThreatened field at a specified index.
  */
 
 /**
@@ -266,5 +267,17 @@ bool arrayListIsFull(ArrayList* src);
  * Otherwise, true is returned.
  */
 bool arrayListIsEmpty(ArrayList* src);
+
+/**
+ * Update isThreatened of element in index.
+ * @param arr   		- The source array list
+ * @param index 		- The element's index
+ * @param isThreatened - update value
+ * @return
+ * ARRAY_LIST_INVALID_ARGUMENT - if arr == NULL or index out of bound
+ * ARRAY_LIST_SUCCESS - otherwise.
+ */
+ARRAY_LIST_MESSAGE arrayListIsThreatened(ArrayList* arr, int index,
+		bool isThreatened);
 
 #endif
