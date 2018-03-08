@@ -11,6 +11,7 @@
 #define CHESS_N_COLUMNS 8
 #define CHESS_WHITE_PLAYER 0
 #define CHESS_BLACK_PLAYER 1
+#define CHESS_NON_PLAYER -1
 #define CHESS_START_ROW_CHAR 'A'
 #define CHESS_START_COLUMN_CHAR '1'
 
@@ -42,7 +43,7 @@ typedef struct chess_piece_position_t {
 typedef struct chess_game_piece_t {
 	CHESS_PIECE_TYPE type;
 	int player;
-	char consoleRepresentation;
+	char representation;
 } ChessPiece;
 
 /**

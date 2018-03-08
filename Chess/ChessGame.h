@@ -29,7 +29,7 @@ typedef struct chess_game_t {
 	ArrayList* history;
 	ChessPiecePosition whiteKingPosition;
 	ChessPiecePosition blackKingPosition;
-	bool isThreatened;
+	bool isCheck;
 } ChessGame;
 
 /**
@@ -133,18 +133,11 @@ void chessGamePrintBoard(ChessGame* game);
 short chessGameGetCurrentPlayer(ChessGame* src);
 
 /**
- * Checks if there's a winner in the specified game status. The function returns either
- * CHESS_GAME_PLAYER_1_SYMBOL or CHESS_GAME_PLAYER_2_SYMBOL in case there's a winner, where
- * the value returned is the symbol of the winner. If the game is over and there's a tie
- * then the value CHESS_GAME_TIE_SYMBOL is returned. in any other case the null characters
- * is returned.
- * @param src - the source game
+ * Checks if the current state is checkmate.
+ * @param game - the source game
  * @return
- * CHESS_GAME_PLAYER_1_SYMBOL - if player 1 won
- * CHESS_GAME_PLAYER_2_SYMBOL - if player 2 won
- * CHESS_GAME_TIE_SYMBOL - If the game is over and there's a tie
- * null character - otherwise
+ * bool - true if checkmate, false if not.
  */
-char chessCheckWinner(ChessGame* src);
+bool chessGameCheckmate(ChessGame* src);
 
 #endif

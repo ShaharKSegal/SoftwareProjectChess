@@ -54,31 +54,36 @@ const static int historySize = 6;
  * Declaration of chess pieces. These are constants.
  */
 const static ChessPiece WHITE_PAWN = { .type = CHESS_PIECE_PAWN, .player =
-		CHESS_WHITE_PLAYER, .consoleRepresentation = WHITE_PAWN_SYMBOL };
+		CHESS_WHITE_PLAYER, .representation = WHITE_PAWN_SYMBOL };
 const static ChessPiece BLACK_PAWN = { .type = CHESS_PIECE_PAWN, .player =
-		CHESS_BLACK_PLAYER, .consoleRepresentation = BLACK_PAWN_SYMBOL };
+		CHESS_BLACK_PLAYER, .representation = BLACK_PAWN_SYMBOL };
 const static ChessPiece WHITE_BISHOP = { .type = CHESS_PIECE_BISHOP, .player =
-		CHESS_WHITE_PLAYER, .consoleRepresentation = WHITE_BISHOP_SYMBOL };
+		CHESS_WHITE_PLAYER, .representation = WHITE_BISHOP_SYMBOL };
 const static ChessPiece BLACK_BISHOP = { .type = CHESS_PIECE_BISHOP, .player =
-		CHESS_BLACK_PLAYER, .consoleRepresentation = BLACK_BISHOP_SYMBOL };
+		CHESS_BLACK_PLAYER, .representation = BLACK_BISHOP_SYMBOL };
 const static ChessPiece WHITE_KNIGHT = { .type = CHESS_PIECE_KNIGHT, .player =
-		CHESS_WHITE_PLAYER, .consoleRepresentation = WHITE_KNIGHT_SYMBOL };
+		CHESS_WHITE_PLAYER, .representation = WHITE_KNIGHT_SYMBOL };
 const static ChessPiece BLACK_KNIGHT = { .type = CHESS_PIECE_KNIGHT, .player =
-		CHESS_BLACK_PLAYER, .consoleRepresentation = BLACK_KNIGHT_SYMBOL };
+		CHESS_BLACK_PLAYER, .representation = BLACK_KNIGHT_SYMBOL };
 const static ChessPiece WHITE_ROOK = { .type = CHESS_PIECE_ROOK, .player =
-		CHESS_WHITE_PLAYER, .consoleRepresentation = WHITE_ROOK_SYMBOL };
+		CHESS_WHITE_PLAYER, .representation = WHITE_ROOK_SYMBOL };
 const static ChessPiece BLACK_ROOK = { .type = CHESS_PIECE_ROOK, .player =
-		CHESS_BLACK_PLAYER, .consoleRepresentation = BLACK_ROOK_SYMBOL };
+		CHESS_BLACK_PLAYER, .representation = BLACK_ROOK_SYMBOL };
 const static ChessPiece WHITE_QUEEN = { .type = CHESS_PIECE_QUEEN, .player =
-		CHESS_WHITE_PLAYER, .consoleRepresentation = WHITE_QUEEN_SYMBOL };
+		CHESS_WHITE_PLAYER, .representation = WHITE_QUEEN_SYMBOL };
 const static ChessPiece BLACK_QUEEN = { .type = CHESS_PIECE_QUEEN, .player =
-		CHESS_BLACK_PLAYER, .consoleRepresentation = BLACK_QUEEN_SYMBOL };
+		CHESS_BLACK_PLAYER, .representation = BLACK_QUEEN_SYMBOL };
 const static ChessPiece WHITE_KING = { .type = CHESS_PIECE_KING, .player =
-		CHESS_WHITE_PLAYER, .consoleRepresentation = WHITE_KING_SYMBOL };
+		CHESS_WHITE_PLAYER, .representation = WHITE_KING_SYMBOL };
 const static ChessPiece BLACK_KING = { .type = CHESS_PIECE_KING, .player =
-		CHESS_BLACK_PLAYER, .consoleRepresentation = BLACK_KING_SYMBOL };
-const static ChessPiece EMPTY_ENTRY = { .type = CHESS_PIECE_EMPTY, .player = -1,
-		.consoleRepresentation = EMPTY_ENTRY_SYMBOL };
+		CHESS_BLACK_PLAYER, .representation = BLACK_KING_SYMBOL };
+const static ChessPiece EMPTY_ENTRY = { .type = CHESS_PIECE_EMPTY, .player =
+		CHESS_NON_PLAYER, .representation = EMPTY_ENTRY_SYMBOL };
+
+/**
+ * Functions declarations (if needed).
+ */
+static bool isKingThreatened(ChessGame* game, int player);
 
 /**
  * Sets the the given piece in the given position of the game's board.
@@ -95,12 +100,35 @@ static void setPieceInPosition(ChessGame* game, ChessPiecePosition pos,
 	game->gameBoard.position[pos.row][pos.column] = piece;
 }
 
-static bool isPositionThreatened(ChessGame* game, ChessPiecePosition pos) {
+static ChessPiece getPieceByPosition(ChessGame* game, ChessPiecePosition pos) {
+	return chessGameGetPieceByPosition(&(game->gameBoard), pos);
+}
+
+/**
+ *  Checks if the given position is threatened, by going over all the pieces on
+ *  board and testing if they can make a move to that position.
+ *  @param game
+ *  @param pos - the potentially threatened position
+ *  @param checkKing -  For any threatening position, should we check if the
+ *  					move causes it's own king to be threatened.
+ *  					This should be true in case we test threats to regular
+ *  					pieces, but in case the threatened pos in a king
+ *  					we shouldn't check for that.
+ *	@return
+ *	true if the position is threatened, false if it's not.
+ *
+ */
+static bool isPositionThreatened(ChessGame* game, ChessPiecePosition pos,
+		bool checkKing) {
 	ChessPiecePosition threatPos;
 	for (int i = 0; i < CHESS_N_ROWS; i++)
 		for (int j = 0; j < CHESS_N_COLUMNS; j++) {
 			threatPos = (ChessPiecePosition ) { .row = i, .column = j };
 			if (chessMoveIsValidMove(&(game->gameBoard), threatPos, pos)) {
+				if (checkKing
+						&& isKingThreatened(game,
+								getPieceByPosition(game, threatPos).player))
+					continue;
 				return true;
 			}
 
@@ -112,7 +140,7 @@ static bool isKingThreatened(ChessGame* game, int player) {
 	ChessPiecePosition kingPos =
 			player == CHESS_WHITE_PLAYER ?
 					game->whiteKingPosition : game->blackKingPosition;
-	return isPositionThreatened(game, kingPos);
+	return isPositionThreatened(game, kingPos, false);
 }
 
 static short getCurrentOpponent(ChessGame* game) {
@@ -202,7 +230,7 @@ ChessGame* chessGameCreate() {
 					KING_COLUMN };
 	game->blackKingPosition = (ChessPiecePosition ) { BLACK_OTHER_ROW,
 					KING_COLUMN };
-	game->isThreatened = false;
+	game->isCheck = false;
 	return game;
 }
 
@@ -266,7 +294,7 @@ CHESS_GAME_MESSAGE chessGameIsValidMove(ChessGame* game,
 		return CHESS_GAME_INVALID_POSITION;
 
 	//Checks if the position contains a piece of the current player
-	ChessPiece piece = chessGameGetPieceByPosition(&(game->gameBoard), cur_pos);
+	ChessPiece piece = getPieceByPosition(game, cur_pos);
 	if (piece.player != chessGameGetCurrentPlayer(game))
 		return CHESS_GAME_NO_PIECE_FOUND;
 
@@ -289,7 +317,7 @@ ArrayList* chessGameGetMoves(ChessGame* game, ChessPiecePosition pos) {
 	ArrayList* arr = chessMoveGetMoves(&(game->gameBoard), pos);
 	if (arr == NULL )
 		return NULL ;
-	ChessPiece piece = chessGameGetPieceByPosition(&(game->gameBoard), pos);
+	ChessPiece piece = getPieceByPosition(game, pos);
 	ChessPiece capturedPiece;
 	ChessPiecePosition nextPos;
 	for (int i = 0; i < arr->actualSize; i++) {
@@ -302,11 +330,10 @@ ArrayList* chessGameGetMoves(ChessGame* game, ChessPiecePosition pos) {
 		setPieceInPosition(game, pos, EMPTY_ENTRY);
 
 		// Remove moves that threatens the king
-		if(isKingThreatened(game, piece.player)) {
+		if (isKingThreatened(game, piece.player)) {
 			arrayListRemoveAt(arr, i);
 			i--;
-		}
-		else if (isPositionThreatened(game, nextPos)) {
+		} else if (isPositionThreatened(game, nextPos, true)) {
 			arrayListIsThreatened(arr, i, true);
 		}
 
@@ -338,9 +365,8 @@ CHESS_GAME_MESSAGE chessGameSetMove(ChessGame* game, ChessPiecePosition cur_pos,
 		return res;
 
 	// Update board
-	ChessPiece piece = chessGameGetPieceByPosition(&(game->gameBoard), cur_pos);
-	ChessPiece capturedPiece = chessGameGetPieceByPosition(&(game->gameBoard),
-			next_pos);
+	ChessPiece piece = getPieceByPosition(game, cur_pos);
+	ChessPiece capturedPiece = getPieceByPosition(game, next_pos);
 	setPieceInPosition(game, next_pos, piece);
 	setPieceInPosition(game, cur_pos, EMPTY_ENTRY);
 
@@ -348,7 +374,7 @@ CHESS_GAME_MESSAGE chessGameSetMove(ChessGame* game, ChessPiecePosition cur_pos,
 	if (isKingThreatened(game, chessGameGetCurrentPlayer(game))) {
 		setPieceInPosition(game, cur_pos, piece);
 		setPieceInPosition(game, next_pos, capturedPiece);
-		return game->isThreatened ?
+		return game->isCheck ?
 				CHESS_GAME_UNRESOLVED_THREATENED_KING :
 				CHESS_GAME_MOVE_THREATEN_KING;
 	}
@@ -365,8 +391,7 @@ CHESS_GAME_MESSAGE chessGameSetMove(ChessGame* game, ChessPiecePosition cur_pos,
 	arrayListAddLast(history, move);
 
 	// Update threatening position.
-	game->isThreatened = isKingThreatened(game,
-			chessGameGetCurrentPlayer(game));
+	game->isCheck = isKingThreatened(game, chessGameGetCurrentPlayer(game));
 	return res;
 }
 
@@ -386,8 +411,7 @@ CHESS_GAME_MESSAGE chessGameUndoMove(ChessGame* game) {
 	if (arrayListIsEmpty(history))
 		return CHESS_GAME_EMPTY_HISTORY;
 	ChessMove move = arrayListGetLast(history);
-	ChessPiece currPiece = chessGameGetPieceByPosition(&(game->gameBoard),
-			move.currentPosition);
+	ChessPiece currPiece = getPieceByPosition(game, move.currentPosition);
 	setPieceInPosition(game, move.previousPosition, currPiece);
 	setPieceInPosition(game, move.currentPosition, move.capturedPiece);
 	arrayListRemoveLast(history);
@@ -410,8 +434,7 @@ void chessGamePrintBoard(ChessGame* game) {
 		line[0] = PRINT_GAME_ZERO_CHAR + (char) (i + 1);
 		for (int j = 0; j < CHESS_N_COLUMNS; j++) {
 			line[2 * j + 2] = PRINT_GAME_WHITESPACE;
-			line[2 * j + 3] =
-					game->gameBoard.position[i][j].consoleRepresentation;
+			line[2 * j + 3] = game->gameBoard.position[i][j].representation;
 		}
 		printf("%s\n", line);
 	}
@@ -430,19 +453,24 @@ short chessGameGetCurrentPlayer(ChessGame* game) {
 }
 
 /**
- * Checks if there's a winner in the specified game status. The function returns either
- * CHESS_GAME_PLAYER_1_SYMBOL or CHESS_GAME_PLAYER_2_SYMBOL in case there's a winner, where
- * the value returned is the symbol of the winner. If the game is over and there's a tie
- * then the value CHESS_GAME_TIE_SYMBOL is returned. in any other case the null characters
- * is returned.
- * @param src - the source game
+ * Checks if the current state is checkmate.
+ * @param game - the source game
  * @return
- * CHESS_GAME_PLAYER_1_SYMBOL - if player 1 won
- * CHESS_GAME_PLAYER_2_SYMBOL - if player 2 won
- * CHESS_GAME_TIE_SYMBOL - If the game is over and there's a tie
- * null character - otherwise
+ * bool - true if checkmate, false if not.
  */
-char chessCheckWinner(ChessGame* src) {
-// TODO: implement check winner.
-	return 0;
+bool chessGameCheckmate(ChessGame* game) {
+	if (!game->isCheck)
+		return false;
+	ChessPiecePosition pos;
+	for (int i = 0; i < CHESS_N_ROWS; i++)
+		for (int j = 0; j < CHESS_N_COLUMNS; j++) {
+			pos = (ChessPiecePosition ) { .row = i, .column = j };
+			if (chessGameGetCurrentPlayer(game)
+					== getPieceByPosition(game, pos).player) {
+				ArrayList* moves = chessGameGetMoves(game, pos);
+				if (moves != NULL && moves->actualSize > 0)
+					return false;
+			}
+		}
+	return true;
 }

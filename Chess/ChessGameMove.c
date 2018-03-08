@@ -14,17 +14,27 @@ const static int rookArrayMaxSize = 14;
 const static int queenArrayMaxSize = 27;
 const static int kingArrayMaxSize = 8;
 
-//TODO: document all this shit.
-
+/**
+ * Gets the opponent of the piece's player (assumes the piece is a valid piece)
+ */
 static int getOpponent(ChessPiece piece) {
 	return piece.player == CHESS_WHITE_PLAYER ?
 			CHESS_BLACK_PLAYER : CHESS_WHITE_PLAYER;
 }
 
+/**
+ * Checks if a position on board is empty and returns a boolean for it
+ */
 static bool isEmptyPosition(ChessBoard* board, ChessPiecePosition pos) {
 	return chessGameGetPieceByPosition(board, pos).type == CHESS_PIECE_EMPTY;
 }
 
+/**
+ * Adds a move by the positions given to the array list.
+ * NOTE: Sets isThreatened=false. This field should be changed in an advance
+ * 		 module (ChessGame module) which look on the entire game.
+ * NOTE2: assume the move is valid, doesn't check it.
+ */
 static void createAndAddMove(ArrayList* arr, ChessBoard* board,
 		ChessPiecePosition pos, ChessPiecePosition newPos) {
 	ChessMove move = { .previousPosition = pos, .currentPosition = newPos,
@@ -33,9 +43,18 @@ static void createAndAddMove(ArrayList* arr, ChessBoard* board,
 	arrayListAddLast(arr, move);
 }
 
+/**
+ * Attempts to move from pos to newPos given the vertical and horizontal
+ * directions (which gets the values of -1, 0 or 1).
+ * Checks if the path for pos to newPos in that direction is clear
+ * meaning, no pieces in between.
+ * NOTE: Assume you give it the right directions!
+ * NOTE2: Assume you check if the pieces are of the same player beforehand!
+ */
 static bool tryMoveToPosition(ChessBoard* board, ChessPiecePosition pos,
 		ChessPiecePosition newPos, int vDirection, int hDirection) {
-	while (!chessGameIsPositionEquals(pos, newPos)) {
+	while (chessGameIsValidPosition(pos)
+			&& !chessGameIsPositionEquals(pos, newPos)) {
 		pos.row += vDirection;
 		pos.column += hDirection;
 		if (!isEmptyPosition(board, pos)
@@ -45,6 +64,11 @@ static bool tryMoveToPosition(ChessBoard* board, ChessPiecePosition pos,
 	return true;
 }
 
+/**
+ * Attempts to add the row and column coordinates to position.
+ * Only verify that that position is a position on board.
+ * NOTE: Assume you check if the positions are of the same player beforehand!
+ */
 static void tryAddRelativePosition(ArrayList* arr, ChessBoard* board,
 		ChessPiecePosition pos, int rowAdd, int colAdd) {
 	ChessPiecePosition newPos = (ChessPiecePosition ) { .row = pos.row + rowAdd,
@@ -53,6 +77,12 @@ static void tryAddRelativePosition(ArrayList* arr, ChessBoard* board,
 		createAndAddMove(arr, board, pos, newPos);
 }
 
+/**
+ * Adds all valid moves in the vertical and horizontal directions, meaning all
+ * moves until we collide with another piece (and capture it if not of the same
+ * player).
+ * NOTE: Assume vDirection and hDirection are in {-1, 0, 1}.
+ */
 static void addMovesInDirection(ArrayList* arr, ChessBoard* board,
 		ChessPiecePosition pos, int vDirection, int hDirection) {
 	int player = chessGameGetPieceByPosition(board, pos).player;
@@ -66,6 +96,10 @@ static void addMovesInDirection(ArrayList* arr, ChessBoard* board,
 	} while (chessGameIsValidPosition(newPos) && isEmptyPosition(board, newPos));
 }
 
+/**
+ * Simple case switch to get the max size for the array list of moves by piece
+ * type. Each piece have different number of maximum possible moves.
+ */
 static int getArraySizeByPieceType(ChessPiece piece) {
 	int size = 0;
 	switch (piece.type) {
@@ -93,6 +127,10 @@ static int getArraySizeByPieceType(ChessPiece piece) {
 	return size;
 }
 
+/**
+ * Validate pawn move, using chess rules.
+ * NOTE: Doesn't check for king threats.
+ */
 static bool isValidMovePawn(ChessBoard* board, ChessPiecePosition pos,
 		ChessPiecePosition newPos, int rowDiff, int colDiff) {
 	ChessPiece piece = chessGameGetPieceByPosition(board, pos);
@@ -110,6 +148,10 @@ static bool isValidMovePawn(ChessBoard* board, ChessPiecePosition pos,
 	return false;
 }
 
+/**
+ * Validate bishop move, using chess rules.
+ * NOTE: Doesn't check for king threats.
+ */
 static bool isValidMoveBishop(ChessBoard* board, ChessPiecePosition pos,
 		ChessPiecePosition newPos, int rowDiff, int colDiff) {
 	// Checks if the direction is diagonal
@@ -122,6 +164,10 @@ static bool isValidMoveBishop(ChessBoard* board, ChessPiecePosition pos,
 	return tryMoveToPosition(board, pos, newPos, vDirection, hDirection);
 }
 
+/**
+ * Validate knight move, using chess rules.
+ * NOTE: Doesn't check for king threats.
+ */
 static bool isValidMoveKnight(ChessBoard* board, ChessPiecePosition pos,
 		ChessPiecePosition newPos, int rowDiff, int colDiff) {
 	// Checks if the move is L shaped.
@@ -136,6 +182,10 @@ static bool isValidMoveKnight(ChessBoard* board, ChessPiecePosition pos,
 	return false;
 }
 
+/**
+ * Validate rook move, using chess rules.
+ * NOTE: Doesn't check for king threats.
+ */
 static bool isValidMoveRook(ChessBoard* board, ChessPiecePosition pos,
 		ChessPiecePosition newPos, int rowDiff, int colDiff) {
 	// Checks if the direction is horizontal/vertical.
@@ -152,18 +202,30 @@ static bool isValidMoveRook(ChessBoard* board, ChessPiecePosition pos,
 	return tryMoveToPosition(board, pos, newPos, vDirection, hDirection);
 }
 
+/**
+ * Validate queen move, using chess rules.
+ * NOTE: Doesn't check for king threats.
+ */
 static bool isValidMoveQueen(ChessBoard* board, ChessPiecePosition pos,
 		ChessPiecePosition newPos, int rowDiff, int colDiff) {
 	return isValidMoveRook(board, pos, newPos, rowDiff, colDiff)
 			|| isValidMoveBishop(board, pos, newPos, rowDiff, colDiff);
 }
 
+/**
+ * Validate king move, using chess rules.
+ * NOTE: Doesn't check for king threats.
+ */
 static bool isValidMoveKing(ChessBoard* board, ChessPiecePosition pos,
 		ChessPiecePosition newPos, int rowDiff, int colDiff) {
 	// Checks if each axis step is at most 1
 	return (rowDiff * rowDiff) <= 1 && (colDiff * colDiff) <= 1;
 }
 
+/**
+ * Add all pawn moves, using chess rules.
+ * NOTE: Doesn't check for king threats.
+ */
 static void addMovesPawn(ArrayList* arr, ChessBoard* board,
 		ChessPiecePosition pos) {
 	int vDir =
@@ -179,6 +241,10 @@ static void addMovesPawn(ArrayList* arr, ChessBoard* board,
 	tryAddRelativePosition(arr, board, pos, 2 * vDir, 0);
 }
 
+/**
+ * Add all bishop moves, using chess rules.
+ * NOTE: Doesn't check for king threats.
+ */
 static void addMovesBishop(ArrayList* arr, ChessBoard* board,
 		ChessPiecePosition pos) {
 	// Add all moves in the 4 diagonal directions
@@ -188,6 +254,10 @@ static void addMovesBishop(ArrayList* arr, ChessBoard* board,
 	addMovesInDirection(arr, board, pos, -1, -1);
 }
 
+/**
+ * Add all knight moves, using chess rules.
+ * NOTE: Doesn't check for king threats.
+ */
 static void addMovesKnight(ArrayList* arr, ChessBoard* board,
 		ChessPiecePosition pos) {
 	// Checks all possible knight moves (L shape)
@@ -201,6 +271,10 @@ static void addMovesKnight(ArrayList* arr, ChessBoard* board,
 	}
 }
 
+/**
+ * Add all rook moves, using chess rules.
+ * NOTE: Doesn't check for king threats.
+ */
 static void addMovesRook(ArrayList* arr, ChessBoard* board,
 		ChessPiecePosition pos) {
 	// Add all moves in the 4 horizontal/vertical directions
@@ -210,12 +284,20 @@ static void addMovesRook(ArrayList* arr, ChessBoard* board,
 	addMovesInDirection(arr, board, pos, 0, -1);
 }
 
+/**
+ * Add all queen moves, using chess rules.
+ * NOTE: Doesn't check for king threats.
+ */
 static void addMovesQueen(ArrayList* arr, ChessBoard* board,
 		ChessPiecePosition pos) {
 	addMovesBishop(arr, board, pos);
 	addMovesRook(arr, board, pos);
 }
 
+/**
+ * Add all king moves, using chess rules.
+ * NOTE: Doesn't check for king threats.
+ */
 static void addMovesKing(ArrayList* arr, ChessBoard* board,
 		ChessPiecePosition pos) {
 	// Checks all possible king moves (at most 1 step in each axis)
@@ -224,6 +306,10 @@ static void addMovesKing(ArrayList* arr, ChessBoard* board,
 			tryAddRelativePosition(arr, board, pos, rAdd, cAdd);
 }
 
+/**
+ * Validate movement from pos to newPos, split to cases by pos's piece type
+ * NOTE: Doesn't check for king threats.
+ */
 bool chessMoveIsValidMove(ChessBoard* board, ChessPiecePosition pos,
 		ChessPiecePosition newPos) {
 	//Validate parameters
@@ -266,11 +352,16 @@ bool chessMoveIsValidMove(ChessBoard* board, ChessPiecePosition pos,
 	return res;
 }
 
-// NOTE: Doesn't update isThreatened field. It should be updated in ChessGame.
+/**
+ * Get all valid moves of a piece in pos.
+ * Returns NULL if arrayList fails or the position is empty\invalid.
+ * NOTE: Doesn't check for king threats.
+ * NOTE2: Doesn't update isThreatened field. It should be updated in ChessGame.
+ */
 ArrayList* chessMoveGetMoves(ChessBoard* board, ChessPiecePosition pos) {
 	//Validate parameters
 	if (board == NULL || !chessGameIsValidPosition(pos))
-		return false;
+		return NULL ;
 
 	ChessPiece piece = chessGameGetPieceByPosition(board, pos);
 	ArrayList* arr = arrayListCreate(getArraySizeByPieceType(piece));
