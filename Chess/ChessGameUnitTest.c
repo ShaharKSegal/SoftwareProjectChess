@@ -259,7 +259,7 @@ static bool ChessGameBasicTest() {
 	return true;
 }
 
-int main() {
+int main123567() {
 	RUN_TEST(ChessGameBasicTest);
 	RUN_TEST(ChessGameSetMoveTest);
 	RUN_TEST(ChessGameGetMovesTest);

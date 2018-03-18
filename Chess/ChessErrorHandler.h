@@ -15,4 +15,8 @@ void hadMemoryFailure();
  */
 bool getHadMemoryFailure();
 
+void printSDLError();
+
+bool getHadSDLError();
+
 #endif
