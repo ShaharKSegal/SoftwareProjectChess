@@ -136,6 +136,9 @@ static bool isValidMovePawn(ChessBoard* board, ChessPiecePosition pos,
 	ChessPiece piece = chessGameGetPieceByPosition(board, pos);
 	ChessPiece newPosPiece = chessGameGetPieceByPosition(board, newPos);
 	rowDiff *= piece.player == CHESS_WHITE_PLAYER ? 1 : -1;
+	int startingRow =
+			piece.player == CHESS_WHITE_PLAYER ?
+					WHITE_PAWN_ROW : BLACK_PAWN_ROW;
 	if (rowDiff == 1) {
 		if (!colDiff && isEmptyPosition(board, newPos)) // regular move
 			return true;
@@ -143,7 +146,8 @@ static bool isValidMovePawn(ChessBoard* board, ChessPiecePosition pos,
 				&& newPosPiece.player == getOpponent(piece)) // capturing
 			return true;
 	}
-	if (rowDiff == 2 && !colDiff && isEmptyPosition(board, newPos))
+	if (rowDiff == 2 && !colDiff && isEmptyPosition(board, newPos)
+			&& pos.row == startingRow)
 		return true;
 	return false;
 }
@@ -309,8 +313,7 @@ static void addMovesKing(ArrayList* arr, ChessBoard* board,
 /**
  * Validate movement from pos to newPos, split to cases by pos's piece type
  * NOTE: Doesn't check for king threats.
- */
-bool chessMoveIsValidMove(ChessBoard* board, ChessPiecePosition pos,
+ */bool chessMoveIsValidMove(ChessBoard* board, ChessPiecePosition pos,
 		ChessPiecePosition newPos) {
 	//Validate parameters
 	if (board == NULL || !chessGameIsValidPosition(pos)

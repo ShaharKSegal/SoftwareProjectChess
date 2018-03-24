@@ -21,7 +21,8 @@ const static SDL_MessageBoxColorScheme COLOR_SCHEME = { { { 255, 0, 0 }, { 0,
  * Adds a new button to the widgets array in the given index.
  * Handles failures and frees memory in the widget array.
  * NOTE: assumes the given index is the end of the actual size of the array.
- */bool createButtonInWidgetArray(Widget** widgets, int index,
+ */
+bool createButtonInWidgetArray(Widget** widgets, int index,
 		SDL_Renderer* renderer, SDL_Rect location, const char* activeImage,
 		const char* inactiveImage, UI_EVENT eventActive, UI_EVENT eventInactive,
 		bool isActive) {

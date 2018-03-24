@@ -17,11 +17,6 @@ struct window_t {
 
 Window* windowBaseCreate();
 
-Window* windowCreate(SDL_Window* window, SDL_Renderer* renderer,
-		SDL_Texture* bgTexture, Widget** widgets, int numOfWidgets, void* data,
-		void (*drawWindow)(Window*), UI_EVENT (*handleEvent)(Window*, SDL_Event*),
-		void (*destroyWindow)(Window*));
-
 void windowBaseDraw(Window* window);
 
 void windowDraw (Window* window);

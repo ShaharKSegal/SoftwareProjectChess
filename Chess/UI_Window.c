@@ -53,33 +53,6 @@ Window* windowBaseCreate(char* image) {
 	return window;
 }
 
-Window* windowCreate(SDL_Window* sdlWindow, SDL_Renderer* renderer,
-		SDL_Texture* bgTexture, Widget** widgets, int numOfWidgets, void* data,
-		void (*drawWindow)(Window*),
-		UI_EVENT (*handleEvent)(Window*, SDL_Event*),
-		void (*destroyWindow)(Window*)) {
-	if (sdlWindow == NULL || renderer == NULL || bgTexture == NULL
-			|| widgets == NULL || drawWindow == NULL || handleEvent == NULL
-			|| destroyWindow == NULL )
-		return NULL ;
-	Window* window = (Window*) malloc(sizeof(Window));
-	if (window == NULL ) {
-		hadMemoryFailure();
-		return NULL ;
-	}
-	window->sdlWindow = sdlWindow;
-	window->renderer = renderer;
-	window->bgTexture = bgTexture;
-	window->widgets = widgets;
-	window->numOfWidgets = numOfWidgets;
-	window->data = data;
-	window->destroyWindow = destroyWindow;
-	window->drawWindow = drawWindow;
-	window->handleEvent = handleEvent;
-
-	return window;
-}
-
 void windowBaseDraw(Window* window) {
 	if (window == NULL )
 		return;

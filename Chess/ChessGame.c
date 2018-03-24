@@ -161,15 +161,28 @@ static CHESS_GAME_MESSAGE chessGameIsValidMove(ChessGame* game,
  */
 static bool isPositionThreatened(ChessGame* game, ChessPiecePosition pos,
 		bool checkKing) {
+	ChessPiece piece = getPieceByPosition(game, pos);
 	ChessPiecePosition threatPos;
 	for (int i = 0; i < CHESS_N_ROWS; i++)
 		for (int j = 0; j < CHESS_N_COLUMNS; j++) {
 			threatPos = (ChessPiecePosition ) { .row = i, .column = j };
 			if (chessMoveIsValidMove(&(game->gameBoard), threatPos, pos)) {
-				if (checkKing
-						&& isKingThreatened(game,
-								getPieceByPosition(game, threatPos).player))
-					continue;
+				// need to perform the move in order to check king threats
+				if (checkKing) {
+					ChessPiece threatPiece = getPieceByPosition(game,
+							threatPos);
+					// Change board to test for threats
+					setPieceInPosition(game, pos, threatPiece);
+					setPieceInPosition(game, threatPos, EMPTY_ENTRY);
+
+					bool res = isKingThreatened(game, threatPiece.player);
+
+					// Undo changes to board
+					setPieceInPosition(game, threatPos, threatPiece);
+					setPieceInPosition(game, pos, piece);
+					if (res)
+						continue;
+				}
 				return true;
 			}
 

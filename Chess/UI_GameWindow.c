@@ -34,7 +34,7 @@ static int getNumberOfPieces(ChessGame* game) {
 }
 
 static int getNumberOfWidgets(GameWindowData* data) {
-	return data->numOfPieces + OTHER_BUTTONS_NUM;
+	return data->numOfHighlightMoves + data->numOfPieces + OTHER_BUTTONS_NUM;
 }
 
 static char* getPiecePicturePath(ChessPiece piece) {
@@ -85,13 +85,13 @@ static void setWidgetByPosition(Window* window, ChessPiecePosition position,
 	}
 }
 
-static void pieceDragMode(Window* window, int widgetID) {
+static void handlePieceDragMode(Window* window) {
 	GameWindowData* data = gameWindowGetData(window);
 	SDL_Event event;
 	ChessPiecePosition pos;
 	while (event.type != SDL_MOUSEBUTTONUP) {
 		pos = coordinatesToPiecePosition(event.button.x, event.button.y);
-		setWidgetByPosition(window, pos, widgetID);
+		setWidgetByPosition(window, pos, data->dragPieceWidgetID);
 		windowDraw(window);
 		SDL_WaitEvent(&event);
 	}
@@ -102,13 +102,13 @@ static UI_EVENT handleEventPieceClick(Window* window, SDL_Event* event,
 		int widgetID) {
 	SDL_MouseButtonEvent mouseEvent = event->button;
 	GameWindowData* data = gameWindowGetData(window);
-	data->dragPieceWidgetID = widgetID;
 	ChessPiecePosition pos = coordinatesToPiecePosition(mouseEvent.x,
 			mouseEvent.y);
 	switch (mouseEvent.button) {
 	case SDL_BUTTON_LEFT:
 		data->sourcePos = pos;
-		pieceDragMode(window, widgetID);
+		data->dragPieceWidgetID = widgetID;
+		handlePieceDragMode(window);
 		return UI_BUTTON_EVENT_PIECE_DRAG;
 	case SDL_BUTTON_RIGHT:
 		data->sourcePos = pos;
@@ -201,7 +201,51 @@ static GameWindowData* createGameWindowData(ChessGame* game) {
 	data->game = game;
 	data->numOfPieces = getNumberOfPieces(game);
 	data->numOfHighlightMoves = 0;
+	data->dragPieceWidgetID = -1;
 	return data;
+}
+
+static void gameWindowDraw(Window* window) {
+	if (window == NULL )
+		return;
+	SDL_Renderer* renderer = window->renderer;
+	//Draw window
+	SDL_Rect rec = { .x = 0, .y = 0, .w = 800, .h = 600 };
+	if (SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255) == -1) {
+		printSDLError();
+		return;
+	}
+	if (SDL_RenderClear(renderer) == -1) {
+		printSDLError();
+		return;
+	}
+	if (SDL_RenderCopy(renderer, window->bgTexture, NULL, &rec) == -1) {
+		printSDLError();
+		return;
+	}
+	GameWindowData* data = gameWindowGetData(window);
+	int dragWidgetID = data->dragPieceWidgetID;
+	//Draw highlighted moves
+	for (int i = data->numOfPieces + OTHER_BUTTONS_NUM;
+			i < window->numOfWidgets; i++) {
+		(window->widgets[i])->drawWidget(window->widgets[i]);
+		if (getHadSDLError())
+			return;
+	}
+	//Draw basic window buttons + chess pieces
+	for (int i = 0; i < window->numOfWidgets - data->numOfHighlightMoves; i++) {
+		if (window->widgets[i] == NULL || i == dragWidgetID)
+			continue;
+		(window->widgets[i])->drawWidget(window->widgets[i]);
+		if (getHadSDLError())
+			return;
+	}
+	if (dragWidgetID >= 0)
+		(window->widgets[dragWidgetID])->drawWidget(
+				window->widgets[dragWidgetID]);
+	if (getHadSDLError())
+		return;
+	SDL_RenderPresent(renderer);
 }
 
 static UI_EVENT gameWindowHandleEvent(Window* window, SDL_Event* event) {
@@ -228,6 +272,7 @@ Window* gameWindowCreate(ChessGame* game) {
 		return NULL ;
 	window->data = data;
 	window->numOfWidgets = getNumberOfWidgets(data);
+	window->drawWindow = gameWindowDraw;
 	window->handleEvent = gameWindowHandleEvent;
 	window->widgets = gameWindowWidgetsCreate(window->renderer, data);
 	if (window->widgets == NULL ) {
@@ -254,13 +299,23 @@ bool gameWindowAddHighlightMoves(Window* window, ArrayList* moves) {
 	for (int i = 0; i < numOfMoves; i++) {
 		ChessMove move = arrayListGetAt(moves, i);
 		SDL_Rect rect = piecePositionToRect(move.currentPosition);
+		const char* movePicPath = UI_PIC_POSSIBLE_MOVE;
+		if (move.capturedPiece.type != CHESS_PIECE_EMPTY) {
+			if (move.isThreatened)
+				movePicPath = UI_PIC_THREATENED_CAPTURE_MOVE;
+			else
+				movePicPath = UI_PIC_CAPTURE_MOVE;
+		}
+		else if (move.isThreatened) {
+			movePicPath = UI_PIC_THREATENED_MOVE;
+		}
 		rect.x += HIGHLIGHT_DELTA;
 		rect.y += HIGHLIGHT_DELTA;
 		rect.h += -2 * HIGHLIGHT_DELTA;
 		rect.w += -2 * HIGHLIGHT_DELTA;
 		if (!createButtonInWidgetArray(widgets, prevNumOfWidgets + i,
-				window->renderer, rect, UI_PIC_POSSIBLE_MOVE,
-				UI_PIC_POSSIBLE_MOVE, UI_EVENT_NONE, UI_EVENT_NONE, false))
+				window->renderer, rect, movePicPath, movePicPath, UI_EVENT_NONE,
+				UI_EVENT_NONE, false))
 			return false;
 	}
 	gameWindowGetData(window)->numOfHighlightMoves = numOfMoves;

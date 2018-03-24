@@ -72,10 +72,10 @@
 #define UI_PIC_BLACK_KING "./pictures/blackKing.bmp"
 #define UI_PIC_WHITE_KING "./pictures/whiteKing.bmp"
 
-
 #define UI_PIC_POSSIBLE_MOVE "./pictures/possibleMove.bmp"
 #define UI_PIC_THREATENED_MOVE "./pictures/threatenedLoc.bmp"
 #define UI_PIC_CAPTURE_MOVE "./pictures/opponentLoc.bmp"
+#define UI_PIC_THREATENED_CAPTURE_MOVE "./pictures/threatenedAndOpponentLoc.bmp"
 
 #define UI_PIC_RESTART "./pictures/restart.bmp"
 #define UI_PIC_SAVE "./pictures/save.bmp"
@@ -84,13 +84,11 @@
 #define UI_PIC_BACK_TO_MAIN "./pictures/mainMenuForGame.bmp"
 #define UI_PIC_EXIT_GAME "./pictures/exitForGame.bmp"
 
-
 /**
  * Adds a new button to the widgets array in the given index.
  * Handles failures and frees memory in the widget array.
  * NOTE: assumes the given index is the end of the actual size of the array.
- */
-bool createButtonInWidgetArray(Widget** widgets, int index,
+ */bool createButtonInWidgetArray(Widget** widgets, int index,
 		SDL_Renderer* renderer, SDL_Rect location, const char* activeImage,
 		const char* inactiveImage, UI_EVENT eventActive, UI_EVENT eventInactive,
 		bool isActive);
@@ -101,13 +99,13 @@ bool createButtonInWidgetArray(Widget** widgets, int index,
  * UI_MSGBOX_EVENT_NO - Ignore unsaved changes and continue.
  * UI_MSGBOX_EVENT_CANCEL - Go back to the window as if nothing happened.
  */
- UI_EVENT unsavedChangesPopup();
+UI_EVENT unsavedChangesPopup();
 
- /**
-  * Popup message box for the game state. Indicating check, checkmate or draw.
-  * @return:
-  * See chessGameGeCurrentState in ChessGame.h for details
-  */
- CHESS_GAME_MESSAGE chessGameStatePopup(ChessGame* game);
+/**
+ * Popup message box for the game state. Indicating check, checkmate or draw.
+ * @return:
+ * See chessGameGeCurrentState in ChessGame.h for details
+ */
+CHESS_GAME_MESSAGE chessGameStatePopup(ChessGame* game);
 
 #endif
