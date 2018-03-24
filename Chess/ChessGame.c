@@ -100,7 +100,7 @@ static bool isKingThreatened(ChessGame* game, int player);
 static void setPieceInPosition(ChessGame* game, ChessPiecePosition pos,
 		ChessPiece piece) {
 	if (piece.type == CHESS_PIECE_KING) {
-		if (game->currentPlayer == CHESS_WHITE_PLAYER)
+		if (piece.player == CHESS_WHITE_PLAYER)
 			game->whiteKingPosition = pos;
 		else
 			game->blackKingPosition = pos;
@@ -495,7 +495,7 @@ short chessGameGetCurrentPlayer(ChessGame* game) {
  *	CHESS_GAME_CHECKMATE	- if their's a checkmate.
  *	CHESS_GAME_NONE			- if none of the above is true.
  */
-CHESS_GAME_MESSAGE chessGameGeCurrentState(ChessGame* game) {
+CHESS_GAME_MESSAGE chessGameGetCurrentState(ChessGame* game) {
 	ChessPiecePosition pos;
 	for (int i = 0; i < CHESS_N_ROWS; i++)
 		for (int j = 0; j < CHESS_N_COLUMNS; j++) {

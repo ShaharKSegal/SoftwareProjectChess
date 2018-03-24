@@ -144,7 +144,7 @@ static bool ChessGameSetMoveTest() {
 	pos_next = (ChessPiecePosition ) { .row = 5, .column = 0 };
 	chessGameSetMove(res, pos, pos_next);
 	pos = (ChessPiecePosition ) { .row = 0, .column = 3 };
-	ASSERT_TRUE(chessGameGeCurrentState(res)!= CHESS_GAME_CHECKMATE);
+	ASSERT_TRUE(chessGameGetCurrentState(res)!= CHESS_GAME_CHECKMATE);
 	pos_next = (ChessPiecePosition ) { .row = 2, .column = 5 };
 	chessGameSetMove(res, pos, pos_next);
 	pos = (ChessPiecePosition ) { .row = 5, .column = 0 };
@@ -164,7 +164,7 @@ static bool ChessGameSetMoveTest() {
 	ASSERT_TRUE(
 			chessGameSetMove(res, pos, pos_next)
 					== CHESS_GAME_UNRESOLVED_THREATENED_KING);
-	ASSERT_TRUE(chessGameGeCurrentState(res)== CHESS_GAME_CHECKMATE);
+	ASSERT_TRUE(chessGameGetCurrentState(res)== CHESS_GAME_CHECKMATE);
 	chessGameDestroy(res);
 
 	//Move threaten king check

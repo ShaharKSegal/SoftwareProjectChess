@@ -64,7 +64,7 @@ UI_EVENT unsavedChangesPopup() {
 CHESS_GAME_MESSAGE chessGameStatePopup(ChessGame* game) {
 	if (game == NULL )
 		return CHESS_GAME_NONE;
-	CHESS_GAME_MESSAGE gameMsg = chessGameGeCurrentState(game);
+	CHESS_GAME_MESSAGE gameMsg = chessGameGetCurrentState(game);
 	const char* msg = NULL;
 	switch (gameMsg) {
 	case CHESS_GAME_CHECK:

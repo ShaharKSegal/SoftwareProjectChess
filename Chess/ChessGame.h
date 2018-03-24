@@ -144,6 +144,6 @@ short chessGameGetCurrentPlayer(ChessGame* src);
  *	CHESS_GAME_CHECKMATE	- if their's a checkmate.
  *	CHESS_GAME_NONE			- if none of the above is true.
  */
-CHESS_GAME_MESSAGE chessGameGeCurrentState(ChessGame* game);
+CHESS_GAME_MESSAGE chessGameGetCurrentState(ChessGame* game);
 
 #endif
