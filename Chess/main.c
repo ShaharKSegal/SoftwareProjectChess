@@ -19,8 +19,8 @@ int main(int argc, char** argv) {
 	}
 	WindowController* controller = mainWindowControllerCreate();
 	if (controller == NULL ) {
-		if (getHadMemoryFailure()) {
-			// TODO: report to user that an error occurred
+		if (getHadCriticalError()) {
+			printCriticalError();
 		}
 		SDL_Quit();
 		return 0;
@@ -32,7 +32,7 @@ int main(int argc, char** argv) {
 		UI_CONTROLLER_EVENT res = windowControllerHandleEvent(&controller,
 				&event);
 		if (res == UI_CONTROLLER_EVENT_QUTT || res == UI_CONTROLLER_EVENT_ERROR
-				|| getHadSDLError() || getHadMemoryFailure()) {
+				|| getHadCriticalError()) {
 			break;
 		} else if (res == UI_CONTROLLER_EVENT_INVOKE_DRAW) {
 			windowDraw(controller->window); //draw might invoke SDL errors
@@ -40,6 +40,9 @@ int main(int argc, char** argv) {
 				break;
 			}
 		}
+	}
+	if (getHadCriticalError()) {
+		printCriticalError();
 	}
 	windowControllerDestroy(controller);
 	SDL_Quit();

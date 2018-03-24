@@ -48,7 +48,7 @@ UI_EVENT unsavedChangesPopup() {
 			&COLOR_SCHEME };
 	int buttonid;
 	if (SDL_ShowMessageBox(&messageboxdata, &buttonid) < 0) {
-		printSDLError();
+		hadSDLError();
 		return UI_EVENT_ERROR;
 	}
 	if (buttonid == -1)

@@ -135,7 +135,8 @@ static bool isValidMovePawn(ChessBoard* board, ChessPiecePosition pos,
 		ChessPiecePosition newPos, int rowDiff, int colDiff) {
 	ChessPiece piece = chessGameGetPieceByPosition(board, pos);
 	ChessPiece newPosPiece = chessGameGetPieceByPosition(board, newPos);
-	rowDiff *= piece.player == CHESS_WHITE_PLAYER ? 1 : -1;
+	int pawnDir = piece.player == CHESS_WHITE_PLAYER ? 1 : -1;
+	rowDiff *= pawnDir;
 	int startingRow =
 			piece.player == CHESS_WHITE_PLAYER ?
 					WHITE_PAWN_ROW : BLACK_PAWN_ROW;
@@ -147,6 +148,9 @@ static bool isValidMovePawn(ChessBoard* board, ChessPiecePosition pos,
 			return true;
 	}
 	if (rowDiff == 2 && !colDiff && isEmptyPosition(board, newPos)
+			&& isEmptyPosition(board,
+					(ChessPiecePosition ) { .row = pos.row + pawnDir,
+									.column = pos.column })
 			&& pos.row == startingRow)
 		return true;
 	return false;

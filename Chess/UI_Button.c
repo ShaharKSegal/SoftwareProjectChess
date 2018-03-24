@@ -37,14 +37,14 @@ static void buttonDraw(Widget* widget) {
 		res = SDL_RenderCopy(button->renderer, button->buttonActiveTexture,
 				NULL, &button->location);
 		if (res == -1) {
-			printSDLError();
+			hadSDLError();
 			return;
 		}
 	} else {
 		res = SDL_RenderCopy(button->renderer, button->buttonInactiveTexture,
 				NULL, &button->location);
 		if (res == -1) {
-			printSDLError();
+			hadSDLError();
 			return;
 		}
 	}
@@ -54,7 +54,7 @@ static SDL_Texture* createButtonTexture(SDL_Renderer* renderer,
 		const char* image) {
 	SDL_Surface* surface = SDL_LoadBMP(image);
 	if (surface == NULL ) {
-		printSDLError();
+		hadSDLError();
 		return NULL ;
 	}
 	SDL_SetColorKey(surface, SDL_TRUE,
@@ -62,7 +62,7 @@ static SDL_Texture* createButtonTexture(SDL_Renderer* renderer,
 	SDL_Texture* texture = SDL_CreateTextureFromSurface(renderer, surface);
 	SDL_FreeSurface(surface);
 	if (texture == NULL ) {
-		printSDLError();
+		hadSDLError();
 		return NULL ;
 	}
 	return texture;

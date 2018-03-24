@@ -14,14 +14,14 @@ Window* windowBaseCreate(char* image) {
 			SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, UI_WINDOW_W,
 			UI_WINDOW_H, SDL_WINDOW_OPENGL);
 	if (sdlWindow == NULL ) {
-		printSDLError();
+		hadSDLError();
 		return NULL ;
 	}
 	SDL_Renderer* renderer = SDL_CreateRenderer(sdlWindow, -1,
 			SDL_RENDERER_ACCELERATED);
 	if (renderer == NULL ) {
 		SDL_DestroyWindow(sdlWindow);
-		printSDLError();
+		hadSDLError();
 		return NULL ;
 	}
 	//Create a background texture:
@@ -29,7 +29,7 @@ Window* windowBaseCreate(char* image) {
 	if (surface == NULL ) {
 		SDL_DestroyRenderer(renderer);
 		SDL_DestroyWindow(sdlWindow);
-		printSDLError();
+		hadSDLError();
 		return NULL ;
 	}
 	SDL_Texture* texture = SDL_CreateTextureFromSurface(renderer, surface);
@@ -37,7 +37,7 @@ Window* windowBaseCreate(char* image) {
 	if (texture == NULL ) {
 		SDL_DestroyTexture(texture);
 		SDL_DestroyRenderer(renderer);
-		printSDLError();
+		hadSDLError();
 		return NULL ;
 	}
 
@@ -60,15 +60,15 @@ void windowBaseDraw(Window* window) {
 	//Draw window
 	SDL_Rect rec = { .x = 0, .y = 0, .w = 800, .h = 600 };
 	if (SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255) == -1) {
-		printSDLError();
+		hadSDLError();
 		return;
 	}
 	if (SDL_RenderClear(renderer) == -1) {
-		printSDLError();
+		hadSDLError();
 		return;
 	}
 	if (SDL_RenderCopy(renderer, window->bgTexture, NULL, &rec) == -1) {
-		printSDLError();
+		hadSDLError();
 		return;
 	}
 	for (int i = 0; i < window->numOfWidgets; i++) {

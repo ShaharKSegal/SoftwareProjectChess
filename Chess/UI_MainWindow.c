@@ -39,25 +39,25 @@ static Widget** mainWindowWidgetsCreate(SDL_Renderer* renderer) {
 		hadMemoryFailure();
 		return NULL ;
 	}
-	// TODO: Change to new format with aux
 	SDL_Rect newGameR = { .x = NEW_GAME_X, .y = NEW_GAME_Y, .h = NEW_GAME_H,
 			.w = NEW_GAME_W };
 	SDL_Rect loadR = { .x = MAIN_LOAD_X, .y = MAIN_LOAD_Y, .h = MAIN_LOAD_H,
 			.w = MAIN_LOAD_W };
 	SDL_Rect exitR = { .x = EXIT_X, .y = EXIT_Y, .h = EXIT_H, .w = EXIT_W };
-	widgets[0] = buttonCreate(renderer, newGameR, UI_PIC_NEW_GAME,
-			UI_PIC_NEW_GAME, UI_BUTTON_EVENT_NEW_GAME, UI_EVENT_NONE, true);
-	widgets[1] = buttonCreate(renderer, loadR, UI_PIC_LOAD, UI_PIC_LOAD,
-			UI_BUTTON_EVENT_LOAD, UI_EVENT_NONE, true);
-	widgets[2] = buttonCreate(renderer, exitR, UI_PIC_EXIT, UI_PIC_EXIT,
-			UI_BUTTON_EVENT_EXIT, UI_EVENT_NONE, true);
-	if (widgets[0] == NULL || widgets[1] == NULL || widgets[2] == NULL ) {
-		widgetDestroy(widgets[0]);
-		widgetDestroy(widgets[1]);
-		widgetDestroy(widgets[2]);
-		free(widgets);
-		return NULL ;
-	}
+	int i = 0;
+	if (!createButtonInWidgetArray(widgets, i, renderer, newGameR,
+			UI_PIC_NEW_GAME, UI_PIC_NEW_GAME, UI_BUTTON_EVENT_NEW_GAME,
+			UI_EVENT_NONE, true))
+		return false;
+	i++;
+	if (!createButtonInWidgetArray(widgets, i, renderer, loadR, UI_PIC_LOAD,
+			UI_PIC_LOAD, UI_BUTTON_EVENT_LOAD, UI_EVENT_NONE, true))
+		return false;
+	i++;
+	if (!createButtonInWidgetArray(widgets, i, renderer, exitR, UI_PIC_EXIT,
+			UI_PIC_EXIT, UI_BUTTON_EVENT_EXIT, UI_EVENT_NONE, true))
+		return false;
+	i++;
 	return widgets;
 }
 

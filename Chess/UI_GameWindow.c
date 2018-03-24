@@ -212,15 +212,15 @@ static void gameWindowDraw(Window* window) {
 	//Draw window
 	SDL_Rect rec = { .x = 0, .y = 0, .w = 800, .h = 600 };
 	if (SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255) == -1) {
-		printSDLError();
+		hadSDLError();
 		return;
 	}
 	if (SDL_RenderClear(renderer) == -1) {
-		printSDLError();
+		hadSDLError();
 		return;
 	}
 	if (SDL_RenderCopy(renderer, window->bgTexture, NULL, &rec) == -1) {
-		printSDLError();
+		hadSDLError();
 		return;
 	}
 	GameWindowData* data = gameWindowGetData(window);
