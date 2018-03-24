@@ -11,7 +11,6 @@ static void buttonDestroy(Widget* widget) {
 	Button* button = (Button*) widget->data;
 	SDL_DestroyTexture(button->buttonActiveTexture);
 	SDL_DestroyTexture(button->buttonInactiveTexture);
-	free(button->data);
 	free(button);
 	free(widget);
 }
@@ -25,11 +24,6 @@ static UI_EVENT buttonHandleEvent(Widget* widget, SDL_Event* event) {
 		if (SDL_PointInRect(&point, &button->location))
 			return button->isActive ?
 					button->eventActive : button->eventInactive;
-	} else if (event->type == SDL_MOUSEBUTTONUP
-			&& button->eventUpButton != UI_EVENT_NONE) {
-		SDL_Point point = { .x = event->button.x, .y = event->button.y };
-		if (SDL_PointInRect(&point, &button->location))
-			return button->eventUpButton;
 	}
 	return UI_EVENT_NONE;
 }
@@ -92,8 +86,7 @@ Widget* buttonCreate(SDL_Renderer* renderer, SDL_Rect location,
 		free(button);
 		return NULL ;
 	}
-	button->data = NULL;
-	button->eventUpButton = UI_EVENT_NONE;
+
 	button->renderer = renderer;
 	button->eventActive = eventActive;
 	button->eventInactive = eventInactive;
@@ -116,8 +109,4 @@ void buttonSetActive(Button* button, bool isActive) {
 
 void buttonSetLocation(Button* button, SDL_Rect rect) {
 	button->location = rect;
-}
-
-void buttonSetData(Button* button, void* data) {
-	button->data = data;
 }

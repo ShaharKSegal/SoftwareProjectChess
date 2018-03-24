@@ -36,12 +36,16 @@ typedef struct chess_game_t {
  * Type used for returning error codes from game functions
  */
 typedef enum chess_game_message_t {
+	CHESS_GAME_NONE,
 	CHESS_GAME_INVALID_POSITION,
 	CHESS_GAME_NO_PIECE_FOUND,
 	CHESS_GAME_INVALID_MOVE,
 	CHESS_GAME_MOVE_THREATEN_KING,
 	CHESS_GAME_UNRESOLVED_THREATENED_KING,
 	CHESS_GAME_EMPTY_HISTORY,
+	CHESS_GAME_DRAW,
+	CHESS_GAME_CHECK,
+	CHESS_GAME_CHECKMATE,
 	CHESS_GAME_SUCCESS,
 } CHESS_GAME_MESSAGE;
 
@@ -133,11 +137,13 @@ void chessGamePrintBoard(ChessGame* game);
 short chessGameGetCurrentPlayer(ChessGame* src);
 
 /**
- * Checks if the current state is checkmate.
+ * Checks if the current state is checkmate, draw or none of them.
  * @param game - the source game
  * @return
- * bool - true if checkmate, false if not.
+ * 	CHESS_GAME_DRAW 		- if the game is draw.
+ *	CHESS_GAME_CHECKMATE	- if their's a checkmate.
+ *	CHESS_GAME_NONE			- if none of the above is true.
  */
-bool chessGameCheckmate(ChessGame* src);
+CHESS_GAME_MESSAGE chessGameGeCurrentState(ChessGame* game);
 
 #endif

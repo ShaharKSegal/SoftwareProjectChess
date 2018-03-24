@@ -63,19 +63,7 @@ static char* getPiecePicturePath(ChessPiece piece) {
 	}
 }
 
-static int getWidgetByChessPosition(Window* window, ChessPiecePosition pos) {
-	int numOfWidgets = window->numOfWidgets;
-	for (int i = OTHER_BUTTONS_NUM; i < numOfWidgets; i++) {
-		Widget* widget = window->widgets[i];
-		ChessPiecePosition* widgetPos =
-				(ChessPiecePosition*) ((Button*) widget->data)->data;
-		if (chessGameIsPositionEquals(pos, *widgetPos))
-			return i;
-	}
-	return -1;
-}
-
-static ChessPiecePosition getPiecePositionByCoordinates(int x, int y) {
+static ChessPiecePosition coordinatesToPiecePosition(int x, int y) {
 	ChessPiecePosition pos;
 	pos.row = CHESS_N_ROWS - 1 + (BASE_Y - y) / SQUARE_AXIS;
 	pos.column = (x - BASE_X) / SQUARE_AXIS;
@@ -102,7 +90,7 @@ static void pieceDragMode(Window* window, int widgetID) {
 	SDL_Event event;
 	ChessPiecePosition pos;
 	while (event.type != SDL_MOUSEBUTTONUP) {
-		pos = getPiecePositionByCoordinates(event.button.x, event.button.y);
+		pos = coordinatesToPiecePosition(event.button.x, event.button.y);
 		setWidgetByPosition(window, pos, widgetID);
 		windowDraw(window);
 		SDL_WaitEvent(&event);
@@ -115,7 +103,7 @@ static UI_EVENT handleEventPieceClick(Window* window, SDL_Event* event,
 	SDL_MouseButtonEvent mouseEvent = event->button;
 	GameWindowData* data = gameWindowGetData(window);
 	data->dragPieceWidgetID = widgetID;
-	ChessPiecePosition pos = getPiecePositionByCoordinates(mouseEvent.x,
+	ChessPiecePosition pos = coordinatesToPiecePosition(mouseEvent.x,
 			mouseEvent.y);
 	switch (mouseEvent.button) {
 	case SDL_BUTTON_LEFT:
@@ -171,7 +159,7 @@ static bool addOtherWidgets(SDL_Renderer* renderer, Widget** widgets) {
 static Widget** gameWindowWidgetsCreate(SDL_Renderer* renderer,
 		GameWindowData* data) {
 	int numOfWidgets = getNumberOfWidgets(data);
-	Widget** widgets = calloc(sizeof(Widget*), numOfWidgets);
+	Widget** widgets = calloc(numOfWidgets, sizeof(Widget*));
 	if (widgets == NULL ) {
 		hadMemoryFailure();
 		return NULL ;
@@ -197,7 +185,6 @@ static Widget** gameWindowWidgetsCreate(SDL_Renderer* renderer,
 						UI_BUTTON_EVENT_CHESS_PIECE_CLICK,
 						UI_BUTTON_EVENT_CHESS_PIECE_CLICK, true))
 					return NULL ;
-				buttonSetData(widgets[widgetID]->data, pos);
 				widgetID++;
 			}
 		}
@@ -231,18 +218,6 @@ static UI_EVENT gameWindowHandleEvent(Window* window, SDL_Event* event) {
 	return UI_EVENT_NONE;
 }
 
-//NOTE: Doesn't free window->data->game. This is intentional.
-static void gameWindowDestroy(Window* window) {
-	if (window == NULL )
-		return;
-	widgetListDestory(window->widgets, window->numOfWidgets);
-	SDL_DestroyTexture(window->bgTexture);
-	SDL_DestroyRenderer(window->renderer);
-	SDL_DestroyWindow(window->sdlWindow);
-	free(window->data);
-	free(window);
-}
-
 Window* gameWindowCreate(ChessGame* game) {
 	GameWindowData* data = createGameWindowData(game);
 	if (data == NULL ) {
@@ -254,7 +229,6 @@ Window* gameWindowCreate(ChessGame* game) {
 	window->data = data;
 	window->numOfWidgets = getNumberOfWidgets(data);
 	window->handleEvent = gameWindowHandleEvent;
-	window->destroyWindow = gameWindowDestroy;
 	window->widgets = gameWindowWidgetsCreate(window->renderer, data);
 	if (window->widgets == NULL ) {
 		windowDestroy(window);
@@ -325,9 +299,8 @@ bool gameWindowRefreshWidgets(Window* window) {
 		free(data);
 		return false;
 	}
-	int numOfWidgets = getNumberOfWidgets(data);
 	free(window->data);
-	widgetListDestory(window->widgets, numOfWidgets);
+	widgetListDestory(window->widgets, window->numOfWidgets);
 	window->data = data;
 	window->numOfWidgets = getNumberOfWidgets(data);
 	window->widgets = widgets;

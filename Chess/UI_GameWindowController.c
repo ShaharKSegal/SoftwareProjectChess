@@ -11,10 +11,6 @@ typedef struct chess_game_controller_data_t {
 	GameSettings* gameSettings;
 	bool unsavedChanges;
 	bool hasHighlights;
-	bool isInDragMode;
-	int dragPieceWidgetID;
-	ChessPiecePosition sourcePos;
-	ChessPiecePosition targetPos;
 
 } GameWindowControllerData;
 
@@ -23,8 +19,8 @@ static GameWindowControllerData* getGameWindowControllerData(
 	return (GameWindowControllerData*) controller->data;
 }
 
-static void setUnsavedChanges(WindowController* controller) {
-	getGameWindowControllerData(controller)->unsavedChanges = true;
+static void setUnsavedChanges(WindowController* controller, bool value) {
+	getGameWindowControllerData(controller)->unsavedChanges = value;
 }
 
 static GameWindowControllerData* createGameWindowControllerData(
@@ -37,7 +33,6 @@ static GameWindowControllerData* createGameWindowControllerData(
 	data->gameSettings = settings;
 	data->unsavedChanges = false;
 	data->hasHighlights = false;
-	data->isInDragMode = false;
 	return data;
 }
 
@@ -72,6 +67,7 @@ static UI_CONTROLLER_EVENT handleEventRestart(WindowController* controller) {
 	}
 	chessGameDestroy(settings->chessGame);
 	settings->chessGame = game;
+	setUnsavedChanges(controller, false);
 	return UI_CONTROLLER_EVENT_INVOKE_DRAW;
 }
 
@@ -90,9 +86,7 @@ static UI_CONTROLLER_EVENT handleEventLoad(WindowController** controllerPtr) {
 
 static UI_CONTROLLER_EVENT handleEventSave(WindowController** controllerPtr) {
 	// TODO: implement save mode
-	GameWindowControllerData* data = getGameWindowControllerData(
-			*controllerPtr);
-	data->unsavedChanges = false;
+	setUnsavedChanges(*controllerPtr, false);
 	return UI_CONTROLLER_EVENT_INVOKE_DRAW;
 }
 
@@ -104,7 +98,7 @@ static UI_CONTROLLER_EVENT handleEventUndo(WindowController* controller) {
 		bool res = gameWindowRefreshWidgets(controller->window);
 		if (!res)
 			return UI_CONTROLLER_EVENT_ERROR;
-		setUnsavedChanges(controller);
+		setUnsavedChanges(controller, true);
 	}
 	return UI_CONTROLLER_EVENT_INVOKE_DRAW;
 }
@@ -117,6 +111,7 @@ static UI_CONTROLLER_EVENT handleEventBackToMainMenu(
 	case UI_EVENT_ERROR:
 		return UI_CONTROLLER_EVENT_ERROR;
 	case UI_MSGBOX_EVENT_YES:
+		//TODO: Add to save handler where to go after
 		res = handleEventSave(controllerPtr);
 		break;
 	case UI_MSGBOX_EVENT_NO:
@@ -125,6 +120,7 @@ static UI_CONTROLLER_EVENT handleEventBackToMainMenu(
 		break;
 	default: //Include UI_MSGBOX_EVENT_CANCEL, UI_EVENT_NONE.
 		res = UI_CONTROLLER_EVENT_INVOKE_DRAW;
+		break;
 	}
 	if (res == UI_CONTROLLER_EVENT_ERROR)
 		return res;
@@ -171,15 +167,21 @@ static UI_CONTROLLER_EVENT handleEventGetMoves(WindowController* controller) {
 
 static UI_CONTROLLER_EVENT handleEventPieceDrag(WindowController* controller) {
 	GameWindowControllerData* data = getGameWindowControllerData(controller);
-	data->isInDragMode = false;
 	ChessPiecePosition sourcePos =
 			gameWindowGetData(controller->window)->sourcePos;
 	ChessPiecePosition targetPos =
 			gameWindowGetData(controller->window)->targetPos;
-	CHESS_GAME_MESSAGE msg = chessGameSetMove(data->gameSettings->chessGame,
+	ChessGame* game = data->gameSettings->chessGame;
+	CHESS_GAME_MESSAGE msg = chessGameSetMove(game,
 			sourcePos, targetPos);
 	if (msg == CHESS_GAME_SUCCESS) {
-		setUnsavedChanges(controller);
+		msg = chessGameStatePopup(game);
+		if (msg == CHESS_GAME_NONE || msg == CHESS_GAME_CHECK){
+			if (data->gameSettings->gameMode == ONE_PLAYER) {
+				//TODO: perform next move for computer.
+			}
+			setUnsavedChanges(controller, true);
+		}
 	}
 	bool res = gameWindowRefreshWidgets(controller->window);
 	return res ? UI_CONTROLLER_EVENT_INVOKE_DRAW : UI_CONTROLLER_EVENT_ERROR;
@@ -189,13 +191,13 @@ static UI_CONTROLLER_EVENT gameWindowControllerHandleEvent(
 		WindowController** controllerPtr, SDL_Event* event) {
 	GameWindowControllerData* data = getGameWindowControllerData(
 			*controllerPtr);
-	bool hadhighLights = data->hasHighlights;
-	if (hadhighLights)
-		gameWindowRemoveHighlightMoves((*controllerPtr)->window);
 	UI_EVENT uiEvent = windowHandleEvent((*controllerPtr)->window, event);
+	bool hadhighLights = data->hasHighlights;
 	if (uiEvent == UI_EVENT_NONE)
 		return hadhighLights ?
 				UI_CONTROLLER_EVENT_INVOKE_DRAW : UI_CONTROLLER_EVENT_NONE;
+	if (hadhighLights)
+		gameWindowRemoveHighlightMoves((*controllerPtr)->window);
 	switch (uiEvent) {
 	case UI_BUTTON_EVENT_RESTART:
 		return handleEventRestart(*controllerPtr);

@@ -2,6 +2,7 @@
 #define UI_AUXILIARY_H_
 
 #include <stdlib.h>
+#include "ChessGame.h"
 #include "UI_Widget.h"
 
 /**
@@ -14,6 +15,8 @@
 /**
  * Pictures relative path
  */
+#define UI_PIC_MAX_PATH 2048
+
 #define UI_PIC_DEFAULT_MENU "./pictures/chessMainbg.bmp"
 #define UI_PIC_SETTINGS_MENU "./pictures/chessSettings.bmp"
 #define UI_PIC_GAME_MENU "./pictures/game.bmp"
@@ -49,8 +52,12 @@
 
 #define UI_PIC_LOAD_ACTIVE "./pictures/loadActive.bmp"
 #define UI_PIC_LOAD_INACTIVE "./pictures/loadinActive.bmp"
-#define UI_PIC_SLOT_ACTIVE "./pictures/GameSlot1Active.bmp"
-#define UI_PIC_SLOT_INACTIVE "./pictures/GameSlot1inActive.bmp"
+#define UI_PIC_NEXT_PAGE_ACTIVE "./pictures/nextActive.bmp"
+#define UI_PIC_NEXT_PAGE_INACTIVE "./pictures/nextInactive.bmp"
+#define UI_PIC_PREV_PAGE_ACTIVE "./pictures/previousActive.bmp"
+#define UI_PIC_PREV_PAGE_INACTIVE "./pictures/previousInactive.bmp"
+#define UI_PIC_SLOT_ACTIVE_TEMPLATE "./pictures/GameSlot%dActive.bmp"
+#define UI_PIC_SLOT_INACTIVE_TEMPLATE "./pictures/GameSlot%dinActive.bmp"
 
 #define UI_PIC_BLACK_PAWN "./pictures/blackPawn.bmp"
 #define UI_PIC_WHITE_PAWN "./pictures/whitePawn.bmp"
@@ -95,5 +102,12 @@ bool createButtonInWidgetArray(Widget** widgets, int index,
  * UI_MSGBOX_EVENT_CANCEL - Go back to the window as if nothing happened.
  */
  UI_EVENT unsavedChangesPopup();
+
+ /**
+  * Popup message box for the game state. Indicating check, checkmate or draw.
+  * @return:
+  * See chessGameGeCurrentState in ChessGame.h for details
+  */
+ CHESS_GAME_MESSAGE chessGameStatePopup(ChessGame* game);
 
 #endif

@@ -83,6 +83,14 @@ const static ChessPiece EMPTY_ENTRY = { .type = CHESS_PIECE_EMPTY, .player =
 /**
  * Functions declarations (if needed).
  */
+/**
+ *  Checks if the king of that player is threatened,
+ *  using the isPositionThreatened function.
+ *  @param game - current game.
+ *  @param player - player of the king.
+ *	@return
+ *	true if the king is threatened, false if it's not.
+ */
 static bool isKingThreatened(ChessGame* game, int player);
 
 /**
@@ -100,8 +108,42 @@ static void setPieceInPosition(ChessGame* game, ChessPiecePosition pos,
 	game->gameBoard.position[pos.row][pos.column] = piece;
 }
 
+/**
+ * Gets chess piece in the given position of the given game.
+ */
 static ChessPiece getPieceByPosition(ChessGame* game, ChessPiecePosition pos) {
 	return chessGameGetPieceByPosition(&(game->gameBoard), pos);
+}
+
+/**
+ * Checks if a piece can be put in the specified position.
+ * NOTE: Does NOT validate threats made to the king.
+ *
+ * @param game - The source game. Assumes not NULL.
+ * @param cur_pos - The piece's position on board. Assumes not NULL.
+ * @param next_pos - The specified position. Assumes not NULL.
+ *
+ * @return
+ * CHESS_GAME_INVALID_POSITION - if cur_pos or next_pos are out-of-range.
+ * CHESS_GAME_INVALID_MOVE - if the given next_pos is illegal for this piece.
+ * CHESS_GAME_SUCCESS - otherwise
+ */
+static CHESS_GAME_MESSAGE chessGameIsValidMove(ChessGame* game,
+		ChessPiecePosition cur_pos, ChessPiecePosition next_pos) {
+	// Checks if positions are valid
+	if (!chessGameIsValidPosition(cur_pos)
+			|| !chessGameIsValidPosition(next_pos))
+		return CHESS_GAME_INVALID_POSITION;
+
+	//Checks if the position contains a piece of the current player
+	ChessPiece piece = getPieceByPosition(game, cur_pos);
+	if (piece.player != chessGameGetCurrentPlayer(game))
+		return CHESS_GAME_NO_PIECE_FOUND;
+
+	// Checks moves validity (without validating threats)
+	if (!chessMoveIsValidMove(&(game->gameBoard), cur_pos, next_pos))
+		return CHESS_GAME_INVALID_MOVE;
+	return CHESS_GAME_SUCCESS;
 }
 
 /**
@@ -116,7 +158,6 @@ static ChessPiece getPieceByPosition(ChessGame* game, ChessPiecePosition pos) {
  *  					we shouldn't check for that.
  *	@return
  *	true if the position is threatened, false if it's not.
- *
  */
 static bool isPositionThreatened(ChessGame* game, ChessPiecePosition pos,
 		bool checkKing) {
@@ -136,6 +177,14 @@ static bool isPositionThreatened(ChessGame* game, ChessPiecePosition pos,
 	return false;
 }
 
+/**
+ *  Checks if the king of that player is threatened,
+ *  using the isPositionThreatened function.
+ *  @param game - current game.
+ *  @param player - player of the king.
+ *	@return
+ *	true if the king is threatened, false if it's not.
+ */
 static bool isKingThreatened(ChessGame* game, int player) {
 	ChessPiecePosition kingPos =
 			player == CHESS_WHITE_PLAYER ?
@@ -143,6 +192,9 @@ static bool isKingThreatened(ChessGame* game, int player) {
 	return isPositionThreatened(game, kingPos, false);
 }
 
+/**
+ * Get the current opponent based on the current player in the given game.
+ */
 static short getCurrentOpponent(ChessGame* game) {
 	return chessGameGetCurrentPlayer(game) == CHESS_WHITE_PLAYER ?
 			CHESS_BLACK_PLAYER : CHESS_WHITE_PLAYER;
@@ -271,37 +323,6 @@ void chessGameDestroy(ChessGame* game) {
 		return;
 	arrayListDestroy(game->history);
 	free(game);
-}
-
-/**
- * Checks if a piece can be put in the specified position.
- * NOTE: Does NOT validate threats made to the king.
- *
- * @param game - The source game. Assumes not NULL.
- * @param cur_pos - The piece's position on board. Assumes not NULL.
- * @param next_pos - The specified position. Assumes not NULL.
- *
- * @return
- * CHESS_GAME_INVALID_POSITION - if cur_pos or next_pos are out-of-range.
- * CHESS_GAME_INVALID_MOVE - if the given next_pos is illegal for this piece.
- * CHESS_GAME_SUCCESS - otherwise
- */
-CHESS_GAME_MESSAGE chessGameIsValidMove(ChessGame* game,
-		ChessPiecePosition cur_pos, ChessPiecePosition next_pos) {
-	// Checks if positions are valid
-	if (!chessGameIsValidPosition(cur_pos)
-			|| !chessGameIsValidPosition(next_pos))
-		return CHESS_GAME_INVALID_POSITION;
-
-	//Checks if the position contains a piece of the current player
-	ChessPiece piece = getPieceByPosition(game, cur_pos);
-	if (piece.player != chessGameGetCurrentPlayer(game))
-		return CHESS_GAME_NO_PIECE_FOUND;
-
-	// Checks moves validity (without validating threats)
-	if (!chessMoveIsValidMove(&(game->gameBoard), cur_pos, next_pos))
-		return CHESS_GAME_INVALID_MOVE;
-	return CHESS_GAME_SUCCESS;
 }
 
 /**
@@ -453,14 +474,15 @@ short chessGameGetCurrentPlayer(ChessGame* game) {
 }
 
 /**
- * Checks if the current state is checkmate.
+ * Checks if the current state is checkmate, draw or none of them.
  * @param game - the source game
  * @return
- * bool - true if checkmate, false if not.
+ *  CHESS_GAME_CHECK		- if the game is in check.
+ * 	CHESS_GAME_DRAW 		- if the game is draw.
+ *	CHESS_GAME_CHECKMATE	- if their's a checkmate.
+ *	CHESS_GAME_NONE			- if none of the above is true.
  */
-bool chessGameCheckmate(ChessGame* game) {
-	if (!game->isCheck)
-		return false;
+CHESS_GAME_MESSAGE chessGameGeCurrentState(ChessGame* game) {
 	ChessPiecePosition pos;
 	for (int i = 0; i < CHESS_N_ROWS; i++)
 		for (int j = 0; j < CHESS_N_COLUMNS; j++) {
@@ -469,8 +491,8 @@ bool chessGameCheckmate(ChessGame* game) {
 					== getPieceByPosition(game, pos).player) {
 				ArrayList* moves = chessGameGetMoves(game, pos);
 				if (moves != NULL && moves->actualSize > 0)
-					return false;
+					return game->isCheck ? CHESS_GAME_CHECK : CHESS_GAME_NONE;
 			}
 		}
-	return true;
+	return game->isCheck ? CHESS_GAME_CHECKMATE : CHESS_GAME_DRAW;
 }

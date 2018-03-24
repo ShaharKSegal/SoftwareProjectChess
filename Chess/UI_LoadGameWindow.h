@@ -6,11 +6,15 @@
 #include "ChessGame.h"
 
 typedef struct load_game_data_t {
-	int numOfGames;
+	int page;
+	int maxNumOfSlots;
+	char** slotsPicPath;
+	int numOfPageSlots;
 	int activeSlot;
 } LoadGameWindowData;
 
-Window* loadGameWindowCreate(int numOfGames);
+Window* loadGameWindowCreate(int maxNumOfSlots);
 
+bool loadGameWindowChangePage(Window* window, int page);
 
 #endif

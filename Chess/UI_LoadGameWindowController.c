@@ -8,11 +8,24 @@
 
 const static char* saveFileTemplate = "./save%d";
 const static int saveFileMaxChars = 128;
+const static int MAX_SAVES = 5;
 
 typedef struct load_game_controller_data_t {
-	GameSettings* gameSettings;
+	int numOfSaves;
+	int currentPage;
+	GameSettings* previousGameSettings;
+	GameSettings* loadedGameSettings;
 	UI_MODE previousMode;
 } LoadGameWindowControllerData;
+
+static int getNumberOfSaves() {
+	return MAX_SAVES;
+}
+
+static LoadGameWindowControllerData* getLoadGameWindowControllerData(
+		WindowController* controller) {
+	return (LoadGameWindowControllerData*) controller->data;
+}
 
 static LoadGameWindowControllerData* createLoadGameWindowControllerData(
 		GameSettings* settings, UI_MODE previousMode) {
@@ -22,7 +35,10 @@ static LoadGameWindowControllerData* createLoadGameWindowControllerData(
 		hadMemoryFailure();
 		return NULL ;
 	}
-	data->gameSettings = settings;
+	data->numOfSaves = getNumberOfSaves();
+	data->currentPage = 0;
+	data->previousGameSettings = settings;
+	data->loadedGameSettings = NULL;
 	data->previousMode = previousMode;
 	return data;
 }
@@ -31,7 +47,7 @@ static void destroyLoadGameWindowControllerData(
 		LoadGameWindowControllerData* data) {
 	if (data == NULL )
 		return;
-	GameSettingsDestroy(data->gameSettings);
+	GameSettingsDestroy(data->loadedGameSettings);
 	free(data);
 }
 
@@ -43,19 +59,40 @@ static void loadGameWindowControllerDestroy(WindowController* controller) {
 	free(controller);
 }
 
-static bool handleEventBack(WindowController** controllerPtr) {
+static UI_CONTROLLER_EVENT handleEventBack(WindowController** controllerPtr) {
 	LoadGameWindowControllerData* controllerData =
 			(LoadGameWindowControllerData*) (*controllerPtr)->data;
-	UI_MODE previousMode = controllerData->previousMode;
-	GameSettings* settings = gameSettingsCopy(controllerData->gameSettings);
-	if (settings == NULL )
-		return false;
+	GameSettings* settings = NULL;
+	WindowController* controller = NULL;
+	switch (controllerData->previousMode) {
+	case UI_MAIN_MODE:
+		controller = mainWindowControllerCreate();
+		break;
+	case UI_GAME_MODE:
+		settings = gameSettingsCopy(controllerData->previousGameSettings);
+		if (settings == NULL )
+			return false;
+		controller = gameWindowControllerCreate(settings);
+		break;
+	default:
+		return UI_CONTROLLER_EVENT_ERROR;
+	}
 	windowControllerDestroy(*controllerPtr);
-	if (previousMode == UI_MAIN_MODE)
-		*controllerPtr = mainWindowControllerCreate();
-	else if (previousMode == UI_GAME_MODE)
-		*controllerPtr = gameWindowControllerCreate(settings);
-	return (*controllerPtr) != NULL ;
+	*controllerPtr = controller;
+	return (*controllerPtr) != NULL ?
+			UI_CONTROLLER_EVENT_INVOKE_DRAW : UI_CONTROLLER_EVENT_ERROR;
+}
+
+static UI_CONTROLLER_EVENT handleEventChangePage(WindowController* controller,
+		bool isNext) {
+	LoadGameWindowControllerData* data = getLoadGameWindowControllerData(
+			controller);
+	if (isNext)
+		data->currentPage++;
+	else
+		data->currentPage--;
+	bool res = loadGameWindowChangePage(controller->window, data->currentPage);
+	return res ? UI_CONTROLLER_EVENT_INVOKE_DRAW : UI_CONTROLLER_EVENT_ERROR;
 }
 
 static UI_CONTROLLER_EVENT loadGameWindowControllerHandleEvent(
@@ -65,7 +102,7 @@ static UI_CONTROLLER_EVENT loadGameWindowControllerHandleEvent(
 	int slot =
 			((LoadGameWindowData*) ((*controllerPtr)->window->data))->activeSlot;
 	if (uiEvent == UI_EVENT_NONE)
-			return UI_CONTROLLER_EVENT_NONE;
+		return UI_CONTROLLER_EVENT_NONE;
 	switch (uiEvent) {
 	case UI_BUTTON_EVENT_ACTIVATED_SLOT:
 		sprintf(saveFile, saveFileTemplate, slot);
@@ -76,16 +113,14 @@ static UI_CONTROLLER_EVENT loadGameWindowControllerHandleEvent(
 		windowControllerDestroy(*controllerPtr);
 		return UI_CONTROLLER_EVENT_INVOKE_DRAW;
 	case UI_BUTTON_EVENT_BACK:
-		return handleEventBack(controllerPtr) ?
-				UI_CONTROLLER_EVENT_INVOKE_DRAW : UI_CONTROLLER_EVENT_ERROR;
+		return handleEventBack(controllerPtr);
+	case UI_BUTTON_EVENT_NEXT_PAGE:
+		return handleEventChangePage(*controllerPtr, true);
+	case UI_BUTTON_EVENT_PREVIOUS_PAGE:
+		return handleEventChangePage(*controllerPtr, false);
 	default:
 		return UI_CONTROLLER_EVENT_INVOKE_DRAW;
 	}
-}
-
-static int getNumberOfSaves() {
-	// TODO: implement generic
-	return 5;
 }
 
 WindowController* loadGameWindowControllerCreate(GameSettings* settings,

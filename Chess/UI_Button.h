@@ -11,8 +11,6 @@ typedef struct button_t {
 	bool isActive;
 	UI_EVENT eventActive;
 	UI_EVENT eventInactive;
-	UI_EVENT eventUpButton;
-	void* data;
 } Button;
 
 typedef struct event_result_t {
@@ -31,7 +29,5 @@ Widget* buttonCreate(SDL_Renderer* renderer, SDL_Rect location,
 void buttonSetActive(Button* button, bool isActive);
 
 void buttonSetLocation(Button* button, SDL_Rect rect);
-
-void buttonSetData(Button* button, void* data);
 
 #endif

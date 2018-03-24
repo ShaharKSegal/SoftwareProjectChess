@@ -117,7 +117,7 @@ static bool addDifficultyWidgets(SDL_Renderer* renderer, Widget** widgets) {
 }
 
 static Widget** createSettingsWindowWidgets(SDL_Renderer* renderer) {
-	Widget** widgets = (Widget**) calloc(sizeof(Widget*), WIDGET_NUM);
+	Widget** widgets = (Widget**) calloc(WIDGET_NUM, sizeof(Widget*));
 	if (widgets == NULL ) {
 		hadMemoryFailure();
 		return NULL ;

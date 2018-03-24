@@ -34,7 +34,7 @@ static UI_EVENT mainWindowHandleEvent(Window* window, SDL_Event* event) {
 static Widget** mainWindowWidgetsCreate(SDL_Renderer* renderer) {
 	if (renderer == NULL )
 		return NULL ;
-	Widget** widgets = (Widget**) calloc(sizeof(Widget*), WIDGETS_NUM);
+	Widget** widgets = (Widget**) calloc(WIDGETS_NUM, sizeof(Widget*));
 	if (widgets == NULL ) {
 		hadMemoryFailure();
 		return NULL ;
