@@ -52,6 +52,8 @@
 
 #define UI_PIC_LOAD_ACTIVE "./pictures/loadActive.bmp"
 #define UI_PIC_LOAD_INACTIVE "./pictures/loadinActive.bmp"
+#define UI_PIC_SAVE_ACTIVE "./pictures/saveActive.bmp"
+#define UI_PIC_SAVE_INACTIVE "./pictures/saveInactive.bmp"
 #define UI_PIC_NEXT_PAGE_ACTIVE "./pictures/nextActive.bmp"
 #define UI_PIC_NEXT_PAGE_INACTIVE "./pictures/nextInactive.bmp"
 #define UI_PIC_PREV_PAGE_ACTIVE "./pictures/previousActive.bmp"

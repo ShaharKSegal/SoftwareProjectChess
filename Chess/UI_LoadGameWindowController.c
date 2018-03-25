@@ -1,21 +1,27 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include "ChessErrorHandler.h"
+#include "LoadGame.h"
+#include "SaveGame.h"
 #include "UI_LoadGameWindow.h"
 #include "UI_LoadGameWindowController.h"
 #include "UI_GameWindowController.h"
 #include "UI_MainWindowController.h"
-#include "ChessErrorHandler.h"
+
+#define SAVE_FILE_MAX_PATH 128
 
 const static char* saveFileTemplate = "./save%d";
-const static int saveFileMaxChars = 128;
 const static int MAX_SAVES = 5;
 
 typedef struct load_game_controller_data_t {
 	int numOfSaves;
 	int currentPage;
+	char filePath[SAVE_FILE_MAX_PATH];
 	GameSettings* previousGameSettings;
 	GameSettings* loadedGameSettings;
 	UI_CONTROLLER previousMode;
+	UI_CONTROLLER currentMode;
+	UI_CONTROLLER nextMode;
 } LoadGameWindowControllerData;
 
 static int getNumberOfSaves() {
@@ -28,7 +34,13 @@ static LoadGameWindowControllerData* getLoadGameWindowControllerData(
 }
 
 static LoadGameWindowControllerData* createLoadGameWindowControllerData(
-		GameSettings* settings, UI_CONTROLLER previousMode) {
+		GameSettings* settings, UI_CONTROLLER previousMode,
+		UI_CONTROLLER currentMode, UI_CONTROLLER nextMode) {
+	if (currentMode != UI_LOAD_CONTROLLER && currentMode != UI_SAVE_CONTROLLER)
+		return NULL ;
+	if (previousMode != UI_GAME_CONTROLLER
+			&& previousMode != UI_MAIN_CONTROLLER)
+		return NULL ;
 	LoadGameWindowControllerData* data = malloc(
 			sizeof(LoadGameWindowControllerData));
 	if (data == NULL ) {
@@ -40,6 +52,8 @@ static LoadGameWindowControllerData* createLoadGameWindowControllerData(
 	data->previousGameSettings = settings;
 	data->loadedGameSettings = NULL;
 	data->previousMode = previousMode;
+	data->currentMode = currentMode;
+	data->nextMode = nextMode;
 	return data;
 }
 
@@ -95,23 +109,80 @@ static UI_CONTROLLER_EVENT handleEventChangePage(WindowController* controller,
 	return res ? UI_CONTROLLER_EVENT_INVOKE_DRAW : UI_CONTROLLER_EVENT_ERROR;
 }
 
+static UI_CONTROLLER_EVENT handleEventActivateSlot(WindowController* controller) {
+	LoadGameWindowControllerData* data = getLoadGameWindowControllerData(
+			controller);
+	int slot = ((LoadGameWindowData*) (controller->window->data))->activeSlot;
+	sprintf(data->filePath, saveFileTemplate, slot);
+	if (data->currentMode == UI_LOAD_CONTROLLER) {
+		GameSettings* settings = gameSettingsCreateAndLoad(data->filePath);
+		if (settings == NULL )
+			return UI_CONTROLLER_EVENT_MINOR_ERROR;
+		data->loadedGameSettings = settings;
+	}
+	loadGameActivateSlot(controller->window);
+	return UI_CONTROLLER_EVENT_INVOKE_DRAW;
+}
+
+static UI_CONTROLLER_EVENT handleEventLoad(WindowController** controllerPtr) {
+	LoadGameWindowControllerData* data = getLoadGameWindowControllerData(
+			*controllerPtr);
+	GameSettings* settings = gameSettingsCopy(data->loadedGameSettings);
+		if (settings == NULL )
+			return UI_CONTROLLER_EVENT_ERROR;
+	WindowController* controller = gameWindowControllerCreate(
+			settings);
+	if (controller == NULL )
+		return UI_CONTROLLER_EVENT_ERROR;
+	windowControllerDestroy(*controllerPtr);
+	*controllerPtr = controller;
+	return UI_CONTROLLER_EVENT_INVOKE_DRAW;
+}
+
+static UI_CONTROLLER_EVENT handleEventSave(WindowController** controllerPtr) {
+	WindowController* controller = NULL;
+	GameSettings* settings = NULL;
+	LoadGameWindowControllerData* data = getLoadGameWindowControllerData(
+			*controllerPtr);
+	GAME_SETTINGS_MESSAGE msg = chessGameSave(data->filePath,
+			data->previousGameSettings);
+	if (msg == GAME_SETTINGS_SAVE_GAME_FAIL) {
+		return UI_CONTROLLER_EVENT_MINOR_ERROR;
+	}
+	switch (data->nextMode) {
+	case UI_GAME_CONTROLLER:
+		settings = gameSettingsCopy(data->previousGameSettings);
+		if (settings == NULL )
+				return UI_CONTROLLER_EVENT_ERROR;
+		controller = gameWindowControllerCreate(settings);
+		break;
+	case UI_MAIN_CONTROLLER:
+		controller = mainWindowControllerCreate();
+		break;
+	case UI_QUIT_CONTROLLER:
+		return UI_CONTROLLER_EVENT_QUTT;
+	default:
+		break;
+	}
+	if (controller == NULL )
+		return UI_CONTROLLER_EVENT_ERROR;
+	windowControllerDestroy(*controllerPtr);
+	*controllerPtr = controller;
+	return UI_CONTROLLER_EVENT_INVOKE_DRAW;
+}
+
 static UI_CONTROLLER_EVENT loadGameWindowControllerHandleEvent(
 		WindowController** controllerPtr, SDL_Event* event) {
 	UI_EVENT uiEvent = windowHandleEvent((*controllerPtr)->window, event);
-	char saveFile[saveFileMaxChars];
-	int slot =
-			((LoadGameWindowData*) ((*controllerPtr)->window->data))->activeSlot;
 	if (uiEvent == UI_EVENT_NONE)
 		return UI_CONTROLLER_EVENT_NONE;
 	switch (uiEvent) {
 	case UI_BUTTON_EVENT_ACTIVATED_SLOT:
-		sprintf(saveFile, saveFileTemplate, slot);
-		//TODO: Load file and change settings.
-		return UI_CONTROLLER_EVENT_INVOKE_DRAW;
+		return handleEventActivateSlot(*controllerPtr);
 	case UI_BUTTON_EVENT_LOAD:
-		//TODO: Change to game controller (create).
-		windowControllerDestroy(*controllerPtr);
-		return UI_CONTROLLER_EVENT_INVOKE_DRAW;
+		return handleEventLoad(controllerPtr);
+	case UI_BUTTON_EVENT_SAVE:
+		return handleEventSave(controllerPtr);
 	case UI_BUTTON_EVENT_BACK:
 		return handleEventBack(controllerPtr);
 	case UI_BUTTON_EVENT_NEXT_PAGE:
@@ -123,13 +194,15 @@ static UI_CONTROLLER_EVENT loadGameWindowControllerHandleEvent(
 	}
 }
 
-WindowController* loadGameWindowControllerCreate(GameSettings* settings,
-		UI_CONTROLLER previousMode) {
+WindowController* createLoadOrSaveGameWindowController(
+		GameSettings* previousSettings, UI_CONTROLLER previousMode,
+		UI_CONTROLLER currentMode, UI_CONTROLLER nextMode) {
 	LoadGameWindowControllerData* data = createLoadGameWindowControllerData(
-			settings, previousMode);
+			previousSettings, previousMode, currentMode, nextMode);
 	if (data == NULL )
 		return NULL ;
-	Window* window = loadGameWindowCreate(getNumberOfSaves());
+	Window* window = loadGameWindowCreate(currentMode == UI_SAVE_CONTROLLER,
+			getNumberOfSaves());
 	if (window == NULL )
 		return NULL ;
 	WindowController* controller = windowControllerCreate(window, data,
@@ -141,4 +214,16 @@ WindowController* loadGameWindowControllerCreate(GameSettings* settings,
 		return NULL ;
 	}
 	return controller;
+}
+
+WindowController* loadGameWindowControllerCreate(GameSettings* settings,
+		UI_CONTROLLER previousMode) {
+	return createLoadOrSaveGameWindowController(settings, previousMode,
+			UI_LOAD_CONTROLLER, UI_GAME_CONTROLLER);
+}
+
+WindowController* saveGameWindowControllerCreate(GameSettings* settings,
+		UI_CONTROLLER previousMode, UI_CONTROLLER nextMode) {
+	return createLoadOrSaveGameWindowController(settings, previousMode,
+			UI_SAVE_CONTROLLER, nextMode);
 }

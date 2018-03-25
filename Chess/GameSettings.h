@@ -1,5 +1,6 @@
 #ifndef GAMESETTINGS_H_
 #define GAMESETTINGS_H_
+#include <stdio.h>
 #include "ChessGame.h"
 
 /**
@@ -14,6 +15,7 @@ typedef enum game_settings_message_t {
 	GAME_SETTINGS_WRONG_USER_COLOR,
 	GAME_SETTINGS_INVALID_COMMAND,
 	GAME_SETTINGS_LOAD_FILE_FAIL,
+	GAME_SETTINGS_LOAD_FILE_SUCCESS,
 	GAME_SETTINGS_SAVE_GAME_FAIL,
 	GAME_SETTINGS_SAVE_GAME_SUCCESS,
 	GAME_SETTINGS_DEFAULT_SUCCESS,
@@ -29,6 +31,8 @@ typedef enum game_settings_message_t {
 #define DIFFICULTY_LEVEL_3 "moderate"
 #define DIFFICULTY_LEVEL_4 "hard"
 #define DIFFICULTY_LEVEL_5 "expert"
+
+#define DELIMETER " \n"
 
 /*
  * Difficulty levels definitions - integers.
@@ -60,7 +64,7 @@ typedef enum game_settings_message_t {
 #define USER_COLOR_WHITE_LINE "USER_COLOR: white\n"
 #define DIFFICULTY_LEVEL_IINE "DIFFICULTY:"
 #define USER_COLOR_LINE "USER_COLOR:"
-#define SETTINGS_LINE "SETTINGS:\n"
+#define SETTINGS_LINE "SETTINGS:"
 
 
 
@@ -71,6 +75,8 @@ typedef struct game_setting_t {
 	unsigned int maxDepth; //relevant for 1-mode only
 } GameSettings;
 
+
+#endif /* GAMESETTINGS_H_ */
 
 /**
  * Creates a new game settings.
@@ -141,7 +147,18 @@ GAME_SETTINGS_MESSAGE changeUserColor(GameSettings* settings, int userColor);
  * GAME_SETTINGS_PRINT_SETTINGS_FAIL    - if a printing failure occurs.
  * GAME_SETTINGS_PRINT_SETTINGS_SUCCESS - otherwise.
  */
-GAME_SETTINGS_MESSAGE chessGamePrintSettingsToUser(GameSettings* settings);
+void chessGamePrintSettingsToUser(GameSettings* settings);
+
+/*
+ * Prints the current game settings.
+ *
+ * @param settings - the current game settings, file - the file to write the settings to.
+ *
+ *@return
+ * -1 if there is a printing failure.
+ * 0, otherwise.
+ */
+int printSettings(FILE* file, GameSettings* settings);
 
 /*
  * Resets all game settings to default values.
@@ -183,4 +200,22 @@ GAME_SETTINGS_MESSAGE chessGameStart ();
  */
 char* difficultyLevelToMessage(unsigned int level);
 
-#endif /* GAMESETTINGS_H_ */
+/*
+ * Converts difficulty level name to difficulty level value.
+ *
+ * @param level - the difficulty level name.
+ *
+ *@return
+ * the difficulty level value.
+ */
+int charDifficultyLevelToInt(char* level);
+
+/*
+ * Converts user color from int to string.
+ *
+ * @param userColor - the user's color.
+ *
+ * @return
+ * the string compatible with the given int,"white/n" or "black/n";
+ */
+char* userColorToChar (int userColor);

@@ -77,16 +77,28 @@ static UI_CONTROLLER_EVENT handleEventLoad(WindowController** controllerPtr) {
 	GameSettings* settings = gameSettingsCopy(data->gameSettings);
 	if (settings == NULL )
 		return UI_CONTROLLER_EVENT_ERROR;
-	windowControllerDestroy(*controllerPtr);
-	*controllerPtr = loadGameWindowControllerCreate(settings,
+	WindowController* controller = loadGameWindowControllerCreate(settings,
 			UI_GAME_CONTROLLER);
-	if (*controllerPtr == NULL )
+	if (controller == NULL )
 		return UI_CONTROLLER_EVENT_ERROR;
+	windowControllerDestroy(*controllerPtr);
+	*controllerPtr = controller;
 	return UI_CONTROLLER_EVENT_INVOKE_DRAW;
 }
 
-static UI_CONTROLLER_EVENT handleEventSave(WindowController** controllerPtr) {
-	// TODO: implement save mode
+static UI_CONTROLLER_EVENT handleEventSave(WindowController** controllerPtr,
+		UI_CONTROLLER nextMode) {
+	GameWindowControllerData* data = getGameWindowControllerData(
+			*controllerPtr);
+	GameSettings* settings = gameSettingsCopy(data->gameSettings);
+	if (settings == NULL )
+		return UI_CONTROLLER_EVENT_ERROR;
+	WindowController* controller = saveGameWindowControllerCreate(settings,
+			UI_GAME_CONTROLLER, nextMode);
+	if (controller == NULL )
+		return UI_CONTROLLER_EVENT_ERROR;
+	windowControllerDestroy(*controllerPtr);
+	*controllerPtr = controller;
 	setUnsavedChanges(*controllerPtr, false);
 	return UI_CONTROLLER_EVENT_INVOKE_DRAW;
 }
@@ -106,38 +118,44 @@ static UI_CONTROLLER_EVENT handleEventUndo(WindowController* controller) {
 
 static UI_CONTROLLER_EVENT handleEventBackToMainMenu(
 		WindowController** controllerPtr) {
-	UI_EVENT event = unsavedChangesPopup();
-	UI_CONTROLLER_EVENT res;
-	switch (event) {
-	case UI_EVENT_ERROR:
-		return UI_CONTROLLER_EVENT_ERROR;
-	case UI_MSGBOX_EVENT_YES:
-		//TODO: Add to save handler where to go after
-		res = handleEventSave(controllerPtr);
-		break;
-	case UI_MSGBOX_EVENT_NO:
+	if (!getGameWindowControllerData(*controllerPtr)->unsavedChanges) {
 		windowControllerDestroy(*controllerPtr);
 		*controllerPtr = mainWindowControllerCreate();
-		break;
-	default: //Include UI_MSGBOX_EVENT_CANCEL, UI_EVENT_NONE.
-		res = UI_CONTROLLER_EVENT_INVOKE_DRAW;
-		break;
+	} else {
+		UI_EVENT event = unsavedChangesPopup();
+		UI_CONTROLLER_EVENT res;
+		switch (event) {
+		case UI_EVENT_ERROR:
+			return UI_CONTROLLER_EVENT_ERROR;
+		case UI_MSGBOX_EVENT_YES:
+			//TODO: Add to save handler where to go after
+			res = handleEventSave(controllerPtr, UI_MAIN_CONTROLLER);
+			break;
+		case UI_MSGBOX_EVENT_NO:
+			windowControllerDestroy(*controllerPtr);
+			*controllerPtr = mainWindowControllerCreate();
+			break;
+		default: //Include UI_MSGBOX_EVENT_CANCEL, UI_EVENT_NONE.
+			res = UI_CONTROLLER_EVENT_INVOKE_DRAW;
+			break;
+		}
+		if (res == UI_CONTROLLER_EVENT_ERROR)
+			return res;
 	}
-	if (res == UI_CONTROLLER_EVENT_ERROR)
-		return res;
 	return (*controllerPtr) != NULL ?
 			UI_CONTROLLER_EVENT_INVOKE_DRAW : UI_CONTROLLER_EVENT_ERROR;
-
 }
 
 static UI_CONTROLLER_EVENT handleEventExit(WindowController** controllerPtr) {
+	if (!getGameWindowControllerData(*controllerPtr)->unsavedChanges)
+		return UI_CONTROLLER_EVENT_QUTT;
 	UI_EVENT event = unsavedChangesPopup();
 	UI_CONTROLLER_EVENT res = UI_CONTROLLER_EVENT_INVOKE_DRAW;
 	switch (event) {
 	case UI_EVENT_ERROR:
 		return UI_CONTROLLER_EVENT_ERROR;
 	case UI_MSGBOX_EVENT_YES:
-		res = handleEventSave(controllerPtr);
+		res = handleEventSave(controllerPtr, UI_QUIT_CONTROLLER);
 		break;
 	case UI_MSGBOX_EVENT_NO:
 		return UI_CONTROLLER_EVENT_QUTT;
@@ -204,7 +222,7 @@ static UI_CONTROLLER_EVENT gameWindowControllerHandleEvent(
 	case UI_BUTTON_EVENT_LOAD:
 		return handleEventLoad(controllerPtr);
 	case UI_BUTTON_EVENT_SAVE:
-		return handleEventSave(controllerPtr);
+		return handleEventSave(controllerPtr, UI_GAME_CONTROLLER);
 	case UI_BUTTON_EVENT_UNDO:
 		return handleEventUndo(*controllerPtr);
 	case UI_BUTTON_EVENT_MAIN_MENU_SCREEN:

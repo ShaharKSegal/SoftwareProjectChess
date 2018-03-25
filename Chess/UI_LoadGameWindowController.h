@@ -7,4 +7,7 @@
 WindowController* loadGameWindowControllerCreate(GameSettings* settings,
 		UI_CONTROLLER previousMode);
 
+WindowController* saveGameWindowControllerCreate(GameSettings* settings,
+		UI_CONTROLLER previousMode, UI_CONTROLLER nextMode);
+
 #endif

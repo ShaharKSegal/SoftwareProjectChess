@@ -1,7 +1,7 @@
 #include "GameSettings.h"
 #include "ChessErrorHandler.h"
-#include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 
 /**
  * Creates a new game settings.
@@ -10,19 +10,19 @@
  * NULL if a memory allocation failure occurs.
  * Otherwise, a new game settings instance is returned.
  */
-GameSettings* GameSettingsCreate(){
+GameSettings* GameSettingsCreate() {
 	ChessGame* game = chessGameCreate();
-	if (game == NULL)
-		return NULL;
+	if (game == NULL )
+		return NULL ;
 	GameSettings* settings = malloc(sizeof(GameSettings));
-	if (settings == NULL){
+	if (settings == NULL ) {
 		hadMemoryFailure();
-		return NULL;
+		return NULL ;
 	}
 	settings->chessGame = game;
 	settings->gameMode = ONE_PLAYER; //char gameMode
-	if (settings->gameMode==ONE_PLAYER){
-		settings->maxDepth = 2; //unsigned int
+	if (settings->gameMode == ONE_PLAYER) {
+		settings->maxDepth = DIFFICULTY_LEVEL_2_INT; //unsigned int
 		settings->userColor = CHESS_WHITE_PLAYER; //int
 	}
 
@@ -67,30 +67,27 @@ void GameSettingsDestroy(GameSettings* settings) {
 	free(settings);
 }
 
-GAME_SETTINGS_MESSAGE changeUserColor(GameSettings* settings, int userColor){
-	if (settings->gameMode == ONE_PLAYER){
-		if (userColor != CHESS_WHITE_PLAYER && userColor != CHESS_WHITE_PLAYER)
+GAME_SETTINGS_MESSAGE changeUserColor(GameSettings* settings, int userColor) {
+	if (settings->gameMode == ONE_PLAYER) {
+		if (userColor != CHESS_WHITE_PLAYER && userColor != CHESS_BLACK_PLAYER)
 			return GAME_SETTINGS_WRONG_USER_COLOR;
 		settings->userColor = userColor;
 		return GAME_SETTINGS_USER_COLOR_SUCCESS;
-	}
-	else
+	} else
 		return GAME_SETTINGS_INVALID_COMMAND;
 }
 
-
-GAME_SETTINGS_MESSAGE changeGameMode(GameSettings* settings, char gameMode){
-	if (gameMode == ONE_PLAYER || gameMode == TWO_PLAYERS)
-	{
+GAME_SETTINGS_MESSAGE changeGameMode(GameSettings* settings, char gameMode) {
+	if (gameMode == ONE_PLAYER || gameMode == TWO_PLAYERS) {
 		settings->gameMode = gameMode;
 		return GAME_SETTINGS_GAME_MODE_SUCCESS;
 	}
 	return GAME_SETTINGS_WRONG_GAME_MODE;
 }
 
-GAME_SETTINGS_MESSAGE changeDifficulty(GameSettings* settings, int difficulty){
-	if (settings->gameMode == ONE_PLAYER){
-		if (difficulty < 6 && difficulty > 0){
+GAME_SETTINGS_MESSAGE changeDifficulty(GameSettings* settings, int difficulty) {
+	if (settings->gameMode == ONE_PLAYER) {
+		if (difficulty < 6 && difficulty > 0) {
 			settings->maxDepth = difficulty;
 			return GAME_SETTINGS_DIFFICULTY_LEVEL_SUCCESS;
 		}
@@ -99,51 +96,67 @@ GAME_SETTINGS_MESSAGE changeDifficulty(GameSettings* settings, int difficulty){
 	return GAME_SETTINGS_INVALID_COMMAND;
 }
 
-static int printSettingOnePlayer(FILE* file, GameSettings* settings){
-	if (fprintf(file, GAME_MODE_1_PLAYER_LINE) < 0) {
+static int printSettingOnePlayer(FILE* file, GameSettings* settings) {
+	if (fprintf(file, "%s", GAME_MODE_1_PLAYER_LINE) < 0) {
 		fclose(file);
 		return -1;
 	}
-	if (fprintf(file, "%s %d\n", DIFFICULTY_LEVEL_IINE, settings->maxDepth) < 0) {
+	if (fprintf(file, "%s %s\n", DIFFICULTY_LEVEL_IINE,
+			difficultyLevelToMessage(settings->maxDepth)) < 0) {
 		fclose(file);
 		return -1;
 	}
-	if (fprintf(file, "%s %d\n", USER_COLOR_LINE, settings->userColor) < 0) {
-		fclose(file);
-		return -1;
-	}
-	return 1;
-}
-
-static int printSettingTwoPlayers(FILE* file, GameSettings* settings){
-	if (fprintf(file, GAME_MODE_2_PLAYER_LINE) < 0) {
+	if (fprintf(file, "%s %s", USER_COLOR_LINE,
+			userColorToChar(settings->userColor)) < 0) {
 		fclose(file);
 		return -1;
 	}
 	return 1;
 }
 
-int printSettings(FILE* file, GameSettings* settings){
-	if (fprintf(file, SETTINGS_LINE) < 0) {
+static int printSettingTwoPlayers(FILE* file, GameSettings* settings) {
+	if (fprintf(file, "%s", GAME_MODE_2_PLAYER_LINE) < 0) {
 		fclose(file);
 		return -1;
 	}
-	if (settings->gameMode == ONE_PLAYER){
+	return 1;
+}
+
+int printSettings(FILE* file, GameSettings* settings) {
+	if (fprintf(file, "%s\n", SETTINGS_LINE) < 0) {
+		fclose(file);
+		return -1;
+	}
+	if (settings->gameMode == ONE_PLAYER) {
 		return printSettingOnePlayer(file, settings);
-	}
-	else //(settings->gameMode == TWO_PLAYERS){
+	} else
+		//(settings->gameMode == TWO_PLAYERS){
 		return printSettingTwoPlayers(file, settings);
 }
 
 /*
- * Resets all game settings to default values.
+ * Prints the current game settings.
  *
  * @param settings - the current game settings
  *
  *@return
- * GAME_SETTINGS_DEFAULT_SUCCESS - all values are default.
+ * GAME_SETTINGS_PRINT_SETTINGS_FAIL    - if a printing failure occurs.
+ * GAME_SETTINGS_PRINT_SETTINGS_SUCCESS - otherwise.
  */
-GAME_SETTINGS_MESSAGE chessGameDefaulter (GameSettings* settings){
+void chessGamePrintSettingsToUser(GameSettings* settings) { //TODO: shouldnt it return something?
+	printSettings(stdout, settings);
+
+}
+
+	/*
+	 * Resets all game settings to default values.
+	 *
+	 * @param settings - the current game settings
+	 *
+	 *@return
+	 * GAME_SETTINGS_DEFAULT_SUCCESS - all values are default.
+	 */
+GAME_SETTINGS_MESSAGE chessGameDefaulter(GameSettings* settings) {
 	settings->gameMode = ONE_PLAYER;
 	settings->maxDepth = DIFFICULTY_LEVEL_2_INT;
 	settings->userColor = CHESS_WHITE_PLAYER;
@@ -158,7 +171,7 @@ GAME_SETTINGS_MESSAGE chessGameDefaulter (GameSettings* settings){
  *@return
  * GAME_SETTINGS_QUIT_SUCCESS - the program is exiting.
  */
-GAME_SETTINGS_MESSAGE chessGamequit(GameSettings* settings){
+GAME_SETTINGS_MESSAGE chessGamequit(GameSettings* settings) {
 	GameSettingsDestroy(settings);
 	return GAME_SETTINGS_QUIT_SUCCESS;
 }
@@ -171,22 +184,42 @@ GAME_SETTINGS_MESSAGE chessGamequit(GameSettings* settings){
  *@return
  * GAME_SETTINGS_START_SUCCESS - the game starts.
  */
-GAME_SETTINGS_MESSAGE chessGameStart (){
+GAME_SETTINGS_MESSAGE chessGameStart() {
 	return GAME_SETTINGS_START_SUCCESS;
 }
 
-char* difficultyLevelToMessage(unsigned int level){
-	switch(level){
-		case DIFFICULTY_LEVEL_1_INT:
-			return DIFFICULTY_LEVEL_1;
-		case DIFFICULTY_LEVEL_2_INT:
-			return DIFFICULTY_LEVEL_2;
-		case DIFFICULTY_LEVEL_3_INT:
-			return DIFFICULTY_LEVEL_3;
-		case DIFFICULTY_LEVEL_4_INT:
-			return DIFFICULTY_LEVEL_4;
-		case DIFFICULTY_LEVEL_5_INT:
-			return DIFFICULTY_LEVEL_5;
+char* difficultyLevelToMessage(unsigned int level) {
+	switch (level) {
+	case DIFFICULTY_LEVEL_1_INT:
+		return DIFFICULTY_LEVEL_1;
+	case DIFFICULTY_LEVEL_2_INT:
+		return DIFFICULTY_LEVEL_2;
+	case DIFFICULTY_LEVEL_3_INT:
+		return DIFFICULTY_LEVEL_3;
+	case DIFFICULTY_LEVEL_4_INT:
+		return DIFFICULTY_LEVEL_4;
+	case DIFFICULTY_LEVEL_5_INT:
+		return DIFFICULTY_LEVEL_5;
 	}
-	return 0;
+	return NULL;
+}
+
+int charDifficultyLevelToInt(char* level) {
+	if (strcmp(level, DIFFICULTY_LEVEL_1)==0)
+		return DIFFICULTY_LEVEL_1_INT;
+	if (strcmp(level, DIFFICULTY_LEVEL_2)==0)
+		return DIFFICULTY_LEVEL_2_INT;
+	if (strcmp(level, DIFFICULTY_LEVEL_3)==0)
+		return DIFFICULTY_LEVEL_3_INT;
+	if (strcmp(level, DIFFICULTY_LEVEL_4)==0)
+		return DIFFICULTY_LEVEL_4_INT;
+	if (strcmp(level, DIFFICULTY_LEVEL_5)==0)
+		return DIFFICULTY_LEVEL_5_INT;
+	return NULL;
+}
+
+char* userColorToChar(int userColor) {
+	if (userColor == CHESS_WHITE_PLAYER)
+		return WHITE_USER;
+	return BLACK_USER;
 }

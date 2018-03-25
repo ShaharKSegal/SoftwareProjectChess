@@ -1,7 +1,12 @@
 #ifndef CHESSGAME_H_
 #define CHESSGAME_H_
+
+#include <stdio.h>
 #include "ChessGameCommon.h"
 #include "ArrayList.h"
+
+#define WHITE_KING_SYMBOL 'k'
+#define BLACK_KING_SYMBOL 'K'
 
 /**
  * ChessGame Summary:
@@ -120,13 +125,13 @@ ArrayList* chessGameGetMoves(ChessGame* game, ChessPiecePosition pos);
 CHESS_GAME_MESSAGE chessGameUndoMove(ChessGame* game);
 
 /**
- * On success, the function prints the board game,
- * by the defined representation of each piece.
+ * On success, the function prints the board game to the file given.
+ * Uses the defined representation of each piece.
  *
  * @param game - Assumes not NULL.
+ * @param file - Assumes not NULL.
  */
-// TODO: move to different location since it's only for console.
-void chessGamePrintBoard(ChessGame* game);
+void chessGamePrintBoard(ChessGame* game, FILE* file);
 
 /**
  * Returns the current player of the specified game.
@@ -145,5 +150,19 @@ short chessGameGetCurrentPlayer(ChessGame* src);
  *	CHESS_GAME_NONE			- if none of the above is true.
  */
 CHESS_GAME_MESSAGE chessGameGetCurrentState(ChessGame* game);
+
+/**
+ * Update game->isCheck of the given game.
+ * @param game - the source game
+ */
+void chessGameUpdateIsCheck(ChessGame* game);
+
+/**
+ * Converts from char to ChessPiece instance.
+ * @param piece - the char representing the piece.
+ * @return
+ * ChessPiece - the chessPiece the char represents.
+ */
+ChessPiece charToChessPieceConverter(char piece);
 
 #endif

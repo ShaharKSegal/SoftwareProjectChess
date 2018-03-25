@@ -9,11 +9,14 @@
 static UI_CONTROLLER_EVENT settingsWindowControllerHandleEvent(
 		WindowController** controllerPtr, SDL_Event* event) {
 	UI_EVENT uiEvent = windowHandleEvent((*controllerPtr)->window, event);
-	GameSettings* settings = gameSettingsCopy((*controllerPtr)->data);
+	GameSettings* settings = (GameSettings*)(*controllerPtr)->data;
 	if (uiEvent == UI_EVENT_NONE)
 		return UI_CONTROLLER_EVENT_NONE;
 	switch (uiEvent) {
 	case UI_BUTTON_EVENT_START_GAME:
+		settings = gameSettingsCopy(settings);
+		if (settings == NULL)
+			return UI_CONTROLLER_EVENT_ERROR;
 		windowControllerDestroy(*controllerPtr);
 		*controllerPtr = gameWindowControllerCreate(settings);
 		return *controllerPtr != NULL ?

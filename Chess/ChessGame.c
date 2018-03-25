@@ -1,4 +1,3 @@
-#include <stdio.h>
 #include <stdlib.h>
 #include "ChessErrorHandler.h"
 #include "ChessGameMove.h"
@@ -31,14 +30,12 @@
 #define BLACK_ROOK_SYMBOL 'R'
 #define WHITE_QUEEN_SYMBOL 'q'
 #define BLACK_QUEEN_SYMBOL 'Q'
-#define WHITE_KING_SYMBOL 'k'
-#define BLACK_KING_SYMBOL 'K'
 #define EMPTY_ENTRY_SYMBOL '_'
 
 /**
  * Definitions for print game
  */
-const static int PRINT_GAME_LINE_SIZE = 21;
+const static int PRINT_GAME_LINE_SIZE = 20;
 const static char PRINT_GAME_ZERO_CHAR = '0';
 const static char PRINT_GAME_VERTICAL_BAR = '|';
 const static char PRINT_GAME_WHITESPACE = ' ';
@@ -425,7 +422,7 @@ CHESS_GAME_MESSAGE chessGameSetMove(ChessGame* game, ChessPiecePosition cur_pos,
 	arrayListAddLast(history, move);
 
 	// Update threatening position.
-	game->isCheck = isKingThreatened(game, chessGameGetCurrentPlayer(game));
+	chessGameUpdateIsCheck(game);
 	return res;
 }
 
@@ -454,12 +451,15 @@ CHESS_GAME_MESSAGE chessGameUndoMove(ChessGame* game) {
 }
 
 /**
- * On success, the function prints the board game,
- * by the defined representation of each piece.
+ * On success, the function prints the board game to the file given.
+ * Uses the defined representation of each piece.
  *
  * @param game - Assumes not NULL.
+ * @param file - Assumes not NULL.
  */
-void chessGamePrintBoard(ChessGame* game) {
+void chessGamePrintBoard(ChessGame* game, FILE* file) {
+	if (game == NULL || file == NULL)
+		return;
 	char line[PRINT_GAME_LINE_SIZE + 1];
 	line[1] = line[PRINT_GAME_LINE_SIZE - 1] = PRINT_GAME_VERTICAL_BAR;
 	line[PRINT_GAME_LINE_SIZE - 2] = PRINT_GAME_WHITESPACE;
@@ -470,10 +470,10 @@ void chessGamePrintBoard(ChessGame* game) {
 			line[2 * j + 2] = PRINT_GAME_WHITESPACE;
 			line[2 * j + 3] = game->gameBoard.position[i][j].representation;
 		}
-		printf("%s\n", line);
+		fprintf(file, "%s\n", line);
 	}
-	printf(PRINT_GAME_BEFORE_LAST_LINE);
-	printf(PRINT_GAME_LAST_LINE);
+	fprintf(file, PRINT_GAME_BEFORE_LAST_LINE);
+	fprintf(file, PRINT_GAME_LAST_LINE);
 }
 
 /**
@@ -487,6 +487,15 @@ short chessGameGetCurrentPlayer(ChessGame* game) {
 }
 
 /**
+ * Update game->isCheck of the given game.
+ * @param game - the source game
+ */
+void chessGameUpdateIsCheck(ChessGame* game) {
+	if (game != NULL )
+		game->isCheck = isKingThreatened(game, chessGameGetCurrentPlayer(game));
+}
+
+/**
  * Checks if the current state is checkmate, draw or none of them.
  * @param game - the source game
  * @return
@@ -496,6 +505,7 @@ short chessGameGetCurrentPlayer(ChessGame* game) {
  *	CHESS_GAME_NONE			- if none of the above is true.
  */
 CHESS_GAME_MESSAGE chessGameGetCurrentState(ChessGame* game) {
+	chessGameUpdateIsCheck(game);
 	ChessPiecePosition pos;
 	for (int i = 0; i < CHESS_N_ROWS; i++)
 		for (int j = 0; j < CHESS_N_COLUMNS; j++) {
@@ -508,4 +518,56 @@ CHESS_GAME_MESSAGE chessGameGetCurrentState(ChessGame* game) {
 			}
 		}
 	return game->isCheck ? CHESS_GAME_CHECKMATE : CHESS_GAME_DRAW;
+}
+
+/**
+ * Converts from char to ChessPiece instance.
+ * @param piece - the char representing the piece.
+ * @return
+ * ChessPiece - the chessPiece the char represents.
+ */
+ChessPiece charToChessPieceConverter(char piece) {
+	ChessPiece chessPiece;
+	switch (piece) {
+	case WHITE_PAWN_SYMBOL:
+		chessPiece = WHITE_PAWN;
+		break;
+	case BLACK_PAWN_SYMBOL:
+		chessPiece = BLACK_PAWN;
+		break;
+	case WHITE_BISHOP_SYMBOL:
+		chessPiece = WHITE_BISHOP;
+		break;
+	case BLACK_BISHOP_SYMBOL:
+		chessPiece = BLACK_BISHOP;
+		break;
+	case WHITE_KNIGHT_SYMBOL:
+		chessPiece = WHITE_KNIGHT;
+		break;
+	case BLACK_KNIGHT_SYMBOL:
+		chessPiece = BLACK_KNIGHT;
+		break;
+	case WHITE_ROOK_SYMBOL:
+		chessPiece = WHITE_ROOK;
+		break;
+	case BLACK_ROOK_SYMBOL:
+		chessPiece = BLACK_ROOK;
+		break;
+	case WHITE_QUEEN_SYMBOL:
+		chessPiece = WHITE_QUEEN;
+		break;
+	case BLACK_QUEEN_SYMBOL:
+		chessPiece = BLACK_QUEEN;
+		break;
+	case WHITE_KING_SYMBOL:
+		chessPiece = WHITE_KING;
+		break;
+	case BLACK_KING_SYMBOL:
+		chessPiece = BLACK_KING;
+		break;
+	default:
+		chessPiece = EMPTY_ENTRY;
+		break;
+	}
+	return chessPiece;
 }

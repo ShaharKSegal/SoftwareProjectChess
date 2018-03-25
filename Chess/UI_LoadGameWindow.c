@@ -27,6 +27,7 @@
 #define PREV_H 50
 #define PREV_W 100
 
+const static int LOAD_BTN_WIDGET_ID = 0;
 const static int SAVES_IN_PAGE = 5;
 const static int OTHER_BUTTONS_NUM = 4;
 
@@ -85,21 +86,20 @@ static LoadGameWindowData* getLoadGameWindowData(Window* window) {
 	return (LoadGameWindowData*) window->data;
 }
 
-static void handleEventActivateGameSlot(Window* window, int gameSlot) {
-	Button* loadButton = (Button*) window->widgets[0]->data;
-	buttonSetActive(loadButton, true);
-	for (int i = OTHER_BUTTONS_NUM; i < window->numOfWidgets; i++) {
-		Button* slotButton = (Button*) window->widgets[i]->data;
-		buttonSetActive(slotButton, gameSlot == i);
-	}
+static void handleEventActivateGameSlot(Window* window, int slotWidgetID) {
+	getLoadGameWindowData(window)->activeSlot = slotWidgetID
+			- OTHER_BUTTONS_NUM;
+	return;
 }
 
-static LoadGameWindowData* createLoadGameWindowData(int maxNumOfSlots) {
+static LoadGameWindowData* createLoadGameWindowData(bool isSaveMode,
+		int maxNumOfSlots) {
 	LoadGameWindowData* data = malloc(sizeof(LoadGameWindowData));
 	if (data == NULL ) {
 		hadMemoryFailure();
 		return NULL ;
 	}
+	data->isSaveMode = isSaveMode;
 	data->page = 0; //Upon creation the default page is the first one
 	data->numOfPageSlots = getNumOfPageSlots(data->page, maxNumOfSlots);
 	data->slotsPicPath = getSlotArrayPath(data->page, data->numOfPageSlots);
@@ -141,9 +141,11 @@ static Widget** createLoadGameWindowWidgets(SDL_Renderer* renderer,
 	SDL_Rect nextR = { .x = NEXT_X, .y = NEXT_Y, .h = NEXT_H, .w = NEXT_W };
 	SDL_Rect prevR = { .x = PREV_X, .y = PREV_Y, .h = PREV_H, .w = PREV_W };
 
-	int j = 0;
+	int j = LOAD_BTN_WIDGET_ID;
 	if (!createButtonInWidgetArray(widgets, j++, renderer, loadR,
-			UI_PIC_LOAD_ACTIVE, UI_PIC_LOAD_INACTIVE, UI_BUTTON_EVENT_LOAD,
+			data->isSaveMode ? UI_PIC_SAVE_ACTIVE : UI_PIC_LOAD_ACTIVE,
+			data->isSaveMode ? UI_PIC_SAVE_INACTIVE : UI_PIC_LOAD_INACTIVE,
+			data->isSaveMode ? UI_BUTTON_EVENT_SAVE : UI_BUTTON_EVENT_LOAD,
 			UI_EVENT_NONE, false))
 		return NULL ;
 	if (!createButtonInWidgetArray(widgets, j++, renderer, backR, UI_PIC_BACK,
@@ -186,9 +188,10 @@ static void loadGameWindowDestroy(Window* window) {
 	windowBaseDestroy(window);
 }
 
-Window* loadGameWindowCreate(int maxNumOfSlots) {
+Window* loadGameWindowCreate(bool isSaveMode, int maxNumOfSlots) {
 	int numOfWidgets = OTHER_BUTTONS_NUM + SAVES_IN_PAGE;
-	LoadGameWindowData* data = createLoadGameWindowData(maxNumOfSlots);
+	LoadGameWindowData* data = createLoadGameWindowData(isSaveMode,
+			maxNumOfSlots);
 	if (data == NULL )
 		return NULL ;
 	Window* window = windowBaseCreate(UI_PIC_DEFAULT_MENU);
@@ -223,4 +226,14 @@ bool loadGameWindowChangePage(Window* window, int page) {
 	data->numOfPageSlots = numOfPageSlots;
 	window->widgets = createLoadGameWindowWidgets(window->renderer, data);
 	return window->widgets != NULL ;
+}
+
+void loadGameActivateSlot(Window* window) {
+	int gameSlot = getLoadGameWindowData(window)->activeSlot;
+	Button* loadButton = (Button*) window->widgets[LOAD_BTN_WIDGET_ID]->data;
+	buttonSetActive(loadButton, true);
+	for (int i = OTHER_BUTTONS_NUM; i < window->numOfWidgets; i++) {
+		Button* slotButton = (Button*) window->widgets[i]->data;
+		buttonSetActive(slotButton, (gameSlot + OTHER_BUTTONS_NUM) == i);
+	}
 }

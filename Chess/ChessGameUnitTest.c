@@ -1,66 +1,16 @@
+#include <stdbool.h>
+#include <string.h>
+#include <stdlib.h>
 #include "unit_test_util.h"
 #include "ChessGame.h"
-#include <stdbool.h>
-#include <stdio.h>
-#include <stdlib.h>
+#include "ChessGameCommon.h"
+#include "GameSettings.h"
+#include "SaveGame.h"
+#include "LoadGame.h"
+
 
 #define HISTORY_SIZE 6
-/*
- static bool ChessGameValidMoveTest() {
- ChessGame* res = ChessGameCreate(HISTORY_SIZE);
- ASSERT_TRUE(res!=NULL);
- int repeat = CHESS_N_ROWS;
- while (repeat-- > 0) {
- ASSERT_TRUE(ChessGameSetMove(res, 2) == CHESS_GAME_SUCCESS);
 
- }
- ASSERT_FALSE(ChessGameIsValidMove(res, 2));
- ASSERT_TRUE(ChessGameSetMove(res, 2) == CHESS_GAME_INVALID_MOVE);
- ChessGamePrintBoard(res);
- ChessGameDestroy(res);
- return true;
- }
- */
-/*
- ChessGame* res = ChessGameCreate(HISTORY_SIZE);
- ASSERT_TRUE(res!=NULL);
- int repeat = 3;
- while (repeat-- > 0) {
- for (int i = 0; i < CHESS_N_COLUMNS; i++) {
- ASSERT_TRUE(ChessGameSetMove(res, i) == CHESS_GAME_SUCCESS);
- }
- }
- repeat = 20;
- while (repeat-- > 0) {
- ASSERT_TRUE(ChessGameUndoPrevMove(res) == CHESS_GAME_SUCCESS);
- }
- ASSERT_TRUE(ChessGameUndoPrevMove(res) == CHESS_GAME_EMPTY_HISTORY);
- ChessGamePrintBoard(res);
- ChessGameDestroy(res);
- return true;
- }
- */
-/*
- static bool ChessGameUndoMoveTest() {
- ChessGame* res = ChessGameCreate(HISTORY_SIZE);
- ASSERT_TRUE(res!=NULL);
- int repeat = 2;
- while (repeat-- > 0) {
- for (int i = 0; i < CHESS_N_COLUMNS; i++) {
- ASSERT_TRUE(ChessGameSetMove(res, i) == CHESS_GAME_SUCCESS);
- }
- }
- repeat = 2;
- while (repeat-- > 0) {
- for (int i = 0; i < CHESS_N_COLUMNS; i++) {
- ASSERT_TRUE(ChessGameUndoPrevMove(res) == CHESS_GAME_SUCCESS);
- }
- }
- ChessGamePrintBoard(res);
- ChessGameDestroy(res);
- return true;
- }
- */
 
 static bool ChessGameSetMoveTest() {
 	ChessGame* res = chessGameCreate(HISTORY_SIZE);
@@ -72,7 +22,7 @@ static bool ChessGameSetMoveTest() {
 	pos = (ChessPiecePosition ) { .row = 1, .column = 0 };
 	pos_next = (ChessPiecePosition ) { .row = 3, .column = 0 };
 	chessGameSetMove(res, pos, pos_next);
-	chessGamePrintBoard(res);
+	chessGamePrintBoard(res, stdout);
 
 	//Move invalid positions
 	pos = (ChessPiecePosition ) { .row = -1, .column = 0 };
@@ -143,8 +93,8 @@ static bool ChessGameSetMoveTest() {
 	pos = (ChessPiecePosition ) { .row = 6, .column = 0 };
 	pos_next = (ChessPiecePosition ) { .row = 5, .column = 0 };
 	chessGameSetMove(res, pos, pos_next);
-	pos = (ChessPiecePosition ) { .row = 0, .column = 3 };
 	ASSERT_TRUE(chessGameGetCurrentState(res)!= CHESS_GAME_CHECKMATE);
+	pos = (ChessPiecePosition ) { .row = 0, .column = 3 };
 	pos_next = (ChessPiecePosition ) { .row = 2, .column = 5 };
 	chessGameSetMove(res, pos, pos_next);
 	pos = (ChessPiecePosition ) { .row = 5, .column = 0 };
@@ -164,7 +114,7 @@ static bool ChessGameSetMoveTest() {
 	ASSERT_TRUE(
 			chessGameSetMove(res, pos, pos_next)
 					== CHESS_GAME_UNRESOLVED_THREATENED_KING);
-	ASSERT_TRUE(chessGameGetCurrentState(res)== CHESS_GAME_CHECKMATE);
+	ASSERT_TRUE(chessGameGetCurrentState(res)!= CHESS_GAME_CHECKMATE);
 	chessGameDestroy(res);
 
 	//Move threaten king check
@@ -249,7 +199,7 @@ static bool ChessGameGetMovesTest() {
 
 static bool ChessGameBasicTest() {
 	ChessGame* res = chessGameCreate(HISTORY_SIZE);
-	chessGamePrintBoard(res);
+	chessGamePrintBoard(res, stdout);
 	ASSERT_TRUE(res != NULL);
 	ChessGame* res2 = chessGameCopy(res);
 	ASSERT_TRUE(res2 != NULL);
@@ -259,16 +209,71 @@ static bool ChessGameBasicTest() {
 	return true;
 }
 
-int main123567() {
+static bool ChessGameSettingsTest(){
+	GameSettings* settings = GameSettingsCreate();
+	ASSERT_TRUE(settings->gameMode == ONE_PLAYER);
+	ASSERT_TRUE(settings->maxDepth == DIFFICULTY_LEVEL_2_INT);
+	ASSERT_TRUE(settings->userColor == CHESS_WHITE_PLAYER);
+	changeUserColor(settings, CHESS_BLACK_PLAYER);
+	ASSERT_TRUE(settings->userColor == CHESS_BLACK_PLAYER);
+	changeGameMode(settings, TWO_PLAYERS);
+	chessGamePrintSettingsToUser(settings);
+	changeDifficulty(settings, DIFFICULTY_LEVEL_3_INT);
+	ASSERT_TRUE(settings->maxDepth == DIFFICULTY_LEVEL_2_INT);
+	changeGameMode(settings, ONE_PLAYER);
+	changeDifficulty(settings, DIFFICULTY_LEVEL_3_INT);
+	ASSERT_TRUE(settings->maxDepth == DIFFICULTY_LEVEL_3_INT);
+	chessGamePrintSettingsToUser(settings);
+	chessGameDefaulter(settings);
+	chessGamePrintSettingsToUser(settings);
+	GameSettingsDestroy(settings);
+	return true;
+}
+
+
+static bool ChessGameSaveGameTest(){
+	GameSettings* settings = GameSettingsCreate();
+	chessGameSave("file.txt", settings);
+	changeDifficulty(settings, DIFFICULTY_LEVEL_4_INT);
+	changeUserColor(settings, CHESS_BLACK_PLAYER);
+	chessGameSave("file.txt", settings);
+	GameSettingsDestroy(settings);
+	return true;
+}
+
+
+static bool ChessGameLoadGameTest(){
+	GameSettings* settings = GameSettingsCreate();
+	FILE* file = fopen("file.txt", "r");
+	if (file == NULL){
+		return GAME_SETTINGS_LOAD_FILE_FAIL;
+	}
+	char line[22];
+	fgets(line, sizeof(line), file);
+	ASSERT_TRUE(strcmp(line,"white\n")==0);
+	fgets(line, sizeof(line), file);
+	ASSERT_TRUE(strcmp(line,"SETTINGS:\n")==0);
+	fgets(line, sizeof(line), file);
+	ASSERT_TRUE(strcmp("GAME_MODE: 1-player\n",line)==0);
+	fgets(line, sizeof(line), file);
+	ASSERT_TRUE(strcmp("DIFFICULTY: hard\n",line)==0);
+	fgets(line, sizeof(line), file);
+	ASSERT_TRUE(strcmp("USER_COLOR: black\n",line)==0);
+	chessGameLoad(settings, "file.txt");
+	chessGamePrintSettingsToUser(settings);
+	fclose(file);
+	GameSettingsDestroy(settings);
+	return true;
+}
+int main324565687() {
+
+
 	RUN_TEST(ChessGameBasicTest);
 	RUN_TEST(ChessGameSetMoveTest);
 	RUN_TEST(ChessGameGetMovesTest);
-
-	/*/*
-	 RUN_TEST(ChessGameUndoMoveTest);
-	 RUN_TEST(ChessGameUndoMoveTest2);
-	 RUN_TEST(ChessGameValidMoveTest);
-	 RUN_TEST(ChessGameWinnerTest);
-	 */
+	RUN_TEST(ChessGameSettingsTest);
+	RUN_TEST(ChessGameSaveGameTest);
+	printf("//GameLoad///\n");
+	RUN_TEST(ChessGameLoadGameTest);
 	return 0;
 }
