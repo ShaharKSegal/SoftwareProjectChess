@@ -4,6 +4,9 @@
 #include "UI_Button.h"
 #include "ChessErrorHandler.h"
 
+/**
+ * MessageBox related constants
+ */
 const static char* TITLE_GAME_STATE = "Game State";
 const static char* TITLE_WARNING = "Warning";
 const static char* MESSAGE_UNSAVED =
@@ -59,7 +62,8 @@ UI_EVENT unsavedChangesPopup() {
 /**
  * Popup message box for the game state. Indicating check, checkmate or draw.
  * @return:
- * See chessGameGeCurrentState in ChessGame.h for details
+ * returns what chessGameGetCurrentState returns.
+ * See chessGameGetCurrentState in ChessGame.h for details
  */
 CHESS_GAME_MESSAGE chessGameStatePopup(ChessGame* game) {
 	if (game == NULL )

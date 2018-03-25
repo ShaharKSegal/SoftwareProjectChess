@@ -4,6 +4,11 @@
 #include <SDL.h>
 #include <SDL_video.h>
 
+/**
+ * Enum for any UI event (in the view).
+ * Including UI_EVENT_ERROR if an error occurred during a call.
+ * UI_EVENT_NONE to represent that nothing happened.
+ */
 typedef enum {
 	UI_EVENT_INVALID_ARGUMENT,
 	UI_EVENT_NONE,
@@ -37,6 +42,11 @@ typedef enum {
 	UI_MSGBOX_EVENT_CANCEL
 } UI_EVENT;
 
+/**
+ * A base structure to represent any item placed on the window.
+ * Includes relevant basic operations (draw/destroy/handle events) and data.
+ * data contains the actual widget information (usually this is a button).
+ */
 typedef struct widget_t Widget;
 struct widget_t {
 	void (*drawWidget)(Widget*);
@@ -45,12 +55,27 @@ struct widget_t {
 	void* data;
 };
 
+/**
+ * A common widget base creation for all widgets.
+ * Can have memmory allocations errors.
+ * @returns
+ * If any argument is NULL, returns NULL.
+ * Otherwise a Widget with the relevant fields filled.
+ */
 Widget* widgetCreate(void* data, void (*drawWidget)(Widget*),
 		UI_EVENT (*handleEvent)(Widget*, SDL_Event*),
 		void (*destroyWidget)(Widget*));
 
+/**
+ * A generic destroy function. Calls widget.destroyWidget is not NULL.
+ */
 void widgetDestroy(Widget* widget);
 
+/**
+ * A generic destroy function for a list of widgets.
+ * Assumes there are numOfWigits widgets.
+ * Calls widget.destroyWidget for each widget and then frees widgets.
+ */
 void widgetListDestory(Widget** widgets, int numOfWigits);
 
 #endif

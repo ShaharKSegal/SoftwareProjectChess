@@ -15,7 +15,7 @@ typedef struct load_game_controller_data_t {
 	int currentPage;
 	GameSettings* previousGameSettings;
 	GameSettings* loadedGameSettings;
-	UI_MODE previousMode;
+	UI_CONTROLLER previousMode;
 } LoadGameWindowControllerData;
 
 static int getNumberOfSaves() {
@@ -28,7 +28,7 @@ static LoadGameWindowControllerData* getLoadGameWindowControllerData(
 }
 
 static LoadGameWindowControllerData* createLoadGameWindowControllerData(
-		GameSettings* settings, UI_MODE previousMode) {
+		GameSettings* settings, UI_CONTROLLER previousMode) {
 	LoadGameWindowControllerData* data = malloc(
 			sizeof(LoadGameWindowControllerData));
 	if (data == NULL ) {
@@ -65,10 +65,10 @@ static UI_CONTROLLER_EVENT handleEventBack(WindowController** controllerPtr) {
 	GameSettings* settings = NULL;
 	WindowController* controller = NULL;
 	switch (controllerData->previousMode) {
-	case UI_MAIN_MODE:
+	case UI_MAIN_CONTROLLER:
 		controller = mainWindowControllerCreate();
 		break;
-	case UI_GAME_MODE:
+	case UI_GAME_CONTROLLER:
 		settings = gameSettingsCopy(controllerData->previousGameSettings);
 		if (settings == NULL )
 			return false;
@@ -124,7 +124,7 @@ static UI_CONTROLLER_EVENT loadGameWindowControllerHandleEvent(
 }
 
 WindowController* loadGameWindowControllerCreate(GameSettings* settings,
-		UI_MODE previousMode) {
+		UI_CONTROLLER previousMode) {
 	LoadGameWindowControllerData* data = createLoadGameWindowControllerData(
 			settings, previousMode);
 	if (data == NULL )

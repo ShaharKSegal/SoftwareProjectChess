@@ -78,7 +78,8 @@ static UI_CONTROLLER_EVENT handleEventLoad(WindowController** controllerPtr) {
 	if (settings == NULL )
 		return UI_CONTROLLER_EVENT_ERROR;
 	windowControllerDestroy(*controllerPtr);
-	*controllerPtr = loadGameWindowControllerCreate(settings, UI_GAME_MODE);
+	*controllerPtr = loadGameWindowControllerCreate(settings,
+			UI_GAME_CONTROLLER);
 	if (*controllerPtr == NULL )
 		return UI_CONTROLLER_EVENT_ERROR;
 	return UI_CONTROLLER_EVENT_INVOKE_DRAW;
@@ -172,11 +173,10 @@ static UI_CONTROLLER_EVENT handleEventPieceDrag(WindowController* controller) {
 	ChessPiecePosition targetPos =
 			gameWindowGetData(controller->window)->targetPos;
 	ChessGame* game = data->gameSettings->chessGame;
-	CHESS_GAME_MESSAGE msg = chessGameSetMove(game,
-			sourcePos, targetPos);
+	CHESS_GAME_MESSAGE msg = chessGameSetMove(game, sourcePos, targetPos);
 	if (msg == CHESS_GAME_SUCCESS) {
 		msg = chessGameStatePopup(game);
-		if (msg == CHESS_GAME_NONE || msg == CHESS_GAME_CHECK){
+		if (msg == CHESS_GAME_NONE || msg == CHESS_GAME_CHECK) {
 			if (data->gameSettings->gameMode == ONE_PLAYER) {
 				//TODO: perform next move for computer.
 			}

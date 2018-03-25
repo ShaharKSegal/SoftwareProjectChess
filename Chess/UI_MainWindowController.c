@@ -20,7 +20,8 @@ static UI_CONTROLLER_EVENT mainWindowControllerHandleEvent(
 		return UI_CONTROLLER_EVENT_INVOKE_DRAW;
 	case UI_BUTTON_EVENT_LOAD:
 		windowControllerDestroy(*controllerPtr);
-		*controllerPtr = loadGameWindowControllerCreate(NULL, UI_MAIN_MODE);
+		*controllerPtr = loadGameWindowControllerCreate(NULL,
+				UI_MAIN_CONTROLLER);
 		return UI_CONTROLLER_EVENT_INVOKE_DRAW;
 	default:
 		return UI_CONTROLLER_EVENT_INVOKE_DRAW;

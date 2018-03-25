@@ -3,6 +3,13 @@
 #include "UI_WindowController.h"
 #include "ChessErrorHandler.h"
 
+/**
+ * A common window controller creation for all controllers.
+ * Can have memory allocations or SDL errors.
+ * by the specific window.
+ * @returns
+ * Window type to be used.
+ */
 WindowController* windowControllerCreate(Window* window, void* data,
 		UI_CONTROLLER_EVENT (*handleEventController)(WindowController**,
 				SDL_Event*), void (*destroyWindowController)(WindowController*)) {
@@ -24,6 +31,10 @@ WindowController* windowControllerCreate(Window* window, void* data,
 	return controller;
 }
 
+/**
+ * A generic handle event function based on the SDL_Event.
+ * NOTE: there is no base handleEvent, so (*controllerPtr).handleEventController must not be NULL.
+ */
 UI_CONTROLLER_EVENT windowControllerHandleEvent(
 		WindowController** controllerPtr, SDL_Event* event) {
 	if (controllerPtr == NULL || *controllerPtr == NULL || event == NULL )
@@ -31,6 +42,9 @@ UI_CONTROLLER_EVENT windowControllerHandleEvent(
 	return (*controllerPtr)->handleEventController(controllerPtr, event);
 }
 
+/**
+ * A common base destroy function.
+ */
 void windowControllerBaseDestroy(WindowController* controller) {
 	if (controller == NULL || controller->window == NULL )
 		return;
@@ -39,6 +53,9 @@ void windowControllerBaseDestroy(WindowController* controller) {
 	free(controller);
 }
 
+/**
+ * A generic destroy function. Calls a base function if controller.destroyWindowController is NULL.
+ */
 void windowControllerDestroy(WindowController* controller) {
 	if (controller == NULL )
 		return;

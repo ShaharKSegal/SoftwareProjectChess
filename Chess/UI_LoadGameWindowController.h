@@ -5,6 +5,6 @@
 #include "UI_WindowController.h"
 
 WindowController* loadGameWindowControllerCreate(GameSettings* settings,
-		UI_MODE previousMode);
+		UI_CONTROLLER previousMode);
 
 #endif
