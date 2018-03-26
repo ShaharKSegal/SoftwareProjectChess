@@ -35,46 +35,46 @@
 /**
  * Definitions for print game
  */
-const static int PRINT_GAME_LINE_SIZE = 20;
-const static char PRINT_GAME_ZERO_CHAR = '0';
-const static char PRINT_GAME_VERTICAL_BAR = '|';
-const static char PRINT_GAME_WHITESPACE = ' ';
-const static char* PRINT_GAME_BEFORE_LAST_LINE = "  -----------------  \n";
-const static char* PRINT_GAME_LAST_LINE = "   A B C D E F G H   \n";
+static const int PRINT_GAME_LINE_SIZE = 20;
+static const char PRINT_GAME_ZERO_CHAR = '0';
+static const char PRINT_GAME_VERTICAL_BAR = '|';
+static const char PRINT_GAME_WHITESPACE = ' ';
+#define PRINT_GAME_BEFORE_LAST_LINE "  -----------------  \n"
+#define PRINT_GAME_LAST_LINE "   A B C D E F G H   \n"
 
 /**
  * Declaration of history size
  */
-const static int historySize = 6;
+static const int historySize = 6;
 
 /**
  * Declaration of chess pieces. These are constants.
  */
-const static ChessPiece WHITE_PAWN = { .type = CHESS_PIECE_PAWN, .player =
+static const ChessPiece WHITE_PAWN = { .type = CHESS_PIECE_PAWN, .player =
 		CHESS_WHITE_PLAYER, .representation = WHITE_PAWN_SYMBOL };
-const static ChessPiece BLACK_PAWN = { .type = CHESS_PIECE_PAWN, .player =
+static const ChessPiece BLACK_PAWN = { .type = CHESS_PIECE_PAWN, .player =
 		CHESS_BLACK_PLAYER, .representation = BLACK_PAWN_SYMBOL };
-const static ChessPiece WHITE_BISHOP = { .type = CHESS_PIECE_BISHOP, .player =
+static const ChessPiece WHITE_BISHOP = { .type = CHESS_PIECE_BISHOP, .player =
 		CHESS_WHITE_PLAYER, .representation = WHITE_BISHOP_SYMBOL };
-const static ChessPiece BLACK_BISHOP = { .type = CHESS_PIECE_BISHOP, .player =
+static const ChessPiece BLACK_BISHOP = { .type = CHESS_PIECE_BISHOP, .player =
 		CHESS_BLACK_PLAYER, .representation = BLACK_BISHOP_SYMBOL };
-const static ChessPiece WHITE_KNIGHT = { .type = CHESS_PIECE_KNIGHT, .player =
+static const ChessPiece WHITE_KNIGHT = { .type = CHESS_PIECE_KNIGHT, .player =
 		CHESS_WHITE_PLAYER, .representation = WHITE_KNIGHT_SYMBOL };
-const static ChessPiece BLACK_KNIGHT = { .type = CHESS_PIECE_KNIGHT, .player =
+static const ChessPiece BLACK_KNIGHT = { .type = CHESS_PIECE_KNIGHT, .player =
 		CHESS_BLACK_PLAYER, .representation = BLACK_KNIGHT_SYMBOL };
-const static ChessPiece WHITE_ROOK = { .type = CHESS_PIECE_ROOK, .player =
+static const ChessPiece WHITE_ROOK = { .type = CHESS_PIECE_ROOK, .player =
 		CHESS_WHITE_PLAYER, .representation = WHITE_ROOK_SYMBOL };
-const static ChessPiece BLACK_ROOK = { .type = CHESS_PIECE_ROOK, .player =
+static const ChessPiece BLACK_ROOK = { .type = CHESS_PIECE_ROOK, .player =
 		CHESS_BLACK_PLAYER, .representation = BLACK_ROOK_SYMBOL };
-const static ChessPiece WHITE_QUEEN = { .type = CHESS_PIECE_QUEEN, .player =
+static const ChessPiece WHITE_QUEEN = { .type = CHESS_PIECE_QUEEN, .player =
 		CHESS_WHITE_PLAYER, .representation = WHITE_QUEEN_SYMBOL };
-const static ChessPiece BLACK_QUEEN = { .type = CHESS_PIECE_QUEEN, .player =
+static const ChessPiece BLACK_QUEEN = { .type = CHESS_PIECE_QUEEN, .player =
 		CHESS_BLACK_PLAYER, .representation = BLACK_QUEEN_SYMBOL };
-const static ChessPiece WHITE_KING = { .type = CHESS_PIECE_KING, .player =
+static const ChessPiece WHITE_KING = { .type = CHESS_PIECE_KING, .player =
 		CHESS_WHITE_PLAYER, .representation = WHITE_KING_SYMBOL };
-const static ChessPiece BLACK_KING = { .type = CHESS_PIECE_KING, .player =
+static const ChessPiece BLACK_KING = { .type = CHESS_PIECE_KING, .player =
 		CHESS_BLACK_PLAYER, .representation = BLACK_KING_SYMBOL };
-const static ChessPiece EMPTY_ENTRY = { .type = CHESS_PIECE_EMPTY, .player =
+static const ChessPiece EMPTY_ENTRY = { .type = CHESS_PIECE_EMPTY, .player =
 		CHESS_NON_PLAYER, .representation = EMPTY_ENTRY_SYMBOL };
 
 /**

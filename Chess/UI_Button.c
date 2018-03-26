@@ -3,9 +3,9 @@
 #include "UI_Button.h"
 #include "ChessErrorHandler.h"
 
-const static int R_MAP_CONST = 34;
-const static int G_MAP_CONST = 177;
-const static int B_MAP_CONST = 76;
+static const int R_MAP_CONST = 34;
+static const int G_MAP_CONST = 177;
+static const int B_MAP_CONST = 76;
 
 /**
  * A destroy function for buttons.

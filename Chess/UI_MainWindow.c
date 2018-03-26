@@ -5,19 +5,19 @@
 #include "UI_Button.h"
 #include "ChessErrorHandler.h"
 
-const static int NEW_GAME_X = 285;
-const static int NEW_GAME_Y = 100;
-const static int NEW_GAME_H = 100;
-const static int NEW_GAME_W = 250;
-const static int MAIN_LOAD_X = 285;
-const static int MAIN_LOAD_Y = 250;
-const static int MAIN_LOAD_H = 100;
-const static int MAIN_LOAD_W = 250;
-const static int EXIT_X = 285;
-const static int EXIT_Y = 400;
-const static int EXIT_H = 100;
-const static int EXIT_W = 250;
-const static int WIDGETS_NUM = 3;
+static const int NEW_GAME_X = 285;
+static const int NEW_GAME_Y = 100;
+static const int NEW_GAME_H = 100;
+static const int NEW_GAME_W = 250;
+static const int MAIN_LOAD_X = 285;
+static const int MAIN_LOAD_Y = 250;
+static const int MAIN_LOAD_H = 100;
+static const int MAIN_LOAD_W = 250;
+static const int EXIT_X = 285;
+static const int EXIT_Y = 400;
+static const int EXIT_H = 100;
+static const int EXIT_W = 250;
+static const int WIDGETS_NUM = 3;
 
 static UI_EVENT mainWindowHandleEvent(Window* window, SDL_Event* event) {
 	if (window == NULL || event == NULL )

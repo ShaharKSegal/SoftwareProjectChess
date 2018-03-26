@@ -7,12 +7,12 @@
 /**
  * Declaration of ArrayList maximum size for each piece
  */
-const static int pawnArrayMaxSize = 4;
-const static int bishopArrayMaxSize = 13;
-const static int knightArrayMaxSize = 8;
-const static int rookArrayMaxSize = 14;
-const static int queenArrayMaxSize = 27;
-const static int kingArrayMaxSize = 8;
+static const int pawnArrayMaxSize = 4;
+static const int bishopArrayMaxSize = 13;
+static const int knightArrayMaxSize = 8;
+static const int rookArrayMaxSize = 14;
+static const int queenArrayMaxSize = 27;
+static const int kingArrayMaxSize = 8;
 
 /**
  * Gets the opponent of the piece's player (assumes the piece is a valid piece)
@@ -176,8 +176,7 @@ static bool isValidMoveBishop(ChessBoard* board, ChessPiecePosition pos,
  * Validate knight move, using chess rules.
  * NOTE: Doesn't check for king threats.
  */
-static bool isValidMoveKnight(ChessBoard* board, ChessPiecePosition pos,
-		ChessPiecePosition newPos, int rowDiff, int colDiff) {
+static bool isValidMoveKnight(int rowDiff, int colDiff) {
 	// Checks if the move is L shaped.
 	// Meaning abs(rowDiff) = (1 or 2) and abs(colDiff) = (2 or 1) respectively.
 	if (rowDiff * rowDiff == 1) {
@@ -224,8 +223,7 @@ static bool isValidMoveQueen(ChessBoard* board, ChessPiecePosition pos,
  * Validate king move, using chess rules.
  * NOTE: Doesn't check for king threats.
  */
-static bool isValidMoveKing(ChessBoard* board, ChessPiecePosition pos,
-		ChessPiecePosition newPos, int rowDiff, int colDiff) {
+static bool isValidMoveKing(int rowDiff, int colDiff) {
 	// Checks if each axis step is at most 1
 	return (rowDiff * rowDiff) <= 1 && (colDiff * colDiff) <= 1;
 }
@@ -342,7 +340,7 @@ static void addMovesKing(ArrayList* arr, ChessBoard* board,
 		res = isValidMoveBishop(board, pos, newPos, rowDiff, colDiff);
 		break;
 	case CHESS_PIECE_KNIGHT:
-		res = isValidMoveKnight(board, pos, newPos, rowDiff, colDiff);
+		res = isValidMoveKnight(rowDiff, colDiff);
 		break;
 	case CHESS_PIECE_ROOK:
 		res = isValidMoveRook(board, pos, newPos, rowDiff, colDiff);
@@ -351,7 +349,7 @@ static void addMovesKing(ArrayList* arr, ChessBoard* board,
 		res = isValidMoveQueen(board, pos, newPos, rowDiff, colDiff);
 		break;
 	case CHESS_PIECE_KING:
-		res = isValidMoveKing(board, pos, newPos, rowDiff, colDiff);
+		res = isValidMoveKing(rowDiff, colDiff);
 		break;
 	default:
 		break;

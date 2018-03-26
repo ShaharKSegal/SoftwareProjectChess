@@ -13,6 +13,9 @@
 #define CHESS_FLAG_MAIN_GUI "-g"
 
 int main(int argc, char** argv) {
+	if (argc || argv) {
+		//TODO: remove this, this is to make the compiler hate me less
+	}
 	if (SDL_Init(SDL_INIT_VIDEO) < 0) { //SDL2 INIT
 		printf("ERROR: unable to init SDL: %s\n", SDL_GetError());
 		return 1;

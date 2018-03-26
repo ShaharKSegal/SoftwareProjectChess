@@ -10,8 +10,8 @@
 
 #define SAVE_FILE_MAX_PATH 128
 
-const static char* saveFileTemplate = "./save%d";
-const static int MAX_SAVES = 5;
+static const char* saveFileTemplate = "./save%d";
+static const int MAX_SAVES = 5;
 
 typedef struct load_game_controller_data_t {
 	int numOfSaves;

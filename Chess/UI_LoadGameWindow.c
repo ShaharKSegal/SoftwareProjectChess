@@ -27,9 +27,9 @@
 #define PREV_H 50
 #define PREV_W 100
 
-const static int LOAD_BTN_WIDGET_ID = 0;
-const static int SAVES_IN_PAGE = 5;
-const static int OTHER_BUTTONS_NUM = 4;
+static const int LOAD_BTN_WIDGET_ID = 0;
+static const int SAVES_IN_PAGE = 5;
+static const int OTHER_BUTTONS_NUM = 4;
 
 static void destroyPathArray(char** paths, int numOfPaths) {
 	for (int i = 0; i < numOfPaths; i++) {

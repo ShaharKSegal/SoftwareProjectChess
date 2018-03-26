@@ -4,7 +4,7 @@
 #include "UI_Window.h"
 #include "ChessErrorHandler.h"
 
-const static int RBGA_CONST = 255;
+static const int RBGA_CONST = 255;
 
 /**
  * A common base draw function.

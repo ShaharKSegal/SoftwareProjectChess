@@ -20,7 +20,7 @@
 
 #define HIGHLIGHT_DELTA 5
 
-const static int OTHER_BUTTONS_NUM = 6;
+static const int OTHER_BUTTONS_NUM = 6;
 
 static int getNumberOfPieces(ChessGame* game) {
 	int count = 0;

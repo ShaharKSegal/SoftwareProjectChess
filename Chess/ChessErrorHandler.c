@@ -5,9 +5,8 @@
 #include <SDL_video.h>
 #include "ChessErrorHandler.h"
 
-const static char* SDL_ERROR_MSG =
-		"ERROR: encountered a problem in sdl lib - %s";
-const static char* MEMORY_ERROR_MSG = "ERROR: dynamic memory allocation failed";
+#define SDL_ERROR_MSG "ERROR: encountered a problem in sdl lib - %s"
+#define MEMORY_ERROR_MSG "ERROR: dynamic memory allocation failed"
 
 static bool memFailure = false;
 static bool sdlError = false;
@@ -41,8 +40,7 @@ void printCriticalError() {
  *
  * @return
  * bool - true if we had a critical error, false if not.
- */
-bool getHadCriticalError() {
+ */bool getHadCriticalError() {
 	return memFailure || sdlError;
 }
 
@@ -51,8 +49,7 @@ bool getHadCriticalError() {
  *
  * @return
  * bool - true if we had memory failure, false if not.
- */
-bool getHadMemoryFailure() {
+ */bool getHadMemoryFailure() {
 	return memFailure;
 }
 
@@ -61,7 +58,6 @@ bool getHadMemoryFailure() {
  *
  * @return
  * bool - true if we had SDL error, false if not.
- */
-bool getHadSDLError() {
+ */bool getHadSDLError() {
 	return sdlError;
 }

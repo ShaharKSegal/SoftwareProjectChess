@@ -114,7 +114,7 @@ static int printSettingOnePlayer(FILE* file, GameSettings* settings) {
 	return 1;
 }
 
-static int printSettingTwoPlayers(FILE* file, GameSettings* settings) {
+static int printSettingTwoPlayers(FILE* file) {
 	if (fprintf(file, "%s", GAME_MODE_2_PLAYER_LINE) < 0) {
 		fclose(file);
 		return -1;
@@ -131,7 +131,7 @@ int printSettings(FILE* file, GameSettings* settings) {
 		return printSettingOnePlayer(file, settings);
 	} else
 		//(settings->gameMode == TWO_PLAYERS){
-		return printSettingTwoPlayers(file, settings);
+		return printSettingTwoPlayers(file);
 }
 
 /*
@@ -215,7 +215,7 @@ int charDifficultyLevelToInt(char* level) {
 		return DIFFICULTY_LEVEL_4_INT;
 	if (strcmp(level, DIFFICULTY_LEVEL_5)==0)
 		return DIFFICULTY_LEVEL_5_INT;
-	return NULL;
+	return -1;
 }
 
 char* userColorToChar(int userColor) {

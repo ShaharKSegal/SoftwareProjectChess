@@ -3,7 +3,6 @@
 
 #include "UI_Widget.h"
 #include "UI_Window.h"
-#include "ChessGame.h"
 
 //TODO: move to settings header when liran give it to me.
 

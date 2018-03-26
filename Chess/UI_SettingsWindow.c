@@ -37,17 +37,17 @@
 #define BACK_H 100
 #define BACK_W 200
 
-const static int ONE_PLAYER_WIDGET_ID = 0;
-const static int TWO_PLAYER_WIDGET_ID = 1;
-const static int WHITE_COLOR_WIDGET_ID = 2;
-const static int BLACK_COLOR_WIDGET_ID = 3;
-const static int DIFFICULTY_AMATEUR_WIDGET_ID = 4;
-const static int DIFFICULTY_EASY_WIDGET_ID = 5;
-const static int DIFFICULTY_MODERATE_WIDGET_ID = 6;
-const static int DIFFICULTY_HARD_WIDGET_ID = 7;
-const static int DIFFICULTY_EXPERT_WIDGET_ID = 8;
-const static int START_WIDGET_ID = 9;
-const static int WIDGET_NUM = 11;
+static const int ONE_PLAYER_WIDGET_ID = 0;
+static const int TWO_PLAYER_WIDGET_ID = 1;
+static const int WHITE_COLOR_WIDGET_ID = 2;
+static const int BLACK_COLOR_WIDGET_ID = 3;
+static const int DIFFICULTY_AMATEUR_WIDGET_ID = 4;
+static const int DIFFICULTY_EASY_WIDGET_ID = 5;
+static const int DIFFICULTY_MODERATE_WIDGET_ID = 6;
+static const int DIFFICULTY_HARD_WIDGET_ID = 7;
+static const int DIFFICULTY_EXPERT_WIDGET_ID = 8;
+static const int START_WIDGET_ID = 9;
+static const int WIDGET_NUM = 11;
 
 static bool addGameModeWidgets(SDL_Renderer* renderer, Widget** widgets) {
 	SDL_Rect onePlayerR = { .x = ONE_PLAYER_X, .y = ONE_PLAYER_Y, .h =
@@ -155,7 +155,8 @@ static void setDifficulty(Window* window, CHESS_DIFFICULTY difficulty) {
 	for (int i = 1; i <= CHESS_DIFFICULTY_EXPERT; i++) {
 		Button* difficultyButton =
 				(Button*) window->widgets[DIFFICULTY_AMATEUR_WIDGET_ID + i - 1]->data;
-		buttonSetActive(difficultyButton, isOnePlayerMode && (difficulty == i));
+		buttonSetActive(difficultyButton,
+				isOnePlayerMode && ((int) difficulty == i));
 	}
 }
 

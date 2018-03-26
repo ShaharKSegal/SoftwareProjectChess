@@ -7,17 +7,17 @@
 /**
  * MessageBox related constants
  */
-const static char* TITLE_GAME_STATE = "Game State";
-const static char* TITLE_WARNING = "Warning";
-const static char* MESSAGE_UNSAVED =
+static const char* TITLE_GAME_STATE = "Game State";
+static const char* TITLE_WARNING = "Warning";
+static const char* MESSAGE_UNSAVED =
 		"Unsaved changes detected, would you like to save the game?";
-const static char* MESSAGE_CHECK = "Check!";
-const static char* MESSAGE_CHECKMATE = "Checkmate!";
-const static char* MESSAGE_DRAW = "Draw!";
-const static SDL_MessageBoxButtonData BUTTONS[] = { { 0, UI_MSGBOX_EVENT_NO,
+static const char* MESSAGE_CHECK = "Check!";
+static const char* MESSAGE_CHECKMATE = "Checkmate!";
+static const char* MESSAGE_DRAW = "Draw!";
+static const SDL_MessageBoxButtonData BUTTONS[] = { { 0, UI_MSGBOX_EVENT_NO,
 		"no" }, { 0, UI_MSGBOX_EVENT_YES, "yes" }, { 0, UI_MSGBOX_EVENT_CANCEL,
 		"cancel" }, };
-const static SDL_MessageBoxColorScheme COLOR_SCHEME = { { { 255, 0, 0 }, { 0,
+static const SDL_MessageBoxColorScheme COLOR_SCHEME = { { { 255, 0, 0 }, { 0,
 		255, 0 }, { 255, 255, 0 }, { 0, 0, 255 }, { 255, 0, 255 } } };
 
 /**
