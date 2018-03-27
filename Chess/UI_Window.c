@@ -55,7 +55,7 @@ Window* windowBaseCreate(char* image) {
 	}
 	SDL_Window* sdlWindow = SDL_CreateWindow(UI_WINDOW_TITLE,
 			SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, UI_WINDOW_W,
-			UI_WINDOW_H, SDL_WINDOW_OPENGL);
+			UI_WINDOW_H, SDL_WINDOW_SHOWN);
 	if (sdlWindow == NULL ) {
 		hadSDLError();
 		return NULL ;

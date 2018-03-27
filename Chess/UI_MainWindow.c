@@ -5,6 +5,9 @@
 #include "UI_Button.h"
 #include "ChessErrorHandler.h"
 
+/**
+ * Constants for the widgets location.
+ */
 static const int NEW_GAME_X = 285;
 static const int NEW_GAME_Y = 100;
 static const int NEW_GAME_H = 100;
@@ -19,6 +22,13 @@ static const int EXIT_H = 100;
 static const int EXIT_W = 250;
 static const int WIDGETS_NUM = 3;
 
+/**
+ * An event handler for the main menu. Invoke event handler of each widget to
+ * determine if the SDL_Event is relevant to one of them.
+ * @returns
+ * UI_EVENT, based on the button which was pressed. If none of the widgets
+ * were clicked, returns UI_EVENT_NONE.
+ */
 static UI_EVENT mainWindowHandleEvent(Window* window, SDL_Event* event) {
 	if (window == NULL || event == NULL )
 		return UI_EVENT_INVALID_ARGUMENT;
@@ -31,6 +41,12 @@ static UI_EVENT mainWindowHandleEvent(Window* window, SDL_Event* event) {
 	return UI_EVENT_NONE;
 }
 
+/**
+ * Creates a widget array with the new game, load and exit buttons.
+ * Can have memory failures
+ * @returns
+ * Widget array, or NULL if an error occurred.
+ */
 static Widget** mainWindowWidgetsCreate(SDL_Renderer* renderer) {
 	if (renderer == NULL )
 		return NULL ;
@@ -61,6 +77,12 @@ static Widget** mainWindowWidgetsCreate(SDL_Renderer* renderer) {
 	return widgets;
 }
 
+/**
+ * Creates a Window type with widgets and operations of the main menu
+ * Can have memory failures or SDL errors
+ * @returns
+ * NULL if some error occurred, otherwise a Window* of the main menu.
+ */
 Window* mainWindowCreate() {
 	Window* window = windowBaseCreate(UI_PIC_DEFAULT_MENU);
 	if (window == NULL )

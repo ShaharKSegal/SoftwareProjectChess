@@ -19,6 +19,7 @@ typedef enum {
 
 /**
  * Enum for controller events, to be used by the UI main.
+ * Tells the UI main if a error occurred, or we should redraw the window ect.
  */
 typedef enum {
 	UI_CONTROLLER_EVENT_INVOKE_DRAW,

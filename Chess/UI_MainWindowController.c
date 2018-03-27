@@ -6,6 +6,14 @@
 #include "UI_SettingsWindowController.h"
 #include "ChessErrorHandler.h"
 
+/**
+ * An event handler for the controller.
+ * Translates the UI_EVENT into UI_CONTROLLER_EVENT.
+ * @returns
+ * If there's no event relevant, returns UI_CONTROLLER_EVENT_NONE.
+ * If the exit button was pressed, returns UI_CONTROLLER_EVENT_QUTT.
+ * Otherwise returns UI_CONTROLLER_EVENT_INVOKE_DRAW.
+ */
 static UI_CONTROLLER_EVENT mainWindowControllerHandleEvent(
 		WindowController** controllerPtr, SDL_Event* event) {
 	UI_EVENT uiEvent = windowHandleEvent((*controllerPtr)->window, event);
@@ -28,6 +36,12 @@ static UI_CONTROLLER_EVENT mainWindowControllerHandleEvent(
 	}
 }
 
+/**
+ * Creates a WindowController type with the relevant Window type.
+ * Can have memory failures or SDL errors
+ * @returns
+ * NULL if some error occurred, otherwise a WindowController* of the main menu.
+ */
 WindowController* mainWindowControllerCreate() {
 	Window* window = mainWindowCreate();
 	if (window == NULL )
