@@ -17,19 +17,25 @@
 static UI_CONTROLLER_EVENT mainWindowControllerHandleEvent(
 		WindowController** controllerPtr, SDL_Event* event) {
 	UI_EVENT uiEvent = windowHandleEvent((*controllerPtr)->window, event);
+	WindowController* controller;
 	if (uiEvent == UI_EVENT_NONE)
 		return UI_CONTROLLER_EVENT_NONE;
 	switch (uiEvent) {
 	case UI_BUTTON_EVENT_EXIT:
 		return UI_CONTROLLER_EVENT_QUTT;
 	case UI_BUTTON_EVENT_NEW_GAME:
+		controller = settingsWindowControllerCreate();
+		if (controller == NULL )
+			return UI_CONTROLLER_EVENT_ERROR;
 		windowControllerDestroy(*controllerPtr);
-		*controllerPtr = settingsWindowControllerCreate();
+		*controllerPtr = controller;
 		return UI_CONTROLLER_EVENT_INVOKE_DRAW;
 	case UI_BUTTON_EVENT_LOAD:
+		controller = loadGameWindowControllerCreate(NULL, UI_MAIN_CONTROLLER);
+		if (controller == NULL )
+			return UI_CONTROLLER_EVENT_ERROR;
 		windowControllerDestroy(*controllerPtr);
-		*controllerPtr = loadGameWindowControllerCreate(NULL,
-				UI_MAIN_CONTROLLER);
+		*controllerPtr = controller;
 		return UI_CONTROLLER_EVENT_INVOKE_DRAW;
 	default:
 		return UI_CONTROLLER_EVENT_INVOKE_DRAW;

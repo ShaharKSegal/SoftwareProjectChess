@@ -5,6 +5,8 @@
 #include "UI_Window.h"
 #include "ChessGame.h"
 
+#define SAVES_IN_PAGE 5
+
 typedef struct load_game_data_t {
 	bool isSaveMode;
 	int page;

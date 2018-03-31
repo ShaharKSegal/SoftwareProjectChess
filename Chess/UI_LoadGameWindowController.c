@@ -113,7 +113,8 @@ static UI_CONTROLLER_EVENT handleEventActivateSlot(WindowController* controller)
 	LoadGameWindowControllerData* data = getLoadGameWindowControllerData(
 			controller);
 	int slot = ((LoadGameWindowData*) (controller->window->data))->activeSlot;
-	sprintf(data->filePath, saveFileTemplate, slot);
+	sprintf(data->filePath, saveFileTemplate,
+			slot + (data->currentPage * SAVES_IN_PAGE));
 	if (data->currentMode == UI_LOAD_CONTROLLER) {
 		GameSettings* settings = gameSettingsCreateAndLoad(data->filePath);
 		if (settings == NULL )
@@ -128,10 +129,9 @@ static UI_CONTROLLER_EVENT handleEventLoad(WindowController** controllerPtr) {
 	LoadGameWindowControllerData* data = getLoadGameWindowControllerData(
 			*controllerPtr);
 	GameSettings* settings = gameSettingsCopy(data->loadedGameSettings);
-		if (settings == NULL )
-			return UI_CONTROLLER_EVENT_ERROR;
-	WindowController* controller = gameWindowControllerCreate(
-			settings);
+	if (settings == NULL )
+		return UI_CONTROLLER_EVENT_ERROR;
+	WindowController* controller = gameWindowControllerCreate(settings);
 	if (controller == NULL )
 		return UI_CONTROLLER_EVENT_ERROR;
 	windowControllerDestroy(*controllerPtr);
@@ -153,7 +153,7 @@ static UI_CONTROLLER_EVENT handleEventSave(WindowController** controllerPtr) {
 	case UI_GAME_CONTROLLER:
 		settings = gameSettingsCopy(data->previousGameSettings);
 		if (settings == NULL )
-				return UI_CONTROLLER_EVENT_ERROR;
+			return UI_CONTROLLER_EVENT_ERROR;
 		controller = gameWindowControllerCreate(settings);
 		break;
 	case UI_MAIN_CONTROLLER:

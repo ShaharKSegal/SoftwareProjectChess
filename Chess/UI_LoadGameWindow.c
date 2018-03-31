@@ -28,7 +28,6 @@
 #define PREV_W 100
 
 static const int LOAD_BTN_WIDGET_ID = 0;
-static const int SAVES_IN_PAGE = 5;
 static const int OTHER_BUTTONS_NUM = 4;
 
 static void destroyPathArray(char** paths, int numOfPaths) {
@@ -189,7 +188,6 @@ static void loadGameWindowDestroy(Window* window) {
 }
 
 Window* loadGameWindowCreate(bool isSaveMode, int maxNumOfSlots) {
-	int numOfWidgets = OTHER_BUTTONS_NUM + SAVES_IN_PAGE;
 	LoadGameWindowData* data = createLoadGameWindowData(isSaveMode,
 			maxNumOfSlots);
 	if (data == NULL )
@@ -197,7 +195,7 @@ Window* loadGameWindowCreate(bool isSaveMode, int maxNumOfSlots) {
 	Window* window = windowBaseCreate(UI_PIC_DEFAULT_MENU);
 	if (window == NULL )
 		return NULL ;
-	window->numOfWidgets = numOfWidgets;
+	window->numOfWidgets = OTHER_BUTTONS_NUM + data->numOfPageSlots;
 	window->handleEvent = loadGameWindowHandleEvent;
 	window->destroyWindow = loadGameWindowDestroy;
 	window->data = data;
