@@ -67,6 +67,7 @@ Window* windowBaseCreate(char* image) {
 		hadSDLError();
 		return NULL ;
 	}
+
 	//Create a background texture:
 	SDL_Surface* surface = SDL_LoadBMP(image);
 	if (surface == NULL ) {
@@ -75,6 +76,7 @@ Window* windowBaseCreate(char* image) {
 		hadSDLError();
 		return NULL ;
 	}
+
 	SDL_Texture* texture = SDL_CreateTextureFromSurface(renderer, surface);
 	SDL_FreeSurface(surface);
 	if (texture == NULL ) {

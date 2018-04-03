@@ -29,9 +29,18 @@ int main(int argc, char** argv) {
 		SDL_Quit();
 		return 0;
 	}
+	windowDraw(controller->window);
+	if (getHadCriticalError()) {
+		printCriticalError();
+		SDL_Quit();
+		return 0;
+	}
 	SDL_Event event;
 	while (1) {
 		SDL_WaitEvent(&event);
+		if (event.type == SDL_QUIT) {
+			break;
+		}
 		//handle event might invoke SDL errors or memory allocation failures
 		UI_CONTROLLER_EVENT res = windowControllerHandleEvent(&controller,
 				&event);

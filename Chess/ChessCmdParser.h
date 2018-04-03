@@ -48,4 +48,11 @@ typedef struct command_t {
  */
 CmdCommand* parseLine(char* str, bool isSettings);
 
+/**
+ * destroy function for the given command. handles move commands differently,
+ * hence the bool option.
+ * NULL safe.
+ */
+void parserCmdCommandDestroy(CmdCommand* command, bool isMoveCommand);
+
 #endif

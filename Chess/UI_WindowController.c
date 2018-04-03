@@ -25,9 +25,6 @@ WindowController* windowControllerCreate(Window* window, void* data,
 	controller->data = data;
 	controller->handleEventController = handleEventController;
 	controller->destroyWindowController = destroyWindowController;
-	windowDraw(window);
-	if (getHadSDLError())
-		return NULL ;
 	return controller;
 }
 

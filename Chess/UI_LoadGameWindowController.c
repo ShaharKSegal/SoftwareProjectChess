@@ -115,7 +115,6 @@ static UI_CONTROLLER_EVENT handleEventActivateSlot(WindowController* controller)
 	int slot = ((LoadGameWindowData*) (controller->window->data))->activeSlot;
 	sprintf(data->filePath, saveFileTemplate,
 			slot + (data->currentPage * SAVES_IN_PAGE));
-	printf(data->filePath);
 	if (data->currentMode == UI_LOAD_CONTROLLER) {
 		GameSettings* settings = GameSettingsCreate();
 		if (settings == NULL )

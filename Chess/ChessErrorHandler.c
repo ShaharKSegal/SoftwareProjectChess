@@ -5,8 +5,8 @@
 #include <SDL_video.h>
 #include "ChessErrorHandler.h"
 
-#define SDL_ERROR_MSG "ERROR: encountered a problem in sdl lib - %s"
-#define MEMORY_ERROR_MSG "ERROR: dynamic memory allocation failed"
+#define SDL_ERROR_MSG "ERROR: encountered a problem in sdl lib - %s. Shutting down."
+#define MEMORY_ERROR_MSG "ERROR: A fatal dynamic memory allocation error occurred. Shutting down."
 
 static bool memFailure = false;
 static bool fileFailure = false;

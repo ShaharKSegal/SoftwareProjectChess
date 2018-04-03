@@ -37,7 +37,7 @@
  * @return
  * true if the string represents a valid integer, and false otherwise.
  */
-bool isInt(const char* str) {
+static bool isInt(const char* str) {
 	if (str == NULL )
 		return false;
 	int len = strlen(str);
@@ -57,7 +57,7 @@ bool isInt(const char* str) {
  * @return
  * A pointer to the token's new allocated memory.
  */
-char* tokenToCharPtr() {
+static char* tokenToCharPtr() {
 	char* token = strtok(NULL, DELI);
 	if (token == NULL )
 		return NULL ;
@@ -76,7 +76,7 @@ char* tokenToCharPtr() {
 /**
  * Checks if there's another token in the current strtok.
  */
-bool hasMoreTokens() {
+static bool hasMoreTokens() {
 	char* token = strtok(NULL, DELI);
 	return token != NULL ;
 }
@@ -84,7 +84,7 @@ bool hasMoreTokens() {
 /**
  * Sets the command's argTypeValid field with the given isValid value;
  */
-void setArgTypeValid(CmdCommand* command, bool isValid) {
+static void setArgTypeValid(CmdCommand* command, bool isValid) {
 	command->argTypeValid = isValid;
 }
 
@@ -93,7 +93,7 @@ void setArgTypeValid(CmdCommand* command, bool isValid) {
  * Handles memory failures and invalid cast of the token.
  *
  */
- void addIntArg(CmdCommand* command) {
+static void addIntArg(CmdCommand* command) {
 	char* token = strtok(NULL, DELI);
 	if (!isInt(token)) {
 		setArgTypeValid(command, false);
@@ -113,13 +113,12 @@ void setArgTypeValid(CmdCommand* command, bool isValid) {
  * Handles memory failures.
  *
  */
-void addStrArg(CmdCommand* command) {
+static void addStrArg(CmdCommand* command) {
 	char* res = tokenToCharPtr();
 	if (getHadMemoryFailure() || res == NULL ) {
 		setArgTypeValid(command, false);
 		return;
 	}
-
 	command->arg = res;
 }
 
@@ -129,7 +128,7 @@ void addStrArg(CmdCommand* command) {
  * Only relevant for MOVE command, so the format is always arg1 " to " arg2;
  * Handles memory failures.
  */
-void addMoveArg(CmdCommand* command) {
+static void addMoveArg(CmdCommand* command) {
 	// Get first char pointer argument
 	char* res1 = tokenToCharPtr();
 	if (getHadMemoryFailure() || res1 == NULL ) {
@@ -170,7 +169,7 @@ void addMoveArg(CmdCommand* command) {
  * If the argument is of the wrong type (e.g. non-integer), cmd is CMD_INVALID
  * and any memory allocated to arg is freed.
  */
-void parseSettingsCommand(char* cmdStr, CmdCommand* command) {
+static void parseSettingsCommand(char* cmdStr, CmdCommand* command) {
 	if (!strcmp(cmdStr, GAME_MODE)) {
 		command->cmd = CMD_GAME_MODE;
 		addIntArg(command);
@@ -199,7 +198,7 @@ void parseSettingsCommand(char* cmdStr, CmdCommand* command) {
  * If the argument is of the wrong type (e.g. non-integer), cmd is CMD_INVALID
  * and any memory allocated to arg is freed.
  */
-void parseGameCommand(char* cmdStr, CmdCommand* command) {
+static void parseGameCommand(char* cmdStr, CmdCommand* command) {
 	if (!strcmp(cmdStr, MOVE)) {
 		command->cmd = CMD_MOVE;
 		addMoveArg(command);
@@ -231,13 +230,14 @@ void parseGameCommand(char* cmdStr, CmdCommand* command) {
  *   argTypeValid - tell whether the arg type is correct (e.g. integer)
  *   arg - the arguments in case there should be one.
  */
-CmdCommand* parseCommand(char* cmdStr, bool isSettings) {
+static CmdCommand* parseCommand(char* cmdStr, bool isSettings) {
 	CmdCommand* command = malloc(sizeof(CmdCommand));
 	if (command == NULL ) {
 		hadMemoryFailure();
 		return NULL ;
 	}
 	setArgTypeValid(command, true);
+	command->arg = NULL;
 	if (!strcmp(cmdStr, QUIT))
 		command->cmd = CMD_QUIT;
 	else if (isSettings)
@@ -279,4 +279,23 @@ CmdCommand* parseLine(char* str, bool isSettings) {
 	if (hasMoreTokens())
 		setArgTypeValid(command, false);
 	return command;
+}
+
+/**
+ * destroy function for the given command. handles move commands differently,
+ * hence the bool option.
+ * NULL safe.
+ */
+void parserCmdCommandDestroy(CmdCommand* command, bool isMoveCommand) {
+	if (command == NULL )
+		return;
+	if (command->arg != NULL) {
+		if (isMoveCommand) {
+				char** args = (char**) command->arg;
+				free(args[0]);
+				free(args[1]);
+			}
+		free(command->arg);
+	}
+	free(command);
 }
