@@ -2,6 +2,7 @@
 #include <stdio.h>
 #include <stdbool.h>
 #include <ctype.h>
+#include "ChessErrorHandler.h"
 #include "LoadGame.h"
 
 #define LINE_LENGTH 22
@@ -98,6 +99,10 @@ static void loadSettings(GameSettings* settings, FILE* file) {
 				return;
 		}
 	}
+	if (ferror(file)) {
+		hadFileFailure();
+		return;
+	}
 	chessGameUpdateIsCheck(game);
 }
 
@@ -115,28 +120,11 @@ GAME_SETTINGS_MESSAGE chessGameLoad(GameSettings* settings, char* fileName) {
 		return GAME_SETTINGS_LOAD_FILE_FAIL;
 	FILE* file = fopen(fileName, "r");
 	if (file == NULL ) {
-		return GAME_SETTINGS_LOAD_FILE_FAIL;
+		return GAME_SETTINGS_LOAD_FILE_OPEN_FAIL;
 	}
 	loadSettings(settings, file);
 	fclose(file);
-	return GAME_SETTINGS_LOAD_FILE_SUCCESS;
+	return getHadFileFailure() ?
+			GAME_SETTINGS_LOAD_FILE_FAIL : GAME_SETTINGS_LOAD_FILE_SUCCESS;
 }
 
-/**
- *	Creates settings from a given file.
- *
- *	@param fileName - the route of the needed file
- *	@return
- *	GameSettings type or NULL if an error occurred/ fileName is NULL.
- *
- */
-GameSettings* gameSettingsCreateAndLoad(char* fileName) {
-	if (fileName == NULL )
-		return NULL ;
-	GameSettings* settings = GameSettingsCreate();
-	if (settings == NULL )
-		return NULL ;
-	if (chessGameLoad(settings, fileName) == GAME_SETTINGS_LOAD_FILE_FAIL)
-		return NULL ;
-	return settings;
-}

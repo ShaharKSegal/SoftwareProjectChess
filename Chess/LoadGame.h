@@ -14,14 +14,5 @@
  */
 GAME_SETTINGS_MESSAGE chessGameLoad(GameSettings* settings, char* fileName);
 
-/**
- *	Creates settings from a given file.
- *
- *	@param fileName - the route of the needed file
- *	@return
- *	GameSettings type or NULL if an error occurred.
- *
- */
-GameSettings* gameSettingsCreateAndLoad(char* fileName);
 #endif /* LOADGAME_H_ */
 

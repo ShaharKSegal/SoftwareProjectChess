@@ -1,6 +1,6 @@
 #include "SaveGame.h"
+#include "ChessErrorHandler.h"
 #include <stdio.h>
-
 
 /**
  *	Saves relevant settings and game to a given file.
@@ -13,29 +13,27 @@
  */
 GAME_SETTINGS_MESSAGE chessGameSave(char* fileName, GameSettings* settings) {
 	FILE* file = fopen(fileName, "w");
-	if (file == NULL) {
+	if (file == NULL ) {
 		return GAME_SETTINGS_SAVE_GAME_FAIL;
 	}
 	char* currentColor;
 	int currentPlayer = settings->chessGame->currentPlayer;
-	if (!(currentPlayer - CHESS_WHITE_PLAYER))
-		currentColor = WHITE_USER;
-	else
-		currentColor = BLACK_USER;
+	currentColor =
+			currentPlayer == CHESS_WHITE_PLAYER ? WHITE_USER : BLACK_USER;
 	if (fprintf(file, "%s", currentColor) < 0) {
+		hadFileFailure();
 		fclose(file);
 		return GAME_SETTINGS_SAVE_GAME_FAIL;
 	}
-	int res = printSettings(file, settings);
-	if (res == -1)
-	{
+	printSettings(file, settings);
+	if (getHadFileFailure()) {
 		fclose(file);
 		return GAME_SETTINGS_SAVE_GAME_FAIL;
 	}
 
 	chessGamePrintBoard(settings->chessGame, file);
-
 	fclose(file);
-	return GAME_SETTINGS_SAVE_GAME_SUCCESS;
+	return getHadFileFailure() ?
+			GAME_SETTINGS_SAVE_GAME_FAIL : GAME_SETTINGS_SAVE_GAME_SUCCESS;
 }
 

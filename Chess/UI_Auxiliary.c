@@ -9,8 +9,11 @@
  */
 static const char* TITLE_GAME_STATE = "Game State";
 static const char* TITLE_WARNING = "Warning";
+static const char* TITLE_ERROR = "ERROR!";
 static const char* MESSAGE_UNSAVED =
 		"Unsaved changes detected, would you like to save the game?";
+static const char* MESSAGE_FILE_FAILURE =
+		"An error occurred while reading/writing to save slot.\n UI will continue working as usual.";
 static const char* MESSAGE_CHECK = "Check!";
 static const char* MESSAGE_CHECKMATE = "Checkmate!";
 static const char* MESSAGE_DRAW = "Draw!";
@@ -24,8 +27,7 @@ static const SDL_MessageBoxColorScheme COLOR_SCHEME = { { { 255, 0, 0 }, { 0,
  * Adds a new button to the widgets array in the given index.
  * Handles failures and frees memory in the widget array.
  * NOTE: assumes the given index is the end of the actual size of the array.
- */
-bool createButtonInWidgetArray(Widget** widgets, int index,
+ */bool createButtonInWidgetArray(Widget** widgets, int index,
 		SDL_Renderer* renderer, SDL_Rect location, const char* activeImage,
 		const char* inactiveImage, UI_EVENT eventActive, UI_EVENT eventInactive,
 		bool isActive) {
@@ -57,6 +59,14 @@ UI_EVENT unsavedChangesPopup() {
 	if (buttonid == -1)
 		return UI_EVENT_NONE;
 	return (UI_EVENT) buttonid;
+}
+
+/**
+ * Popup message box for a file failure (save/load).
+ */
+void fileFailurePopup() {
+	SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, TITLE_ERROR,
+			MESSAGE_FILE_FAILURE, NULL );
 }
 
 /**

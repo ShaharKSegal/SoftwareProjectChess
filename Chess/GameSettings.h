@@ -14,6 +14,7 @@ typedef enum game_settings_message_t {
 	GAME_SETTINGS_USER_COLOR_SUCCESS,
 	GAME_SETTINGS_WRONG_USER_COLOR,
 	GAME_SETTINGS_INVALID_COMMAND,
+	GAME_SETTINGS_LOAD_FILE_OPEN_FAIL,
 	GAME_SETTINGS_LOAD_FILE_FAIL,
 	GAME_SETTINGS_LOAD_FILE_SUCCESS,
 	GAME_SETTINGS_SAVE_GAME_FAIL,
@@ -158,7 +159,7 @@ void chessGamePrintSettingsToUser(GameSettings* settings);
  * -1 if there is a printing failure.
  * 0, otherwise.
  */
-int printSettings(FILE* file, GameSettings* settings);
+void printSettings(FILE* file, GameSettings* settings);
 
 /*
  * Resets all game settings to default values.

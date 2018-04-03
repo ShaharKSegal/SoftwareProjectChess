@@ -458,7 +458,7 @@ CHESS_GAME_MESSAGE chessGameUndoMove(ChessGame* game) {
  * @param file - Assumes not NULL.
  */
 void chessGamePrintBoard(ChessGame* game, FILE* file) {
-	if (game == NULL || file == NULL)
+	if (game == NULL || file == NULL )
 		return;
 	char line[PRINT_GAME_LINE_SIZE + 1];
 	line[1] = line[PRINT_GAME_LINE_SIZE - 1] = PRINT_GAME_VERTICAL_BAR;
@@ -470,10 +470,15 @@ void chessGamePrintBoard(ChessGame* game, FILE* file) {
 			line[2 * j + 2] = PRINT_GAME_WHITESPACE;
 			line[2 * j + 3] = game->gameBoard.position[i][j].representation;
 		}
-		fprintf(file, "%s\n", line);
+		if (fprintf(file, "%s\n", line) < 0) {
+			hadFileFailure();
+			return;
+		}
 	}
-	fprintf(file, PRINT_GAME_BEFORE_LAST_LINE);
-	fprintf(file, PRINT_GAME_LAST_LINE);
+	if (fprintf(file, PRINT_GAME_BEFORE_LAST_LINE) < 0
+			|| fprintf(file, PRINT_GAME_LAST_LINE) < 0) {
+		hadFileFailure();
+	}
 }
 
 /**

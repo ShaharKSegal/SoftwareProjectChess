@@ -26,9 +26,9 @@ ChessGame.o: ChessErrorHandler.h ChessGameCommon.h ArrayList.h ChessGameMove.h C
 	$(CC) $(COMP_FLAG) $(SDL_COMP_FLAG) -c $*.c
 GameSettings.o: ChessErrorHandler.h ChessGameCommon.h ArrayList.h ChessGameMove.h ChessGame.h GameSettings.h GameSettings.c
 	$(CC) $(COMP_FLAG) $(SDL_COMP_FLAG) -c $*.c
-LoadGame.o: GameSettings.h LoadGame.h LoadGame.c
+LoadGame.o: ChessErrorHandler.h GameSettings.h LoadGame.h LoadGame.c
 	$(CC) $(COMP_FLAG) $(SDL_COMP_FLAG) -c $*.c
-SaveGame.o: GameSettings.h SaveGame.h SaveGame.c
+SaveGame.o: ChessErrorHandler.h GameSettings.h SaveGame.h SaveGame.c
 	$(CC) $(COMP_FLAG) $(SDL_COMP_FLAG) -c $*.c 
 UI_Widget.o: UI_Widget.h ChessErrorHandler.h UI_Widget.c 
 	$(CC) $(COMP_FLAG) $(SDL_COMP_FLAG) -c $*.c
@@ -56,7 +56,7 @@ UI_GameWindow.o: UI_Auxiliary.h UI_Widget.h ChessErrorHandler.h UI_Button.h Ches
 	$(CC) $(COMP_FLAG) $(SDL_COMP_FLAG) -c $*.c
 UI_GameWindowController.o: ChessErrorHandler.h GameSettings.h UI_Window.h UI_WindowController.h UI_LoadGameWindowController.h UI_MainWindowController.h UI_GameWindow.h UI_GameWindowController.h UI_GameWindowController.c
 	$(CC) $(COMP_FLAG) $(SDL_COMP_FLAG) -c $*.c
-main.o: main.c UI_Window.h UI_WindowController.h UI_MainWindowController.h ChessErrorHandler.h
+main.o: main.c UI_Auxiliary.h UI_Window.h UI_WindowController.h UI_MainWindowController.h ChessErrorHandler.h
 	$(CC) $(COMP_FLAG) $(SDL_COMP_FLAG) -c $*.c
 clean:
 	rm -f *.o $(EXEC)

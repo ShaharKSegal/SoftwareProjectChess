@@ -96,42 +96,38 @@ GAME_SETTINGS_MESSAGE changeDifficulty(GameSettings* settings, int difficulty) {
 	return GAME_SETTINGS_INVALID_COMMAND;
 }
 
-static int printSettingOnePlayer(FILE* file, GameSettings* settings) {
+static void printSettingOnePlayer(FILE* file, GameSettings* settings) {
 	if (fprintf(file, "%s", GAME_MODE_1_PLAYER_LINE) < 0) {
-		fclose(file);
-		return -1;
+		hadFileFailure();
+		return;
 	}
 	if (fprintf(file, "%s %s\n", DIFFICULTY_LEVEL_IINE,
 			difficultyLevelToMessage(settings->maxDepth)) < 0) {
-		fclose(file);
-		return -1;
+		hadFileFailure();
+		return;
 	}
 	if (fprintf(file, "%s %s", USER_COLOR_LINE,
 			userColorToChar(settings->userColor)) < 0) {
-		fclose(file);
-		return -1;
+		hadFileFailure();
+		return;
 	}
-	return 1;
 }
 
-static int printSettingTwoPlayers(FILE* file) {
+static void printSettingTwoPlayers(FILE* file) {
 	if (fprintf(file, "%s", GAME_MODE_2_PLAYER_LINE) < 0) {
-		fclose(file);
-		return -1;
+		hadFileFailure();
 	}
-	return 1;
 }
 
-int printSettings(FILE* file, GameSettings* settings) {
+void printSettings(FILE* file, GameSettings* settings) {
 	if (fprintf(file, "%s\n", SETTINGS_LINE) < 0) {
-		fclose(file);
-		return -1;
+		hadFileFailure();
+		return;
 	}
 	if (settings->gameMode == ONE_PLAYER) {
-		return printSettingOnePlayer(file, settings);
-	} else
-		//(settings->gameMode == TWO_PLAYERS){
-		return printSettingTwoPlayers(file);
+		printSettingOnePlayer(file, settings);
+	} else // settings->gameMode == TWO_PLAYERS
+		printSettingTwoPlayers(file);
 }
 
 /*

@@ -5,6 +5,7 @@
 #include <stdlib.h>
 #include <stdbool.h>
 #include "UI_Window.h"
+#include "UI_Auxiliary.h"
 #include "UI_WindowController.h"
 #include "UI_MainWindowController.h"
 #include "ChessErrorHandler.h"
@@ -18,7 +19,7 @@ int main(int argc, char** argv) {
 	}
 	if (SDL_Init(SDL_INIT_VIDEO) < 0) { //SDL2 INIT
 		printf("ERROR: unable to init SDL: %s\n", SDL_GetError());
-		return 1;
+		return 0;
 	}
 	WindowController* controller = mainWindowControllerCreate();
 	if (controller == NULL ) {
@@ -42,6 +43,10 @@ int main(int argc, char** argv) {
 			if (getHadSDLError()) {
 				break;
 			}
+		}
+		if (getHadFileFailure()) {
+			fileFailurePopup(); // Show message to user in case of save/load failure
+			unsetFileFailure(); // remove file failure flag at the end of event.
 		}
 	}
 	if (getHadCriticalError()) {

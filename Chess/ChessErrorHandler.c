@@ -9,6 +9,7 @@
 #define MEMORY_ERROR_MSG "ERROR: dynamic memory allocation failed"
 
 static bool memFailure = false;
+static bool fileFailure = false;
 static bool sdlError = false;
 
 /**
@@ -26,6 +27,20 @@ void hadSDLError() {
 }
 
 /**
+ * Report IO file error handler.
+ */
+void hadFileFailure(){
+	fileFailure = true;
+}
+
+/**
+ * Unset IO file error, assumes it was dealt with.
+ */
+void unsetFileFailure(){
+	fileFailure = false;
+}
+
+/**
  * Print critical error messages to console. Prioritizes memory failures.
  */
 void printCriticalError() {
@@ -40,7 +55,8 @@ void printCriticalError() {
  *
  * @return
  * bool - true if we had a critical error, false if not.
- */bool getHadCriticalError() {
+ */
+bool getHadCriticalError() {
 	return memFailure || sdlError;
 }
 
@@ -49,7 +65,8 @@ void printCriticalError() {
  *
  * @return
  * bool - true if we had memory failure, false if not.
- */bool getHadMemoryFailure() {
+ */
+ bool getHadMemoryFailure() {
 	return memFailure;
 }
 
@@ -58,6 +75,17 @@ void printCriticalError() {
  *
  * @return
  * bool - true if we had SDL error, false if not.
- */bool getHadSDLError() {
+ */
+ bool getHadSDLError() {
 	return sdlError;
 }
+
+ /**
+  * Get the current state of file (IO) error (did we have any?).
+  *
+  * @return
+  * bool - true if we had file error, false if not.
+  */
+ bool getHadFileFailure() {
+ 	return fileFailure;
+ }

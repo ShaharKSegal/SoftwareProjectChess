@@ -106,6 +106,11 @@ bool createButtonInWidgetArray(Widget** widgets, int index,
 UI_EVENT unsavedChangesPopup();
 
 /**
+ * Popup message box for a file failure (save/load).
+ */
+void fileFailurePopup();
+
+/**
  * Popup message box for the game state. Indicating check, checkmate or draw.
  * @return:
  * returns what chessGameGetCurrentState returns.
