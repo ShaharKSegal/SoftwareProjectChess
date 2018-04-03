@@ -16,13 +16,11 @@ typedef enum {
 	CMD_PRINT_SETTINGS,
 	CMD_START,
 	CMD_QUIT,
-
 	CMD_MOVE,
 	CMD_GET_MOVES,
 	CMD_UNDO,
 	CMD_SAVE,
 	CMD_RESET,
-
 	CMD_INVALID, // Generic invalid command
 } CMD_COMMAND;
 
@@ -49,10 +47,9 @@ typedef struct command_t {
 CmdCommand* parseLine(char* str, bool isSettings);
 
 /**
- * destroy function for the given command. handles move commands differently,
- * hence the bool option.
+ * destroy function for the given command.
  * NULL safe.
  */
-void parserCmdCommandDestroy(CmdCommand* command, bool isMoveCommand);
+void parserCmdCommandDestroy(CmdCommand* command);
 
 #endif
