@@ -111,12 +111,14 @@ static void printSettingOnePlayer(FILE* file, GameSettings* settings) {
 		hadFileFailure();
 		return;
 	}
+	return;
 }
 
 static void printSettingTwoPlayers(FILE* file) {
 	if (fprintf(file, "%s", GAME_MODE_2_PLAYER_LINE) < 0) {
 		hadFileFailure();
 	}
+	return;
 }
 
 void printSettings(FILE* file, GameSettings* settings) {
@@ -126,8 +128,13 @@ void printSettings(FILE* file, GameSettings* settings) {
 	}
 	if (settings->gameMode == ONE_PLAYER) {
 		printSettingOnePlayer(file, settings);
-	} else // settings->gameMode == TWO_PLAYERS
+	}
+	else
+	{
+		//(settings->gameMode == TWO_PLAYERS){
 		printSettingTwoPlayers(file);
+	}
+
 }
 
 /*
@@ -136,23 +143,25 @@ void printSettings(FILE* file, GameSettings* settings) {
  * @param settings - the current game settings
  *
  *@return
- * GAME_SETTINGS_PRINT_SETTINGS_FAIL    - if a printing failure occurs.
- * GAME_SETTINGS_PRINT_SETTINGS_SUCCESS - otherwise.
+ * GAME_SETTINGS_PRINT_FAILURE    - if a printing failure occurs.
+ * GAME_SETTINGS_PRINT_SUCCESS - otherwise.
  */
-void chessGamePrintSettingsToUser(GameSettings* settings) { //TODO: shouldnt it return something?
+GAME_SETTINGS_MESSAGE gameSettingsPrintSettingsToUser(GameSettings* settings) {
 	printSettings(stdout, settings);
-
+	if (getHadFileFailure())
+		return GAME_SETTINGS_FILE_FAILURE;
+	return GAME_SETTINGS_PRINT_SUCCESS;
 }
 
-	/*
-	 * Resets all game settings to default values.
-	 *
-	 * @param settings - the current game settings
-	 *
-	 *@return
-	 * GAME_SETTINGS_DEFAULT_SUCCESS - all values are default.
-	 */
-GAME_SETTINGS_MESSAGE chessGameDefaulter(GameSettings* settings) {
+/*
+ * Resets all game settings to default values.
+ *
+ * @param settings - the current game settings
+ *
+ *@return
+ * GAME_SETTINGS_DEFAULT_SUCCESS - all values are default.
+ */
+GAME_SETTINGS_MESSAGE gameSettingsDefaulter(GameSettings* settings) {
 	settings->gameMode = ONE_PLAYER;
 	settings->maxDepth = DIFFICULTY_LEVEL_2_INT;
 	settings->userColor = CHESS_WHITE_PLAYER;
@@ -167,20 +176,25 @@ GAME_SETTINGS_MESSAGE chessGameDefaulter(GameSettings* settings) {
  *@return
  * GAME_SETTINGS_QUIT_SUCCESS - the program is exiting.
  */
-GAME_SETTINGS_MESSAGE chessGamequit(GameSettings* settings) {
+GAME_SETTINGS_MESSAGE gameSettingsQuitGameSettings(GameSettings* settings) {
 	GameSettingsDestroy(settings);
 	return GAME_SETTINGS_QUIT_SUCCESS;
 }
 
 /*
- * Starts the game. Once this command is asked, the state is shifted to game state.
+ * Terminates the program. All memory resources will be freed.
  *
  * @param settings - the current game settings
  *
  *@return
- * GAME_SETTINGS_START_SUCCESS - the game starts.
+ * GAME_SETTINGS_QUIT_SUCCESS - the program is exiting.
  */
-GAME_SETTINGS_MESSAGE chessGameStart() {
+CHESS_GAME_MESSAGE gameSettingsQuitGame(GameSettings* settings) {
+	GameSettingsDestroy(settings);
+	return CHESS_GAME_QUIT_SUCCESS;
+}
+
+GAME_SETTINGS_MESSAGE gameSettingsStart(){
 	return GAME_SETTINGS_START_SUCCESS;
 }
 
@@ -211,11 +225,26 @@ int charDifficultyLevelToInt(char* level) {
 		return DIFFICULTY_LEVEL_4_INT;
 	if (strcmp(level, DIFFICULTY_LEVEL_5)==0)
 		return DIFFICULTY_LEVEL_5_INT;
-	return -1;
+	return NULL;
 }
 
 char* userColorToChar(int userColor) {
 	if (userColor == CHESS_WHITE_PLAYER)
 		return WHITE_USER;
 	return BLACK_USER;
+}
+
+/*
+ * Resets all game settings to default values.
+ *
+ * @param settings - the current game settings
+ *
+ *@return
+ * GAME_SETTINGS_DEFAULT_SUCCESS - all values are default.
+ */
+CHESS_GAME_MESSAGE gameSettingsRestart(GameSettings* settings) {
+	settings->gameMode = ONE_PLAYER;
+	settings->maxDepth = DIFFICULTY_LEVEL_2_INT;
+	settings->userColor = CHESS_WHITE_PLAYER;
+	return CHESS_GAME_RESTART;
 }

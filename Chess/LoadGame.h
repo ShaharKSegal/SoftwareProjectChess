@@ -12,7 +12,7 @@
  *	GAME_SETTINGS_LOAD_FILE_SUCCESS - Otherwise
  *
  */
-GAME_SETTINGS_MESSAGE chessGameLoad(GameSettings* settings, char* fileName);
+GAME_SETTINGS_MESSAGE gameSettingsLoad(GameSettings* settings, char* fileName);
 
 #endif /* LOADGAME_H_ */
 

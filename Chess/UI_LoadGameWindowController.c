@@ -119,7 +119,7 @@ static UI_CONTROLLER_EVENT handleEventActivateSlot(WindowController* controller)
 		GameSettings* settings = GameSettingsCreate();
 		if (settings == NULL )
 			return UI_CONTROLLER_EVENT_MINOR_ERROR;
-		GAME_SETTINGS_MESSAGE msg = chessGameLoad(settings, data->filePath);
+		GAME_SETTINGS_MESSAGE msg = gameSettingsLoad(settings, data->filePath);
 		// ignore files that do not exist
 		if (msg == GAME_SETTINGS_LOAD_FILE_OPEN_FAIL) {
 			GameSettingsDestroy(settings);
@@ -154,9 +154,9 @@ static UI_CONTROLLER_EVENT handleEventSave(WindowController** controllerPtr) {
 	GameSettings* settings = NULL;
 	LoadGameWindowControllerData* data = getLoadGameWindowControllerData(
 			*controllerPtr);
-	GAME_SETTINGS_MESSAGE msg = chessGameSave(data->filePath,
+	GAME_SETTINGS_MESSAGE msg = gameSettingsSave(data->filePath,
 			data->previousGameSettings);
-	if (msg == GAME_SETTINGS_SAVE_GAME_FAIL) {
+	if (msg == GAME_SETTINGS_SAVE_GAME_FAIL || msg == GAME_SETTINGS_FILE_FAILURE) {
 		return UI_CONTROLLER_EVENT_FILE_ERROR;
 	}
 	switch (data->nextMode) {

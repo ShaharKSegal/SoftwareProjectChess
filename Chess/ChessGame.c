@@ -323,6 +323,32 @@ ChessGame* chessGameCopy(ChessGame* src) {
 }
 
 /**
+ *	Creates a copy of a given game. The new copy has the same status as the src game,
+ *	only with an empty history of flexible size.
+ *
+ *	@param src - the source game which will be copied
+ *	@return
+ *	NULL if either src is NULL or a memory allocation failure occurred.
+ *	Otherwise, an new copy of the source game is returned.
+ *
+ */
+ChessGame* chessGameCopyEmptyHistory(ChessGame* src, int historySize) {
+	if (src == NULL )
+		return NULL ;
+	ArrayList* history = arrayListCreate(historySize);
+	if (history == NULL )
+		return NULL ;
+	ChessGame* game = malloc(sizeof(ChessGame));
+	if (game == NULL ) {
+		hadMemoryFailure();
+		return NULL ;
+	}
+	*game = *src;
+	game->history = history;
+	return game;
+}
+
+/**
  * Frees all memory allocation associated with a given game.
  * If game is NULL the function does nothing.
  *
@@ -487,8 +513,20 @@ void chessGamePrintBoard(ChessGame* game, FILE* file) {
  * @return
  * game->currentPlayer
  */
-short chessGameGetCurrentPlayer(ChessGame* game) {
+int chessGameGetCurrentPlayer(ChessGame* game) {
 	return game->currentPlayer;
+}
+
+/*
+ * returns the opponent of the current player.
+ * @param player - the current player.
+ * @return
+ * CHESS_WHITE_PLAYER if player == CHESS_BLACK_PLAYER.
+ * CHESS_BLACK_PLAYER if player == CHESS_WHITE_PLAYER.
+ */
+int chessGameGetOpponentByPlayer(int player){
+	return player == CHESS_WHITE_PLAYER ?
+			CHESS_BLACK_PLAYER : CHESS_WHITE_PLAYER;
 }
 
 /**
@@ -531,7 +569,7 @@ CHESS_GAME_MESSAGE chessGameGetCurrentState(ChessGame* game) {
  * @return
  * ChessPiece - the chessPiece the char represents.
  */
-ChessPiece charToChessPieceConverter(char piece) {
+ChessPiece chessGameCharToChessPieceConverter(char piece) {
 	ChessPiece chessPiece;
 	switch (piece) {
 	case WHITE_PAWN_SYMBOL:

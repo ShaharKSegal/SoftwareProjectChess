@@ -32,6 +32,14 @@ typedef struct command_t {
 } CmdCommand;
 
 /**
+ * Checks if a specified string represents a valid integer.
+ *
+ * @return
+ * true if the string represents a valid integer, and false otherwise.
+ */
+bool parserCmdIsInt(const char* str);
+
+/**
  * Parses a specified line. The arguments are parsed and added to arg,
  * if there's more than one argument an array of pointers will be used.
  * If the argument is of the wrong type (e.g. non-integer), cmd is CMD_INVALID
@@ -44,7 +52,7 @@ typedef struct command_t {
  *   argTypeValid - tell whether the arg type is correct (e.g. integer)
  *   arg - the arguments in case there should be one.
  */
-CmdCommand* parseLine(char* str, bool isSettings);
+CmdCommand* parserCmdParseLine(char* str, bool isSettings);
 
 /**
  * destroy function for the given command.

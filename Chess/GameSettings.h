@@ -1,9 +1,8 @@
 #ifndef GAMESETTINGS_H_
 #define GAMESETTINGS_H_
-#include <stdio.h>
 #include "ChessGame.h"
 
-/**
+/*
  * Type used for returning error codes from setting functions
  */
 typedef enum game_settings_message_t {
@@ -14,6 +13,7 @@ typedef enum game_settings_message_t {
 	GAME_SETTINGS_USER_COLOR_SUCCESS,
 	GAME_SETTINGS_WRONG_USER_COLOR,
 	GAME_SETTINGS_INVALID_COMMAND,
+	GAME_SETTINGS_FILE_FAILURE,
 	GAME_SETTINGS_LOAD_FILE_OPEN_FAIL,
 	GAME_SETTINGS_LOAD_FILE_FAIL,
 	GAME_SETTINGS_LOAD_FILE_SUCCESS,
@@ -22,6 +22,7 @@ typedef enum game_settings_message_t {
 	GAME_SETTINGS_DEFAULT_SUCCESS,
 	GAME_SETTINGS_QUIT_SUCCESS,
 	GAME_SETTINGS_START_SUCCESS,
+	GAME_SETTINGS_PRINT_SUCCESS,
 } GAME_SETTINGS_MESSAGE;
 
 /*
@@ -56,6 +57,9 @@ typedef enum game_settings_message_t {
  */
 #define WHITE_USER "white\n"
 #define BLACK_USER "black\n"
+
+#define PRINT_WHITE_USER "white"
+#define PRINT_BLACK_USER "black"
 
 /*
  * save/load line definitions
@@ -148,16 +152,13 @@ GAME_SETTINGS_MESSAGE changeUserColor(GameSettings* settings, int userColor);
  * GAME_SETTINGS_PRINT_SETTINGS_FAIL    - if a printing failure occurs.
  * GAME_SETTINGS_PRINT_SETTINGS_SUCCESS - otherwise.
  */
-void chessGamePrintSettingsToUser(GameSettings* settings);
+GAME_SETTINGS_MESSAGE gameSettingsPrintSettingsToUser(GameSettings* settings);
 
 /*
  * Prints the current game settings.
  *
  * @param settings - the current game settings, file - the file to write the settings to.
  *
- *@return
- * -1 if there is a printing failure.
- * 0, otherwise.
  */
 void printSettings(FILE* file, GameSettings* settings);
 
@@ -169,7 +170,7 @@ void printSettings(FILE* file, GameSettings* settings);
  *@return
  * GAME_SETTINGS_DEFAULT_SUCCESS - all values are default.
  */
-GAME_SETTINGS_MESSAGE chessGameDefaulter (GameSettings* settings);
+GAME_SETTINGS_MESSAGE gameSettingsDefaulter (GameSettings* settings);
 
 /*
  * Terminates the program. All memory resources will be freed.
@@ -179,17 +180,7 @@ GAME_SETTINGS_MESSAGE chessGameDefaulter (GameSettings* settings);
  *@return
  * GAME_SETTINGS_QUIT_SUCCESS - the program is exiting.
  */
-GAME_SETTINGS_MESSAGE chessGamequit(GameSettings* settings);
-
-/*
- * Starts the game. Once this command is asked, the state is shifted to game state.
- *
- * @param settings - the current game settings
- *
- *@return
- * GAME_SETTINGS_START_SUCCESS - the game starts.
- */
-GAME_SETTINGS_MESSAGE chessGameStart ();
+GAME_SETTINGS_MESSAGE gameSettingsQuitGameSettings(GameSettings* settings);
 
 /*
  * Converts difficulty level value to difficulty level name.
@@ -220,3 +211,34 @@ int charDifficultyLevelToInt(char* level);
  * the string compatible with the given int,"white/n" or "black/n";
  */
 char* userColorToChar (int userColor);
+
+/*
+ * Resets all game settings to default values.
+ *
+ * @param settings - the current game settings
+ *
+ *@return
+ * GAME_SETTINGS_DEFAULT_SUCCESS - all values are default.
+ */
+CHESS_GAME_MESSAGE gameSettingsRestart(GameSettings* settings);
+
+/*
+ * Terminates the program. All memory resources will be freed.
+ *
+ * @param settings - the current game settings
+ *
+ *@return
+ * GAME_SETTINGS_QUIT_SUCCESS - the program is exiting.
+ */
+CHESS_GAME_MESSAGE gameSettingsQuitGame(GameSettings* settings);
+
+/*
+ * Starts the game. Once this command is asked, the state is shifted to game state.
+ *
+ * @param settings - the current game settings
+ *
+ *@return
+ * GAME_SETTINGS_START_SUCCESS - the game starts.
+ */
+GAME_SETTINGS_MESSAGE gameSettingsStart ();
+

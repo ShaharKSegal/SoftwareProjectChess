@@ -9,17 +9,16 @@
 #include "UI_WindowController.h"
 #include "UI_MainWindowController.h"
 #include "ChessErrorHandler.h"
+#include "MainAux.h"
+#include "GameSettings.h"
 
 #define CHESS_FLAG_MAIN_CONSOLE "-c"
 #define CHESS_FLAG_MAIN_GUI "-g"
 
-int main(int argc, char** argv) {
-	if (argc || argv) {
-		//TODO: remove this, this is to make the compiler hate me less
-	}
+static int guiMain() {
 	if (SDL_Init(SDL_INIT_VIDEO) < 0) { //SDL2 INIT
 		printf("ERROR: unable to init SDL: %s\n", SDL_GetError());
-		return 0;
+		return EXIT_FAILURE;
 	}
 	WindowController* controller = mainWindowControllerCreate();
 	if (controller == NULL ) {
@@ -27,13 +26,13 @@ int main(int argc, char** argv) {
 			printCriticalError();
 		}
 		SDL_Quit();
-		return 0;
+		return EXIT_FAILURE;
 	}
 	windowDraw(controller->window);
 	if (getHadCriticalError()) {
 		printCriticalError();
 		SDL_Quit();
-		return 0;
+		return EXIT_FAILURE;
 	}
 	SDL_Event event;
 	while (1) {
@@ -63,6 +62,68 @@ int main(int argc, char** argv) {
 	}
 	windowControllerDestroy(controller);
 	SDL_Quit();
-	return 0;
+	return getHadCriticalError() ? EXIT_FAILURE : EXIT_SUCCESS;
+}
+
+static int consoleMain() {
+	bool isSettings = true;
+	printf(STARTING_PROGRAM_LINE);
+	GameSettings* settings = GameSettingsCreate();
+	printf(SETTINGS_STATE_LINE);
+	static int quitGame = false;
+
+	if (settings == NULL || getHadMemoryFailure()) {
+		printCriticalError();
+		return 0;
+	}
+	CmdCommand* command = mainAuxGetUserCommand(isSettings);
+	if (command == NULL ) {
+		GameSettingsDestroy(settings);
+		printCriticalError();
+		return EXIT_FAILURE;
+	}
+	while (!quitGame && !getHadMemoryFailure()) {
+		if (isSettings)
+			quitGame = mainAuxSettingsState(settings, command, &isSettings);
+		else {
+			quitGame = mainAuxGameState(settings, command, &isSettings);
+		}
+		parserCmdCommandDestroy(command);
+		if (!quitGame) {
+			if (!isSettings) {
+				printf("Enter your move (%s player):\n",
+						mainAuxWhichPlayer(settings));
+			}
+			command = mainAuxGetUserCommand(isSettings);
+		}
+	}
+	if (getHadMemoryFailure()) {
+		printCriticalError();
+		GameSettingsDestroy(settings);
+		return EXIT_FAILURE;
+	}
+	return EXIT_SUCCESS;
+}
+
+int main(int argc, char** argv) {
+	int res;
+	if (argc > 2) {
+		printf("ERROR: Too many arguments!");
+		res = EXIT_FAILURE;
+	}
+	else if (argc == 2) {
+		if (strcmp(argv[1], CHESS_FLAG_MAIN_GUI))
+			res = guiMain();
+		else if (strcmp(argv[1], CHESS_FLAG_MAIN_CONSOLE))
+			res = consoleMain();
+		else {
+			printf("ERROR: First argument must be %s or %s",
+					CHESS_FLAG_MAIN_GUI, CHESS_FLAG_MAIN_CONSOLE);
+			res = EXIT_FAILURE;
+		}
+	}
+	else
+		res = consoleMain();
+	return res;
 }
 

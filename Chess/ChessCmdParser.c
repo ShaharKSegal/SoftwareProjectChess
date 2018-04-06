@@ -32,26 +32,6 @@
 #define MOVE_FORMAT_STR "to"
 
 /**
- * Checks if a specified string represents a valid integer.
- *
- * @return
- * true if the string represents a valid integer, and false otherwise.
- */
-static bool isInt(const char* str) {
-	if (str == NULL )
-		return false;
-	int len = strlen(str);
-	for (int i = 0; i < len; i++)
-		if (*(str + i) != '0' && !(*(str + i) == '-' && i == 0)) {
-			if (!atoi(str))
-				return false;
-			else
-				return true;
-		}
-	return true;
-}
-
-/**
  * Give the token a dynamically allocated memory to use as arg pointer.
  *
  * @return
@@ -95,7 +75,7 @@ static void setArgTypeValid(CmdCommand* command, bool isValid) {
  */
 static void addIntArg(CmdCommand* command) {
 	char* token = strtok(NULL, DELI);
-	if (!isInt(token)) {
+	if (!parserCmdIsInt(token)) {
 		setArgTypeValid(command, false);
 		return;
 	}
@@ -252,6 +232,26 @@ static CmdCommand* parseCommand(char* cmdStr, bool isSettings) {
 }
 
 /**
+ * Checks if a specified string represents a valid integer.
+ *
+ * @return
+ * true if the string represents a valid integer, and false otherwise.
+ */
+bool parserCmdIsInt(const char* str) {
+	if (str == NULL )
+		return false;
+	int len = strlen(str);
+	for (int i = 0; i < len; i++)
+		if (*(str + i) != '0' && !(*(str + i) == '-' && i == 0)) {
+			if (!atoi(str))
+				return false;
+			else
+				return true;
+		}
+	return true;
+}
+
+/**
  * Parses a specified line. The arguments are parsed and added to arg,
  * if there's more than one argument an array of pointers will be used.
  * If the argument is of the wrong type (e.g. non-integer), cmd is CMD_INVALID
@@ -265,7 +265,7 @@ static CmdCommand* parseCommand(char* cmdStr, bool isSettings) {
  *   argTypeValid - tell whether the arg type is correct (e.g. integer)
  *   arg - the arguments in case there should be one.
  */
-CmdCommand* parseLine(char* str, bool isSettings) {
+CmdCommand* parserCmdParseLine(char* str, bool isSettings) {
 	char str2[CMD_MAX_LINE_LENGTH];
 	strcpy(str2, str);
 	char* token;
@@ -288,12 +288,12 @@ CmdCommand* parseLine(char* str, bool isSettings) {
 void parserCmdCommandDestroy(CmdCommand* command) {
 	if (command == NULL )
 		return;
-	if (command->arg != NULL) {
+	if (command->arg != NULL ) {
 		if (command->cmd == CMD_MOVE && command->argTypeValid) {
-				char** args = (char**) command->arg;
-				free(args[0]);
-				free(args[1]);
-			}
+			char** args = (char**) command->arg;
+			free(args[0]);
+			free(args[1]);
+		}
 		free(command->arg);
 	}
 	free(command);

@@ -28,7 +28,7 @@
 
 typedef struct chess_game_t {
 	ChessBoard gameBoard;
-	char currentPlayer;
+	int currentPlayer;
 	int historySize;
 	unsigned int maxDepth;
 	ArrayList* history;
@@ -44,6 +44,7 @@ typedef enum chess_game_message_t {
 	CHESS_GAME_NONE,
 	CHESS_GAME_INVALID_POSITION,
 	CHESS_GAME_NO_PIECE_FOUND,
+	CHESS_GAME_NO_PLAYER_PIECE_FOUND,
 	CHESS_GAME_INVALID_MOVE,
 	CHESS_GAME_MOVE_THREATEN_KING,
 	CHESS_GAME_UNRESOLVED_THREATENED_KING,
@@ -52,6 +53,10 @@ typedef enum chess_game_message_t {
 	CHESS_GAME_CHECK,
 	CHESS_GAME_CHECKMATE,
 	CHESS_GAME_SUCCESS,
+	CHESS_GAME_UNDO_SUCCESS,
+	CHESS_GAME_RESTART,
+	CHESS_GAME_QUIT_SUCCESS,
+	CHESS_GAME_INVALID_COMMAND,
 } CHESS_GAME_MESSAGE;
 
 /**
@@ -74,6 +79,18 @@ ChessGame* chessGameCreate();
  *
  */
 ChessGame* chessGameCopy(ChessGame* src);
+
+/**
+ *	Creates a copy of a given game. The new copy has the same status as the src game,
+ *	only with an empty history of flexible size.
+ *
+ *	@param src - the source game which will be copied
+ *	@return
+ *	NULL if either src is NULL or a memory allocation failure occurred.
+ *	Otherwise, an new copy of the source game is returned.
+ *
+ */
+ChessGame* chessGameCopyEmptyHistory(ChessGame* src, int historySize);
 
 /**
  * Frees all memory allocation associated with a given game. If src==NULL
@@ -139,7 +156,16 @@ void chessGamePrintBoard(ChessGame* game, FILE* file);
  * @return
  * game->currentPlayer
  */
-short chessGameGetCurrentPlayer(ChessGame* src);
+int chessGameGetCurrentPlayer(ChessGame* src);
+
+/*
+ * returns the opponent of the current player.
+ * @param player - the current player.
+ * @return
+ * CHESS_WHITE_PLAYER if player == CHESS_BLACK_PLAYER.
+ * CHESS_BLACK_PLAYER if player == CHESS_WHITE_PLAYER.
+ */
+int chessGameGetOpponentByPlayer(int player);
 
 /**
  * Checks if the current state is checkmate, draw or none of them.
@@ -163,6 +189,6 @@ void chessGameUpdateIsCheck(ChessGame* game);
  * @return
  * ChessPiece - the chessPiece the char represents.
  */
-ChessPiece charToChessPieceConverter(char piece);
+ChessPiece chessGameCharToChessPieceConverter(char piece);
 
 #endif

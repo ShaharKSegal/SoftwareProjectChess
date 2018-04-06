@@ -92,7 +92,7 @@ static void loadSettings(GameSettings* settings, FILE* file) {
 				for (int pos = 3; pos < 18; pos = pos + 2) {
 					checkKingPosition(game, line[pos], place, lineNumber);
 					game->gameBoard.position[lineNumber][place] =
-							charToChessPieceConverter(line[pos]);
+							chessGameCharToChessPieceConverter(line[pos]);
 					place++;
 				}
 			} else
@@ -115,7 +115,7 @@ static void loadSettings(GameSettings* settings, FILE* file) {
  *	GAME_SETTINGS_LOAD_FILE_SUCCESS - Otherwise
  *
  */
-GAME_SETTINGS_MESSAGE chessGameLoad(GameSettings* settings, char* fileName) {
+GAME_SETTINGS_MESSAGE gameSettingsLoad(GameSettings* settings, char* fileName) {
 	if (settings == NULL || fileName == NULL )
 		return GAME_SETTINGS_LOAD_FILE_FAIL;
 	FILE* file = fopen(fileName, "r");

@@ -12,6 +12,6 @@
  *	GAME_SETTINGS_SAVE_GAME_FAIL - otherwise.
  *
  */
-GAME_SETTINGS_MESSAGE chessGameSave(char* fileName, GameSettings* settings);
+GAME_SETTINGS_MESSAGE gameSettingsSave(char* fileName, GameSettings* settings);
 
 #endif /* SAVEGAME_H_ */

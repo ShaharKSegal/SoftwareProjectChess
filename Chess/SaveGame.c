@@ -11,7 +11,7 @@
  *	GAME_SETTINGS_SAVE_GAME_FAIL - otherwise.
  *
  */
-GAME_SETTINGS_MESSAGE chessGameSave(char* fileName, GameSettings* settings) {
+GAME_SETTINGS_MESSAGE gameSettingsSave(char* fileName, GameSettings* settings) {
 	FILE* file = fopen(fileName, "w");
 	if (file == NULL ) {
 		return GAME_SETTINGS_SAVE_GAME_FAIL;
@@ -28,12 +28,12 @@ GAME_SETTINGS_MESSAGE chessGameSave(char* fileName, GameSettings* settings) {
 	printSettings(file, settings);
 	if (getHadFileFailure()) {
 		fclose(file);
-		return GAME_SETTINGS_SAVE_GAME_FAIL;
+		return GAME_SETTINGS_FILE_FAILURE;
 	}
 
 	chessGamePrintBoard(settings->chessGame, file);
 	fclose(file);
 	return getHadFileFailure() ?
-			GAME_SETTINGS_SAVE_GAME_FAIL : GAME_SETTINGS_SAVE_GAME_SUCCESS;
+			GAME_SETTINGS_FILE_FAILURE : GAME_SETTINGS_SAVE_GAME_SUCCESS;
 }
 
