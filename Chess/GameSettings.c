@@ -243,8 +243,11 @@ char* userColorToChar(int userColor) {
  * GAME_SETTINGS_DEFAULT_SUCCESS - all values are default.
  */
 CHESS_GAME_MESSAGE gameSettingsRestart(GameSettings* settings) {
-	settings->gameMode = ONE_PLAYER;
-	settings->maxDepth = DIFFICULTY_LEVEL_2_INT;
-	settings->userColor = CHESS_WHITE_PLAYER;
+	ChessGame* game = chessGameCreate();
+	if (game == NULL) {
+		return CHESS_GAME_ERROR;
+	}
+	chessGameDestroy(settings->chessGame);
+	settings->chessGame = game;
 	return CHESS_GAME_RESTART;
 }

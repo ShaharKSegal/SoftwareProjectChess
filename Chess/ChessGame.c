@@ -45,37 +45,37 @@ static const char PRINT_GAME_WHITESPACE = ' ';
 /**
  * Declaration of history size
  */
-static const int historySize = 6;
+static const int HISTORY_SIZE = 6;
 
 /**
  * Declaration of chess pieces. These are constants.
  */
 static const ChessPiece WHITE_PAWN = { .type = CHESS_PIECE_PAWN, .player =
-		CHESS_WHITE_PLAYER, .representation = WHITE_PAWN_SYMBOL };
+CHESS_WHITE_PLAYER, .representation = WHITE_PAWN_SYMBOL };
 static const ChessPiece BLACK_PAWN = { .type = CHESS_PIECE_PAWN, .player =
-		CHESS_BLACK_PLAYER, .representation = BLACK_PAWN_SYMBOL };
+CHESS_BLACK_PLAYER, .representation = BLACK_PAWN_SYMBOL };
 static const ChessPiece WHITE_BISHOP = { .type = CHESS_PIECE_BISHOP, .player =
-		CHESS_WHITE_PLAYER, .representation = WHITE_BISHOP_SYMBOL };
+CHESS_WHITE_PLAYER, .representation = WHITE_BISHOP_SYMBOL };
 static const ChessPiece BLACK_BISHOP = { .type = CHESS_PIECE_BISHOP, .player =
-		CHESS_BLACK_PLAYER, .representation = BLACK_BISHOP_SYMBOL };
+CHESS_BLACK_PLAYER, .representation = BLACK_BISHOP_SYMBOL };
 static const ChessPiece WHITE_KNIGHT = { .type = CHESS_PIECE_KNIGHT, .player =
-		CHESS_WHITE_PLAYER, .representation = WHITE_KNIGHT_SYMBOL };
+CHESS_WHITE_PLAYER, .representation = WHITE_KNIGHT_SYMBOL };
 static const ChessPiece BLACK_KNIGHT = { .type = CHESS_PIECE_KNIGHT, .player =
-		CHESS_BLACK_PLAYER, .representation = BLACK_KNIGHT_SYMBOL };
+CHESS_BLACK_PLAYER, .representation = BLACK_KNIGHT_SYMBOL };
 static const ChessPiece WHITE_ROOK = { .type = CHESS_PIECE_ROOK, .player =
-		CHESS_WHITE_PLAYER, .representation = WHITE_ROOK_SYMBOL };
+CHESS_WHITE_PLAYER, .representation = WHITE_ROOK_SYMBOL };
 static const ChessPiece BLACK_ROOK = { .type = CHESS_PIECE_ROOK, .player =
-		CHESS_BLACK_PLAYER, .representation = BLACK_ROOK_SYMBOL };
+CHESS_BLACK_PLAYER, .representation = BLACK_ROOK_SYMBOL };
 static const ChessPiece WHITE_QUEEN = { .type = CHESS_PIECE_QUEEN, .player =
-		CHESS_WHITE_PLAYER, .representation = WHITE_QUEEN_SYMBOL };
+CHESS_WHITE_PLAYER, .representation = WHITE_QUEEN_SYMBOL };
 static const ChessPiece BLACK_QUEEN = { .type = CHESS_PIECE_QUEEN, .player =
-		CHESS_BLACK_PLAYER, .representation = BLACK_QUEEN_SYMBOL };
+CHESS_BLACK_PLAYER, .representation = BLACK_QUEEN_SYMBOL };
 static const ChessPiece WHITE_KING = { .type = CHESS_PIECE_KING, .player =
-		CHESS_WHITE_PLAYER, .representation = WHITE_KING_SYMBOL };
+CHESS_WHITE_PLAYER, .representation = WHITE_KING_SYMBOL };
 static const ChessPiece BLACK_KING = { .type = CHESS_PIECE_KING, .player =
-		CHESS_BLACK_PLAYER, .representation = BLACK_KING_SYMBOL };
+CHESS_BLACK_PLAYER, .representation = BLACK_KING_SYMBOL };
 static const ChessPiece EMPTY_ENTRY = { .type = CHESS_PIECE_EMPTY, .player =
-		CHESS_NON_PLAYER, .representation = EMPTY_ENTRY_SYMBOL };
+CHESS_NON_PLAYER, .representation = EMPTY_ENTRY_SYMBOL };
 
 /**
  * Functions declarations (if needed).
@@ -94,8 +94,7 @@ static bool isKingThreatened(ChessGame* game, int player);
  * Sets the the given piece in the given position of the game's board.
  * Updates king position field if piece is king.
  */
-static void setPieceInPosition(ChessGame* game, ChessPiecePosition pos,
-		ChessPiece piece) {
+static void setPieceInPosition(ChessGame* game, ChessPiecePosition pos, ChessPiece piece) {
 	if (piece.type == CHESS_PIECE_KING) {
 		if (piece.player == CHESS_WHITE_PLAYER)
 			game->whiteKingPosition = pos;
@@ -125,11 +124,10 @@ static ChessPiece getPieceByPosition(ChessGame* game, ChessPiecePosition pos) {
  * CHESS_GAME_INVALID_MOVE - if the given next_pos is illegal for this piece.
  * CHESS_GAME_SUCCESS - otherwise
  */
-static CHESS_GAME_MESSAGE chessGameIsValidMove(ChessGame* game,
-		ChessPiecePosition cur_pos, ChessPiecePosition next_pos) {
+static CHESS_GAME_MESSAGE chessGameIsValidMove(ChessGame* game, ChessPiecePosition cur_pos,
+		ChessPiecePosition next_pos) {
 	// Checks if positions are valid
-	if (!chessGameIsValidPosition(cur_pos)
-			|| !chessGameIsValidPosition(next_pos))
+	if (!chessGameIsValidPosition(cur_pos) || !chessGameIsValidPosition(next_pos))
 		return CHESS_GAME_INVALID_POSITION;
 
 	//Checks if the position contains a piece of the current player
@@ -157,7 +155,7 @@ static CHESS_GAME_MESSAGE chessGameIsValidMove(ChessGame* game,
  *	true if the position is threatened, false if it's not.
  */
 static bool isPositionThreatened(ChessGame* game, ChessPiecePosition pos,
-		bool checkKing) {
+bool checkKing) {
 	ChessPiece piece = getPieceByPosition(game, pos);
 	ChessPiecePosition threatPos;
 	for (int i = 0; i < CHESS_N_ROWS; i++)
@@ -166,8 +164,7 @@ static bool isPositionThreatened(ChessGame* game, ChessPiecePosition pos,
 			if (chessMoveIsValidMove(&(game->gameBoard), threatPos, pos)) {
 				// need to perform the move in order to check king threats
 				if (checkKing) {
-					ChessPiece threatPiece = getPieceByPosition(game,
-							threatPos);
+					ChessPiece threatPiece = getPieceByPosition(game, threatPos);
 					// Change board to test for threats
 					setPieceInPosition(game, pos, threatPiece);
 					setPieceInPosition(game, threatPos, EMPTY_ENTRY);
@@ -197,8 +194,7 @@ static bool isPositionThreatened(ChessGame* game, ChessPiecePosition pos,
  */
 static bool isKingThreatened(ChessGame* game, int player) {
 	ChessPiecePosition kingPos =
-			player == CHESS_WHITE_PLAYER ?
-					game->whiteKingPosition : game->blackKingPosition;
+			player == CHESS_WHITE_PLAYER ? game->whiteKingPosition : game->blackKingPosition;
 	return isPositionThreatened(game, kingPos, false);
 }
 
@@ -207,7 +203,8 @@ static bool isKingThreatened(ChessGame* game, int player) {
  */
 static short getCurrentOpponent(ChessGame* game) {
 	return chessGameGetCurrentPlayer(game) == CHESS_WHITE_PLAYER ?
-			CHESS_BLACK_PLAYER : CHESS_WHITE_PLAYER;
+	CHESS_BLACK_PLAYER :
+																	CHESS_WHITE_PLAYER;
 }
 
 /**
@@ -276,22 +273,22 @@ static ChessBoard chessBoardCreate() {
  * Otherwise, a new game instance is returned.
  */
 ChessGame* chessGameCreate() {
-	ArrayList* list = arrayListCreate(historySize);
-	if (list == NULL )
-		return NULL ;
+	ArrayList* list = arrayListCreate(HISTORY_SIZE);
+	if (list == NULL)
+		return NULL;
 	ChessGame* game = malloc(sizeof(ChessGame));
-	if (game == NULL ) {
+	if (game == NULL) {
 		hadMemoryFailure();
-		return NULL ;
+		return NULL;
 	}
-	game->historySize = historySize;
+	game->historySize = HISTORY_SIZE;
 	game->history = list;
 	game->currentPlayer = CHESS_WHITE_PLAYER;
 	game->gameBoard = chessBoardCreate();
 	game->whiteKingPosition = (ChessPiecePosition ) { WHITE_OTHER_ROW,
-					KING_COLUMN };
+			KING_COLUMN };
 	game->blackKingPosition = (ChessPiecePosition ) { BLACK_OTHER_ROW,
-					KING_COLUMN };
+			KING_COLUMN };
 	game->isCheck = false;
 	return game;
 }
@@ -307,15 +304,15 @@ ChessGame* chessGameCreate() {
  *
  */
 ChessGame* chessGameCopy(ChessGame* src) {
-	if (src == NULL )
-		return NULL ;
+	if (src == NULL)
+		return NULL;
 	ArrayList* history = arrayListCopy(src->history);
-	if (history == NULL )
-		return NULL ;
+	if (history == NULL)
+		return NULL;
 	ChessGame* game = malloc(sizeof(ChessGame));
-	if (game == NULL ) {
+	if (game == NULL) {
 		hadMemoryFailure();
-		return NULL ;
+		return NULL;
 	}
 	*game = *src;
 	game->history = history;
@@ -333,15 +330,15 @@ ChessGame* chessGameCopy(ChessGame* src) {
  *
  */
 ChessGame* chessGameCopyEmptyHistory(ChessGame* src, int historySize) {
-	if (src == NULL )
-		return NULL ;
+	if (src == NULL)
+		return NULL;
 	ArrayList* history = arrayListCreate(historySize);
-	if (history == NULL )
-		return NULL ;
+	if (history == NULL)
+		return NULL;
 	ChessGame* game = malloc(sizeof(ChessGame));
-	if (game == NULL ) {
+	if (game == NULL) {
 		hadMemoryFailure();
-		return NULL ;
+		return NULL;
 	}
 	*game = *src;
 	game->history = history;
@@ -355,7 +352,7 @@ ChessGame* chessGameCopyEmptyHistory(ChessGame* src, int historySize) {
  * @param game - the source game
  */
 void chessGameDestroy(ChessGame* game) {
-	if (game == NULL )
+	if (game == NULL)
 		return;
 	arrayListDestroy(game->history);
 	free(game);
@@ -372,8 +369,8 @@ void chessGameDestroy(ChessGame* game) {
  */
 ArrayList* chessGameGetMoves(ChessGame* game, ChessPiecePosition pos) {
 	ArrayList* arr = chessMoveGetMoves(&(game->gameBoard), pos);
-	if (arr == NULL )
-		return NULL ;
+	if (arr == NULL)
+		return NULL;
 	ChessPiece piece = getPieceByPosition(game, pos);
 	ChessPiece capturedPiece;
 	ChessPiecePosition nextPos;
@@ -431,9 +428,7 @@ CHESS_GAME_MESSAGE chessGameSetMove(ChessGame* game, ChessPiecePosition cur_pos,
 	if (isKingThreatened(game, chessGameGetCurrentPlayer(game))) {
 		setPieceInPosition(game, cur_pos, piece);
 		setPieceInPosition(game, next_pos, capturedPiece);
-		return game->isCheck ?
-				CHESS_GAME_UNRESOLVED_THREATENED_KING :
-				CHESS_GAME_MOVE_THREATEN_KING;
+		return game->isCheck ? CHESS_GAME_UNRESOLVED_THREATENED_KING : CHESS_GAME_MOVE_THREATEN_KING;
 	}
 
 	// Update current player
@@ -441,8 +436,8 @@ CHESS_GAME_MESSAGE chessGameSetMove(ChessGame* game, ChessPiecePosition cur_pos,
 
 	// Update history
 	ArrayList* history = game->history;
-	ChessMove move = { .previousPosition = cur_pos, .currentPosition = next_pos,
-			.capturedPiece = capturedPiece };
+	ChessMove move = { .previousPosition = cur_pos, .currentPosition = next_pos, .capturedPiece =
+			capturedPiece };
 	if (arrayListIsFull(history))
 		arrayListRemoveFirst(history);
 	arrayListAddLast(history, move);
@@ -484,7 +479,7 @@ CHESS_GAME_MESSAGE chessGameUndoMove(ChessGame* game) {
  * @param file - Assumes not NULL.
  */
 void chessGamePrintBoard(ChessGame* game, FILE* file) {
-	if (game == NULL || file == NULL )
+	if (game == NULL || file == NULL)
 		return;
 	char line[PRINT_GAME_LINE_SIZE + 1];
 	line[1] = line[PRINT_GAME_LINE_SIZE - 1] = PRINT_GAME_VERTICAL_BAR;
@@ -501,8 +496,7 @@ void chessGamePrintBoard(ChessGame* game, FILE* file) {
 			return;
 		}
 	}
-	if (fprintf(file, PRINT_GAME_BEFORE_LAST_LINE) < 0
-			|| fprintf(file, PRINT_GAME_LAST_LINE) < 0) {
+	if (fprintf(file, PRINT_GAME_BEFORE_LAST_LINE) < 0 || fprintf(file, PRINT_GAME_LAST_LINE) < 0) {
 		hadFileFailure();
 	}
 }
@@ -524,9 +518,8 @@ int chessGameGetCurrentPlayer(ChessGame* game) {
  * CHESS_WHITE_PLAYER if player == CHESS_BLACK_PLAYER.
  * CHESS_BLACK_PLAYER if player == CHESS_WHITE_PLAYER.
  */
-int chessGameGetOpponentByPlayer(int player){
-	return player == CHESS_WHITE_PLAYER ?
-			CHESS_BLACK_PLAYER : CHESS_WHITE_PLAYER;
+int chessGameGetOpponentByPlayer(int player) {
+	return player == CHESS_WHITE_PLAYER ? CHESS_BLACK_PLAYER : CHESS_WHITE_PLAYER;
 }
 
 /**
@@ -534,7 +527,7 @@ int chessGameGetOpponentByPlayer(int player){
  * @param game - the source game
  */
 void chessGameUpdateIsCheck(ChessGame* game) {
-	if (game != NULL )
+	if (game != NULL)
 		game->isCheck = isKingThreatened(game, chessGameGetCurrentPlayer(game));
 }
 
@@ -553,14 +546,17 @@ CHESS_GAME_MESSAGE chessGameGetCurrentState(ChessGame* game) {
 	for (int i = 0; i < CHESS_N_ROWS; i++)
 		for (int j = 0; j < CHESS_N_COLUMNS; j++) {
 			pos = (ChessPiecePosition ) { .row = i, .column = j };
-			if (chessGameGetCurrentPlayer(game)
-					== getPieceByPosition(game, pos).player) {
+			if (chessGameGetCurrentPlayer(game) == getPieceByPosition(game, pos).player) {
 				ArrayList* moves = chessGameGetMoves(game, pos);
-				if (moves != NULL && moves->actualSize > 0)
-					return game->isCheck ? CHESS_GAME_CHECK : CHESS_GAME_NONE;
+				if (moves != NULL) {
+					int size = moves->actualSize;
+					arrayListDestroy(moves);
+					if (size > 0)
+						return game->isCheck ? CHESS_GAME_CHECK : CHESS_GAME_NONE;
+				}
 			}
 		}
-	return game->isCheck ? CHESS_GAME_CHECKMATE : CHESS_GAME_DRAW;
+	return game->isCheck ? CHESS_GAME_CHECKMATE : CHESS_GAME_DRAW;;
 }
 
 /**

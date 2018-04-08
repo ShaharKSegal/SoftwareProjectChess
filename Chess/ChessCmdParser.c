@@ -152,7 +152,7 @@ static void addMoveArg(CmdCommand* command) {
 static void parseSettingsCommand(char* cmdStr, CmdCommand* command) {
 	if (!strcmp(cmdStr, GAME_MODE)) {
 		command->cmd = CMD_GAME_MODE;
-		addIntArg(command);
+		addStrArg(command);
 	} else if (!strcmp(cmdStr, DIFFICULTY)) {
 		command->cmd = CMD_DIFFICULTY;
 		addIntArg(command);

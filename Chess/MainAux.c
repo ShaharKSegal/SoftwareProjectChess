@@ -22,7 +22,7 @@
 #define SETTINGS_MESSAGE_SAVE_FILE "Game saved to: %s\n"
 #define SETTINGS_MESSAGE_DEFAULT "All settings reset to default\n"
 #define SETTINGS_MESSAGE_EXITING "Exiting...\n"
-#define SETTINGS_MESSAGE_STARTING_GAME "Starting game…\n"
+#define SETTINGS_MESSAGE_STARTING_GAME "Starting game...\n"
 #define SETTINGS_MESSAGE_FILE_ERROR "ERROR: executing the asked function on the relevant file has failed, please try again\n"
 
 /*
@@ -228,17 +228,17 @@ void gameMessageToOutput(CHESS_GAME_MESSAGE message, GameSettings* settings) {
 		printf(GAME_MESSAGE_EMPTY_HISTORY);
 		break;
 	case CHESS_GAME_UNDO_SUCCESS:
-		player =
-				(!settings->chessGame->currentPlayer) ?
-						PRINT_BLACK_USER : PRINT_WHITE_USER;
+		player = (!settings->chessGame->currentPlayer) ?
+		PRINT_BLACK_USER :
+															PRINT_WHITE_USER;
 		printf(GAME_MESSAGE_UNDO_MOVE, player);
 		break;
 	case CHESS_GAME_SUCCESS:
 		break;
 	case CHESS_GAME_CHECK:
-		player =
-				(!settings->chessGame->currentPlayer) ?
-						PRINT_BLACK_USER : PRINT_WHITE_USER;
+		player = (!settings->chessGame->currentPlayer) ?
+		PRINT_BLACK_USER :
+															PRINT_WHITE_USER;
 		printf(GAME_MESSAGE_CHECK, player);
 		break;
 	case CHESS_GAME_DRAW:
@@ -246,9 +246,9 @@ void gameMessageToOutput(CHESS_GAME_MESSAGE message, GameSettings* settings) {
 		GameSettingsDestroy(settings);
 		break;
 	case CHESS_GAME_CHECKMATE:
-		player =
-				(settings->chessGame->currentPlayer) ?
-						PRINT_BLACK_USER : PRINT_WHITE_USER;
+		player = (settings->chessGame->currentPlayer) ?
+		PRINT_BLACK_USER :
+														PRINT_WHITE_USER;
 		GameSettingsDestroy(settings);
 		printf(GAME_MESSAGE_CHECKMATE, player); //TODO check if not previous player
 		break;
@@ -262,7 +262,12 @@ void gameMessageToOutput(CHESS_GAME_MESSAGE message, GameSettings* settings) {
 		break;
 	case CHESS_GAME_INVALID_COMMAND:
 		printf(GAME_MESSAGE_INVALID_COMMAND);
+		break;
+	case CHESS_GAME_ERROR:
+		printCriticalError();
+		break;
 	}
+
 	return;
 }
 
@@ -298,7 +303,7 @@ void gameMessageToOutput(CHESS_GAME_MESSAGE message, GameSettings* settings) {
 		return false;
 	char* token;
 	token = strtok(str, MOVE_DELI);
-	if (token == NULL ) {
+	if (token == NULL) {
 		hadMemoryFailure();
 		return false;
 	}
@@ -308,7 +313,7 @@ void gameMessageToOutput(CHESS_GAME_MESSAGE message, GameSettings* settings) {
 	int i = *token - '0';
 	pos->row = i - 1;
 	token = strtok(NULL, MOVE_DELI);
-	if (token == NULL ) {
+	if (token == NULL) {
 		hadMemoryFailure();
 		return false;
 	}
@@ -404,6 +409,7 @@ int handlingGameCommand(GameSettings* settings, CmdCommand* command) {
 	ChessMove move;
 	switch (command->cmd) {
 	case CMD_RESET:
+		gameMessageToOutput(gameSettingsRestart(settings), settings);
 		return 1;
 	case CMD_SAVE:
 		if (!command->argTypeValid) {
@@ -415,15 +421,18 @@ int handlingGameCommand(GameSettings* settings, CmdCommand* command) {
 				settings, command);
 		return 1;
 	case CMD_UNDO:
-		move = arrayListGetLast(settings->chessGame->history); //first move to undo
 		if (arrayListIsEmpty(settings->chessGame->history)) {
 			gameMessageToOutput(CHESS_GAME_EMPTY_HISTORY, settings);
 			return 0;
 		}
+		move = arrayListGetLast(settings->chessGame->history); //first move to undo
 		handleUndoCommand(settings, &move);
-		move = arrayListGetLast(settings->chessGame->history);
-		if (!arrayListIsEmpty(settings->chessGame->history)) //second move to undo
+		//second move to undo
+		if (!arrayListIsEmpty(settings->chessGame->history)) {
+			move = arrayListGetLast(settings->chessGame->history);
 			handleUndoCommand(settings, &move);
+		}
+		chessGamePrintBoard(settings->chessGame, stdout);
 		return 1;
 	case CMD_GET_MOVES:
 		if (!command->argTypeValid) {
@@ -455,14 +464,14 @@ int handlingGameCommand(GameSettings* settings, CmdCommand* command) {
  */
 char* getUserInput() {
 	char* cmdStr = malloc(CMD_MAX_LINE_LENGTH);
-	if (cmdStr == NULL ) {
+	if (cmdStr == NULL) {
 		hadMemoryFailure();
-		return NULL ;
+		return NULL;
 	}
 	cmdStr[0] = 0; //Ensure empty line if no input delivered
 	fgets(cmdStr, CMD_MAX_LINE_LENGTH, stdin);
-	if (cmdStr == NULL )
-		return NULL ;
+	if (cmdStr == NULL)
+		return NULL;
 	return cmdStr;
 }
 
@@ -473,13 +482,13 @@ char* getUserInput() {
 CmdCommand* mainAuxGetUserCommand(bool isSettings) {
 	CmdCommand* command;
 	char* cmdStr = getUserInput();
-	if (cmdStr == NULL ) {
+	if (cmdStr == NULL) {
 		hadMemoryFailure();
-		return NULL ;
+		return NULL;
 	}
 	command = parserCmdParseLine(cmdStr, isSettings);
 	if (getHadMemoryFailure())
-		return NULL ;
+		return NULL;
 	free(cmdStr);
 	return command;
 }
@@ -502,7 +511,7 @@ char* typeToString(CHESS_PIECE_TYPE type) {
 	case CHESS_PIECE_KING:
 		return KING;
 	default:
-		return NULL ;
+		return NULL;
 
 	}
 }
@@ -580,7 +589,8 @@ int moveCommandResults(GameSettings* settings, int result) { //todo: check if it
  */
 char* mainAuxWhichPlayer(GameSettings* settings) {
 	return settings->chessGame->currentPlayer ?
-			PRINT_WHITE_USER : PRINT_BLACK_USER;
+	PRINT_WHITE_USER :
+												PRINT_BLACK_USER;
 }
 
 /*
@@ -590,7 +600,7 @@ char* mainAuxWhichPlayer(GameSettings* settings) {
  * 0 - else.
  */
 int mainAuxSettingsState(GameSettings* settings, CmdCommand* command,
-		bool* isSettings) {
+bool* isSettings) {
 	handlingSettingsCommand(settings, command);
 	if (command->argTypeValid) {
 		switch (command->cmd) {
@@ -602,7 +612,7 @@ int mainAuxSettingsState(GameSettings* settings, CmdCommand* command,
 				computerTurn(settings);
 			chessGamePrintBoard(settings->chessGame, stdout);
 			break;
-			default:
+		default:
 			break;
 		}
 	}
@@ -617,7 +627,7 @@ int mainAuxSettingsState(GameSettings* settings, CmdCommand* command,
  *  0  - else.
  */
 int mainAuxGameState(GameSettings* settings, CmdCommand* command,
-		bool* isSettings) {
+bool* isSettings) {
 	int result;
 	result = handlingGameCommand(settings, command);
 	switch (command->cmd) {
@@ -627,16 +637,14 @@ int mainAuxGameState(GameSettings* settings, CmdCommand* command,
 		printf(SETTINGS_STATE_LINE);
 		*isSettings = true;
 		break;
-	case CMD_UNDO:
-		if (result) //undo move executed successfully
-			if (settings->gameMode == ONE_PLAYER && !isUserTurn(settings))
-				chessGamePrintBoard(settings->chessGame, stdout);
-				return handleComputerTurn(settings);
-				return 0;
-				case CMD_MOVE:
-				return moveCommandResults(settings, result);
-				default: //save, get_moves
-						break;
-					}
+	case CMD_UNDO: //undo move executed successfully
+		if (result && settings->gameMode == ONE_PLAYER && !isUserTurn(settings))
+			return handleComputerTurn(settings);
+		return 0;
+	case CMD_MOVE:
+		return moveCommandResults(settings, result);
+	default: //save, get_moves
+		break;
+	}
 	return 0;
 }
