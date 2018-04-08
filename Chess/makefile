@@ -56,7 +56,11 @@ UI_GameWindow.o: UI_Auxiliary.h UI_Widget.h ChessErrorHandler.h UI_Button.h Ches
 	$(CC) $(COMP_FLAG) $(SDL_COMP_FLAG) -c $*.c
 UI_GameWindowController.o: ChessErrorHandler.h GameSettings.h UI_Window.h UI_WindowController.h UI_LoadGameWindowController.h UI_MainWindowController.h UI_GameWindow.h UI_GameWindowController.h UI_GameWindowController.c
 	$(CC) $(COMP_FLAG) $(SDL_COMP_FLAG) -c $*.c
-main.o: main.c UI_Auxiliary.h UI_Window.h UI_WindowController.h UI_MainWindowController.h ChessErrorHandler.h
+Minimax.o: ChessErrorHandler.h ChessGameCommon.h ChessGame.h GameSettings.h Minimax.h Minimax.c
+	$(CC) $(COMP_FLAG) $(SDL_COMP_FLAG) -c $*.c
+MainAux.o: ChessErrorHandler.h ChessCmdParser.h ChessGameCommon.h ChessGameMove.h ChessGame.h GameSettings.h SaveGame.h LoadGame.h Minimax.h MainAux.h MainAux.c
+	$(CC) $(COMP_FLAG) $(SDL_COMP_FLAG) -c $*.c
+main.o: main.c UI_Auxiliary.h UI_Window.h UI_WindowController.h UI_MainWindowController.h MainAux.h GameSettings.h ChessErrorHandler.h
 	$(CC) $(COMP_FLAG) $(SDL_COMP_FLAG) -c $*.c
 clean:
 	rm -f *.o $(EXEC)

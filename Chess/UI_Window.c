@@ -55,13 +55,13 @@ Window* windowBaseCreate(char* image) {
 	}
 	SDL_Window* sdlWindow = SDL_CreateWindow(UI_WINDOW_TITLE,
 			SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, UI_WINDOW_W,
-			UI_WINDOW_H, SDL_WINDOW_SHOWN);
+			UI_WINDOW_H, SDL_WINDOW_OPENGL);
 	if (sdlWindow == NULL ) {
 		hadSDLError();
 		return NULL ;
 	}
 	SDL_Renderer* renderer = SDL_CreateRenderer(sdlWindow, -1,
-			SDL_RENDERER_ACCELERATED);
+			SDL_RENDERER_SOFTWARE);
 	if (renderer == NULL ) {
 		SDL_DestroyWindow(sdlWindow);
 		hadSDLError();
@@ -109,7 +109,6 @@ void windowDraw(Window* window) {
 		windowBaseDraw(window);
 	else
 		window->drawWindow(window);
-
 }
 
 /**

@@ -57,7 +57,6 @@ static void loadSettings(GameSettings* settings, FILE* file) {
 	int userColor = CHESS_WHITE_PLAYER;
 	int count = 0;
 	int place;
-	//TODO: tell the difference between error and EOF.
 	while (fgets(line, sizeof(line), file) != NULL ) {
 		switch (count) {
 		case 0:

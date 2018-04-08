@@ -225,7 +225,7 @@ int charDifficultyLevelToInt(char* level) {
 		return DIFFICULTY_LEVEL_4_INT;
 	if (strcmp(level, DIFFICULTY_LEVEL_5)==0)
 		return DIFFICULTY_LEVEL_5_INT;
-	return NULL;
+	return -1;
 }
 
 char* userColorToChar(int userColor) {

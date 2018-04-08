@@ -70,7 +70,7 @@ static int consoleMain() {
 	printf(STARTING_PROGRAM_LINE);
 	GameSettings* settings = GameSettingsCreate();
 	printf(SETTINGS_STATE_LINE);
-	static int quitGame = false;
+	int quitGame = false;
 
 	if (settings == NULL || getHadMemoryFailure()) {
 		printCriticalError();
@@ -108,13 +108,13 @@ static int consoleMain() {
 int main(int argc, char** argv) {
 	int res;
 	if (argc > 2) {
-		printf("ERROR: Too many arguments!");
+		printf("ERROR: Too many arguments!\n");
 		res = EXIT_FAILURE;
 	}
 	else if (argc == 2) {
-		if (strcmp(argv[1], CHESS_FLAG_MAIN_GUI))
+		if (!strcmp(argv[1], CHESS_FLAG_MAIN_GUI))
 			res = guiMain();
-		else if (strcmp(argv[1], CHESS_FLAG_MAIN_CONSOLE))
+		else if (!strcmp(argv[1], CHESS_FLAG_MAIN_CONSOLE))
 			res = consoleMain();
 		else {
 			printf("ERROR: First argument must be %s or %s",

@@ -128,7 +128,6 @@ static UI_CONTROLLER_EVENT handleEventBackToMainMenu(
 		case UI_EVENT_ERROR:
 			return UI_CONTROLLER_EVENT_ERROR;
 		case UI_MSGBOX_EVENT_YES:
-			//TODO: Add to save handler where to go after
 			res = handleEventSave(controllerPtr, UI_MAIN_CONTROLLER);
 			break;
 		case UI_MSGBOX_EVENT_NO:
