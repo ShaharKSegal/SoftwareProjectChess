@@ -55,17 +55,20 @@ static TreeNode* createTreeNode(int depth) {
 }
 
 static bool isBetterScore(int newScore, int oldScore, int player) {
-	if (player == CHESS_WHITE_PLAYER) {
-		if (newScore > oldScore)
-			return true;
-		else
-			return false;
-	} else {
-		if (newScore < oldScore)
-			return true;
-		else
-			return false;
-	}
+	return player == CHESS_WHITE_PLAYER ?
+			newScore > oldScore : newScore < oldScore;
+	/*
+	 if (player == CHESS_WHITE_PLAYER) {
+	 if (newScore > oldScore)
+	 return true;
+	 else
+	 return false;
+	 } else {
+	 if (newScore < oldScore)
+	 return true;
+	 else
+	 return false;
+	 }*/
 }
 
 static bool isBetterLocation(ChessMove new_move, ChessMove current_move,
@@ -129,49 +132,46 @@ static int MinimaxRec(TreeNode* parent, ChessGame* game, int maxDepth,
 		for (int j = 0; j < CHESS_N_COLUMNS; j++) {
 			ChessPiece piece = game->gameBoard.position[i][j];
 
-			//going through all the player's pieces
-			if (piece.player == player) {
-				ChessPiecePosition position = { .row = i, .column = j };
-				ArrayList* moves = chessGameGetMoves(game, position); //all possible player moves for a specific piece
-
-				//going through all moves of a specific piece
-				for (int move = 0; move < moves->actualSize; move++) {
-					TreeNode* node = createTreeNode(depth);
-					if (node == NULL) {
-						hadMemoryFailure();
-						return 0;
-					}
-					node->piece = piece;
-					node->move.currentPosition =
-							arrayListGetAt(moves, move).currentPosition;
-					node->move.previousPosition = position;
-
-					chessGameSetMove(game, position,
-							node->move.currentPosition);
-					int oppPlayer = chessGameGetOpponentByPlayer(player);
-					node->score = MinimaxRec(node, game, maxDepth, depth + 1,
-							oppPlayer, idealScore);
-					chessGameUndoMove(game);
-
-					if (isBetterScore(node->score, idealScore, player)
-							|| isBetterLocation(node->move, parent->bestMove,
-									initialized, node->score, idealScore)) {
-						initialized = true;
-						idealScore = node->score;
-						parent->bestMove = node->move; //only relevant if parent is root
-						parent->bestPiece = node->piece;
-						if (isBetterScore(parentIdealScore, idealScore,
-								chessGameGetOpponentByPlayer(player))) {
-							free(node);
-							arrayListDestroy(moves);
-							return idealScore;
-						}
-
-					}
-					free(node);
-				}
-				arrayListDestroy(moves);
+			//skip if not the player's piece
+			if (piece.player != player) {
+				continue;
 			}
+			ChessPiecePosition position = { .row = i, .column = j };
+			ArrayList* moves = chessGameGetMoves(game, position); //all possible player moves for a specific piece
+
+			//going through all moves of a specific piece
+			for (int move = 0; move < moves->actualSize; move++) {
+				TreeNode* node = createTreeNode(depth);
+				if (node == NULL)
+					return 0;
+				node->piece = piece;
+				node->move.currentPosition =
+						arrayListGetAt(moves, move).currentPosition;
+				node->move.previousPosition = position;
+
+				chessGameSetMove(game, position, node->move.currentPosition);
+				node->score = MinimaxRec(node, game, maxDepth, depth + 1,
+						chessGameGetOpponentByPlayer(player), idealScore);
+				chessGameUndoMove(game);
+
+				if (isBetterScore(node->score, idealScore, player)
+						|| isBetterLocation(node->move, parent->bestMove,
+								initialized, node->score, idealScore)) {
+					initialized = true;
+					idealScore = node->score;
+					parent->bestMove = node->move; //only relevant if parent is root
+					parent->bestPiece = node->piece;
+					if (isBetterScore(parentIdealScore, idealScore,
+							chessGameGetOpponentByPlayer(player))) {
+						free(node);
+						arrayListDestroy(moves);
+						return idealScore;
+					}
+
+				}
+				free(node);
+			}
+			arrayListDestroy(moves);
 		}
 	}
 	return idealScore;

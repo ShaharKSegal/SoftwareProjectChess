@@ -2,7 +2,8 @@ CC = gcc
 OBJS = ChessErrorHandler.o ChessGameCommon.o ChessCmdParser.o ArrayList.o ChessGameMove.o ChessGame.o GameSettings.o \
 LoadGame.o SaveGame.o UI_Widget.o UI_Button.o UI_Auxiliary.o UI_Window.o UI_WindowController.o \
 UI_MainWindow.o UI_MainWindowController.o UI_SettingsWindow.o UI_SettingsWindowController.o \
-UI_LoadGameWindow.o UI_LoadGameWindowController.o UI_GameWindow.o UI_GameWindowController.o main.o
+UI_LoadGameWindow.o UI_LoadGameWindowController.o UI_GameWindow.o UI_GameWindowController.o \
+Minimax.o MainAux.o main.o
  
 EXEC = chessprog
 COMP_FLAG = -std=c99 -Wall -Wextra \
@@ -54,7 +55,7 @@ UI_LoadGameWindowController.o: ChessErrorHandler.h ChessGame.h GameSettings.h Sa
 	$(CC) $(COMP_FLAG) $(SDL_COMP_FLAG) -c $*.c
 UI_GameWindow.o: UI_Auxiliary.h UI_Widget.h ChessErrorHandler.h UI_Button.h ChessGame.h UI_Window.h UI_GameWindow.h UI_GameWindow.c
 	$(CC) $(COMP_FLAG) $(SDL_COMP_FLAG) -c $*.c
-UI_GameWindowController.o: ChessErrorHandler.h GameSettings.h UI_Window.h UI_WindowController.h UI_LoadGameWindowController.h UI_MainWindowController.h UI_GameWindow.h UI_GameWindowController.h UI_GameWindowController.c
+UI_GameWindowController.o: ChessErrorHandler.h GameSettings.h Minimax.h UI_Window.h UI_WindowController.h UI_LoadGameWindowController.h UI_MainWindowController.h UI_GameWindow.h UI_GameWindowController.h UI_GameWindowController.c
 	$(CC) $(COMP_FLAG) $(SDL_COMP_FLAG) -c $*.c
 Minimax.o: ChessErrorHandler.h ChessGameCommon.h ChessGame.h GameSettings.h Minimax.h Minimax.c
 	$(CC) $(COMP_FLAG) $(SDL_COMP_FLAG) -c $*.c

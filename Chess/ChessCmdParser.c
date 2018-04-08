@@ -55,14 +55,6 @@ static char* tokenToCharPtr() {
 }
 
 /**
- * Checks if there's another token in the current strtok.
- */
-static bool hasMoreTokens() {
-	char* token = strtok(NULL, DELI);
-	return token != NULL ;
-}
-
-/**
  * Sets the command's argTypeValid field with the given isValid value;
  */
 static void setArgTypeValid(CmdCommand* command, bool isValid) {
@@ -280,8 +272,6 @@ CmdCommand* parserCmdParseLine(char* str, bool isSettings) {
 	if (getHadMemoryFailure()) {
 		return NULL ;
 	}
-	if (hasMoreTokens())
-		setArgTypeValid(command, false);
 	return command;
 }
 
