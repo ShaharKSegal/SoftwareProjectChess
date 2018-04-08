@@ -22,7 +22,7 @@
 #define KING "king"
 
 
-#define STARTING_PROGRAM_LINE  "Chess\n-------\n"
+#define STARTING_PROGRAM_LINE  " Chess\n-------\n"
 #define SETTINGS_STATE_LINE "Specify game settings or type 'start' to begin a game with the current settings:\n"
 
 /*

@@ -39,8 +39,8 @@ static const int PRINT_GAME_LINE_SIZE = 20;
 static const char PRINT_GAME_ZERO_CHAR = '0';
 static const char PRINT_GAME_VERTICAL_BAR = '|';
 static const char PRINT_GAME_WHITESPACE = ' ';
-#define PRINT_GAME_BEFORE_LAST_LINE "  -----------------  \n"
-#define PRINT_GAME_LAST_LINE "   A B C D E F G H   \n"
+#define PRINT_GAME_BEFORE_LAST_LINE "  -----------------\n"
+#define PRINT_GAME_LAST_LINE "   A B C D E F G H\n"
 
 /**
  * Declaration of history size

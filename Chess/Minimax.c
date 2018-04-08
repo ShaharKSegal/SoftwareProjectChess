@@ -73,16 +73,23 @@ bool initialized, int newScore, int idealScore) {
 	if (initialized) {
 		if (newScore != idealScore)
 			return false;
-		if (new_move.previousPosition.column < current_move.previousPosition.column)
+		if (new_move.previousPosition.column
+				< current_move.previousPosition.column)
 			return true;
-		else if (new_move.previousPosition.column == current_move.previousPosition.column)
-			if (new_move.previousPosition.row < current_move.previousPosition.row)
+		else if (new_move.previousPosition.column
+				== current_move.previousPosition.column)
+			if (new_move.previousPosition.row
+					< current_move.previousPosition.row)
 				return true;
-			else if (new_move.previousPosition.row == current_move.previousPosition.row)
-				if (new_move.currentPosition.column < current_move.currentPosition.column)
+			else if (new_move.previousPosition.row
+					== current_move.previousPosition.row)
+				if (new_move.currentPosition.column
+						< current_move.currentPosition.column)
 					return true;
-				else if (new_move.currentPosition.column == current_move.currentPosition.column)
-					if (new_move.currentPosition.row < current_move.currentPosition.row)
+				else if (new_move.currentPosition.column
+						== current_move.currentPosition.column)
+					if (new_move.currentPosition.row
+							< current_move.currentPosition.row)
 						return true;
 					else
 						return false;
@@ -96,7 +103,8 @@ bool initialized, int newScore, int idealScore) {
 	return true;
 }
 
-static int MinimaxValidation(int depth, int maxDepth, ChessGame* game, int player) {
+static int MinimaxValidation(int depth, int maxDepth, ChessGame* game,
+		int player) {
 	CHESS_GAME_MESSAGE msg = chessGameGetCurrentState(game);
 	if (depth > maxDepth)
 		return scoringFunction(&(game->gameBoard));
@@ -107,9 +115,11 @@ static int MinimaxValidation(int depth, int maxDepth, ChessGame* game, int playe
 	return INT_MAX;
 }
 
-static int MinimaxRec(TreeNode* parent, ChessGame* game, int maxDepth, int depth, int player,
-		int parentIdealScore) {
-	if (depth > maxDepth || chessGameGetCurrentState(game) != CHESS_GAME_NONE)
+static int MinimaxRec(TreeNode* parent, ChessGame* game, int maxDepth,
+		int depth, int player, int parentIdealScore) {
+	if (depth > maxDepth
+			|| (chessGameGetCurrentState(game) != CHESS_GAME_NONE
+					&& chessGameGetCurrentState(game) != CHESS_GAME_CHECK))
 		return MinimaxValidation(depth, maxDepth, game, player);
 
 	int idealScore = player == CHESS_WHITE_PLAYER ? INT_MIN : INT_MAX;
@@ -130,21 +140,22 @@ static int MinimaxRec(TreeNode* parent, ChessGame* game, int maxDepth, int depth
 					if (node == NULL) {
 						hadMemoryFailure();
 						return 0;
-
 					}
 					node->piece = piece;
-					node->move.currentPosition = arrayListGetAt(moves, move).currentPosition;
+					node->move.currentPosition =
+							arrayListGetAt(moves, move).currentPosition;
 					node->move.previousPosition = position;
 
-					chessGameSetMove(game, position, node->move.currentPosition);
+					chessGameSetMove(game, position,
+							node->move.currentPosition);
 					int oppPlayer = chessGameGetOpponentByPlayer(player);
-					node->score = MinimaxRec(node, game, maxDepth, depth + 1, oppPlayer,
-							idealScore);
+					node->score = MinimaxRec(node, game, maxDepth, depth + 1,
+							oppPlayer, idealScore);
 					chessGameUndoMove(game);
 
 					if (isBetterScore(node->score, idealScore, player)
-							|| isBetterLocation(node->move, parent->bestMove, initialized,
-									node->score, idealScore)) {
+							|| isBetterLocation(node->move, parent->bestMove,
+									initialized, node->score, idealScore)) {
 						initialized = true;
 						idealScore = node->score;
 						parent->bestMove = node->move; //only relevant if parent is root
@@ -168,11 +179,12 @@ static int MinimaxRec(TreeNode* parent, ChessGame* game, int maxDepth, int depth
 
 TreeNode* chessGameMinimax(GameSettings* settings) {
 	TreeNode* root = createTreeNode(0);
-	ChessGame* copiedGame = chessGameCopyEmptyHistory(settings->chessGame, settings->maxDepth);
+	ChessGame* copiedGame = chessGameCopyEmptyHistory(settings->chessGame,
+			settings->maxDepth);
 	int player = copiedGame->currentPlayer;
 	int worstScore = player == CHESS_WHITE_PLAYER ? INT_MAX : INT_MIN;
-	root->score = MinimaxRec(root, copiedGame, settings->maxDepth, root->depth + 1, player,
-			worstScore);
+	root->score = MinimaxRec(root, copiedGame, settings->maxDepth,
+			root->depth + 1, player, worstScore);
 	if (getHadMemoryFailure())
 		return NULL;
 	chessGameDestroy(copiedGame);

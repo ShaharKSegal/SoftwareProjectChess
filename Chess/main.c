@@ -4,6 +4,8 @@
 #include <stdbool.h>
 #include <stdlib.h>
 #include <stdbool.h>
+#include <string.h>
+#include "Bufferset.h"
 #include "UI_Window.h"
 #include "UI_Auxiliary.h"
 #include "UI_WindowController.h"
@@ -106,6 +108,7 @@ static int consoleMain() {
 }
 
 int main(int argc, char** argv) {
+	BUFF_SET();
 	int res;
 	if (argc > 2) {
 		printf("ERROR: Too many arguments!\n");

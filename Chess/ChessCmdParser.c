@@ -1,5 +1,6 @@
 #include <string.h>
 #include <stdlib.h>
+#include <stdio.h>
 #include "ChessCmdParser.h"
 
 #define DELI " \t\r\n"
@@ -216,6 +217,11 @@ static CmdCommand* parseCommand(char* cmdStr, bool isSettings) {
 		hadMemoryFailure();
 		return NULL ;
 	}
+	if (cmdStr == NULL) {
+		command->cmd = CMD_INVALID;
+		setArgTypeValid(command, false);
+		return command;
+	}
 	setArgTypeValid(command, true);
 	command->arg = NULL;
 	if (!strcmp(cmdStr, QUIT))
@@ -270,8 +276,6 @@ CmdCommand* parserCmdParseLine(char* str, bool isSettings) {
 	strcpy(str2, str);
 	char* token;
 	token = strtok(str2, DELI);
-	if (token == NULL )
-		return NULL ;
 	CmdCommand* command = parseCommand(token, isSettings);
 	if (getHadMemoryFailure()) {
 		return NULL ;

@@ -5,6 +5,7 @@
 #include "UI_GameWindowController.h"
 #include "UI_LoadGameWindowController.h"
 #include "UI_MainWindowController.h"
+#include "Minimax.h"
 #include "ChessErrorHandler.h"
 
 typedef struct chess_game_controller_data_t {
@@ -26,9 +27,9 @@ static void setUnsavedChanges(WindowController* controller, bool value) {
 static GameWindowControllerData* createGameWindowControllerData(
 		GameSettings* settings) {
 	GameWindowControllerData* data = malloc(sizeof(GameWindowControllerData));
-	if (data == NULL ) {
+	if (data == NULL) {
 		hadMemoryFailure();
-		return NULL ;
+		return NULL;
 	}
 	data->gameSettings = settings;
 	data->unsavedChanges = false;
@@ -37,14 +38,14 @@ static GameWindowControllerData* createGameWindowControllerData(
 }
 
 static void destroyGameWindowControllerData(GameWindowControllerData* data) {
-	if (data == NULL )
+	if (data == NULL)
 		return;
 	GameSettingsDestroy(data->gameSettings);
 	free(data);
 }
 
 static void gameWindowControllerDestroy(WindowController* controller) {
-	if (controller == NULL || controller->window == NULL )
+	if (controller == NULL || controller->window == NULL)
 		return;
 	windowDestroy(controller->window);
 	destroyGameWindowControllerData(controller->data);
@@ -55,7 +56,7 @@ static UI_CONTROLLER_EVENT handleEventRestart(WindowController* controller) {
 	GameSettings* settings =
 			getGameWindowControllerData(controller)->gameSettings;
 	ChessGame* game = chessGameCreate();
-	if (game == NULL )
+	if (game == NULL)
 		return UI_CONTROLLER_EVENT_ERROR;
 	Window* window = controller->window;
 	GameWindowData* winData = gameWindowGetData(controller->window);
@@ -75,11 +76,11 @@ static UI_CONTROLLER_EVENT handleEventLoad(WindowController** controllerPtr) {
 	GameWindowControllerData* data = getGameWindowControllerData(
 			*controllerPtr);
 	GameSettings* settings = gameSettingsCopy(data->gameSettings);
-	if (settings == NULL )
+	if (settings == NULL)
 		return UI_CONTROLLER_EVENT_ERROR;
 	WindowController* controller = loadGameWindowControllerCreate(settings,
 			UI_GAME_CONTROLLER);
-	if (controller == NULL )
+	if (controller == NULL)
 		return UI_CONTROLLER_EVENT_ERROR;
 	windowControllerDestroy(*controllerPtr);
 	*controllerPtr = controller;
@@ -91,11 +92,11 @@ static UI_CONTROLLER_EVENT handleEventSave(WindowController** controllerPtr,
 	GameWindowControllerData* data = getGameWindowControllerData(
 			*controllerPtr);
 	GameSettings* settings = gameSettingsCopy(data->gameSettings);
-	if (settings == NULL )
+	if (settings == NULL)
 		return UI_CONTROLLER_EVENT_ERROR;
 	WindowController* controller = saveGameWindowControllerCreate(settings,
 			UI_GAME_CONTROLLER, nextMode);
-	if (controller == NULL )
+	if (controller == NULL)
 		return UI_CONTROLLER_EVENT_ERROR;
 	windowControllerDestroy(*controllerPtr);
 	*controllerPtr = controller;
@@ -149,22 +150,17 @@ static UI_CONTROLLER_EVENT handleEventExit(WindowController** controllerPtr) {
 	if (!getGameWindowControllerData(*controllerPtr)->unsavedChanges)
 		return UI_CONTROLLER_EVENT_QUTT;
 	UI_EVENT event = unsavedChangesPopup();
-	UI_CONTROLLER_EVENT res = UI_CONTROLLER_EVENT_INVOKE_DRAW;
 	switch (event) {
 	case UI_EVENT_ERROR:
 		return UI_CONTROLLER_EVENT_ERROR;
 	case UI_MSGBOX_EVENT_YES:
-		res = handleEventSave(controllerPtr, UI_QUIT_CONTROLLER);
+		return handleEventSave(controllerPtr, UI_QUIT_CONTROLLER);
 		break;
 	case UI_MSGBOX_EVENT_NO:
 		return UI_CONTROLLER_EVENT_QUTT;
 	default: //Include UI_MSGBOX_EVENT_CANCEL, UI_EVENT_NONE.
 		return UI_CONTROLLER_EVENT_INVOKE_DRAW;
 	}
-	if (res == UI_CONTROLLER_EVENT_ERROR)
-		return res;
-	return UI_CONTROLLER_EVENT_QUTT;
-
 }
 
 static UI_CONTROLLER_EVENT handleEventGetMoves(WindowController* controller) {
@@ -172,7 +168,7 @@ static UI_CONTROLLER_EVENT handleEventGetMoves(WindowController* controller) {
 	ChessGame* game = data->gameSettings->chessGame;
 	GameWindowData* winData = gameWindowGetData(controller->window);
 	ArrayList* moves = chessGameGetMoves(game, winData->sourcePos);
-	if (moves == NULL ) {
+	if (moves == NULL) {
 		if (getHadMemoryFailure())
 			return UI_CONTROLLER_EVENT_ERROR;
 		return UI_CONTROLLER_EVENT_INVOKE_DRAW;
@@ -192,12 +188,18 @@ static UI_CONTROLLER_EVENT handleEventPieceDrag(WindowController* controller) {
 	ChessGame* game = data->gameSettings->chessGame;
 	CHESS_GAME_MESSAGE msg = chessGameSetMove(game, sourcePos, targetPos);
 	if (msg == CHESS_GAME_SUCCESS) {
+		setUnsavedChanges(controller, true);
 		msg = chessGameStatePopup(game);
 		if (msg == CHESS_GAME_NONE || msg == CHESS_GAME_CHECK) {
 			if (data->gameSettings->gameMode == ONE_PLAYER) {
-				//TODO: perform next move for computer.
+				TreeNode* root = chessGameMinimax(data->gameSettings);
+				if (root == NULL)
+					return UI_CONTROLLER_EVENT_ERROR;
+				ChessMove move = root->bestMove;
+				chessGameSetMove(game, move.previousPosition,
+						move.currentPosition);
+				msg = chessGameStatePopup(game);
 			}
-			setUnsavedChanges(controller, true);
 		}
 	}
 	bool res = gameWindowRefreshWidgets(controller->window);
@@ -239,17 +241,17 @@ static UI_CONTROLLER_EVENT gameWindowControllerHandleEvent(
 
 WindowController* gameWindowControllerCreate(GameSettings* settings) {
 	GameWindowControllerData* data = createGameWindowControllerData(settings);
-	if (data == NULL )
-		return NULL ;
+	if (data == NULL)
+		return NULL;
 	Window* window = gameWindowCreate((ChessGame*) settings->chessGame);
-	if (window == NULL )
-		return NULL ;
+	if (window == NULL)
+		return NULL;
 	WindowController* controller = windowControllerCreate(window, data,
 			gameWindowControllerHandleEvent, gameWindowControllerDestroy);
-	if (controller == NULL ) {
+	if (controller == NULL) {
 		windowDestroy(window);
 		destroyGameWindowControllerData(data);
-		return NULL ;
+		return NULL;
 	}
 	return controller;
 }

@@ -21,7 +21,7 @@
 #define SETTINGS_MESSAGE_FILE_SAVE_FAILURE "File cannot be created or modified\n"
 #define SETTINGS_MESSAGE_SAVE_FILE "Game saved to: %s\n"
 #define SETTINGS_MESSAGE_DEFAULT "All settings reset to default\n"
-#define SETTINGS_MESSAGE_EXITING "Exiting...\n"
+#define SETTINGS_MESSAGE_EXITING "Exiting..."
 #define SETTINGS_MESSAGE_STARTING_GAME "Starting game...\n"
 #define SETTINGS_MESSAGE_FILE_ERROR "ERROR: executing the asked function on the relevant file has failed, please try again\n"
 
@@ -40,7 +40,7 @@
 #define GAME_MESSAGE_DRAW_GAME "The game ends in a draw\n"
 #define GAME_MESSAGE_CHECKMATE "Checkmate! %s player wins the game\n"
 #define GAME_MESSAGE_RESTARTING "Restarting...\n"
-#define GAME_MESSAGE_EXITING "Exiting...\n"
+#define GAME_MESSAGE_EXITING "Exiting..."
 #define GAME_MESSAGE_INVALID_COMMAND "Error: Invalid Command\n"
 
 char columnIntToChar(int column) {
