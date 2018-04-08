@@ -3,10 +3,12 @@
 #include "ArrayList.h"
 #include "ChessErrorHandler.h"
 
+
+
 /**
  * Basic check if arr is not null and index not out of bound
  */
-bool isValidIndex(ArrayList* arr, int index) {
+static bool isValidIndex(ArrayList* arr, int index) {
 	return arr == NULL || index < 0 || arr->actualSize < index;
 }
 /**
