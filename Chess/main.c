@@ -70,7 +70,7 @@ static int guiMain() {
 static int consoleMain() {
 	bool isSettings = true;
 	printf(STARTING_PROGRAM_LINE);
-	GameSettings* settings = GameSettingsCreate();
+	GameSettings* settings = gameSettingsCreate();
 	printf(SETTINGS_STATE_LINE);
 	int quitGame = false;
 
@@ -80,7 +80,7 @@ static int consoleMain() {
 	}
 	CmdCommand* command = mainAuxGetUserCommand(isSettings);
 	if (command == NULL ) {
-		GameSettingsDestroy(settings);
+		gameSettingsDestroy(settings);
 		printCriticalError();
 		return EXIT_FAILURE;
 	}
@@ -101,7 +101,7 @@ static int consoleMain() {
 	}
 	if (getHadMemoryFailure()) {
 		printCriticalError();
-		GameSettingsDestroy(settings);
+		gameSettingsDestroy(settings);
 		return EXIT_FAILURE;
 	}
 	return EXIT_SUCCESS;

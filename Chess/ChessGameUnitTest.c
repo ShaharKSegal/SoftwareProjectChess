@@ -328,18 +328,6 @@ static bool ChessGameLoadGameTest(){
 }
 */
 
-static bool ChessGameMinimaxTest(){
-	GameSettings* settings = GameSettingsCreate();
-	changeDifficulty(settings, DIFFICULTY_LEVEL_1_INT);
-	TreeNode* root = chessGameMinimax(settings);
-	if (root == NULL)
-		printf("root is null :(");
-	printf("success!\n");
-	printf("%d\n", root->score);
-	//printf("%c\n", root->bestPiece.representation);
-	return true;
-}
-
 int main1() {
 
 	//RUN_TEST(ChessGameBasicTest);
@@ -349,7 +337,7 @@ int main1() {
 	//RUN_TEST(ChessGameSaveGameTest);
 	//printf("//GameLoad///\n");
 	//RUN_TEST(ChessGameLoadGameTest);
-	RUN_TEST(ChessGameMinimaxTest);
+	//RUN_TEST(ChessGameMinimaxTest);
 
 	/*
 	 RUN_TEST(ChessGameUndoMoveTest);

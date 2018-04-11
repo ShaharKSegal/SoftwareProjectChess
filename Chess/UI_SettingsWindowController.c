@@ -37,31 +37,31 @@ static UI_CONTROLLER_EVENT settingsWindowControllerHandleEvent(
 		return *controllerPtr != NULL ?
 				UI_CONTROLLER_EVENT_INVOKE_DRAW : UI_CONTROLLER_EVENT_ERROR;
 	case UI_BUTTON_EVENT_ONE_PLAYER_MODE:
-		changeGameMode(settings, ONE_PLAYER);
+		gameSettingsChangeGameMode(settings, ONE_PLAYER);
 		return UI_CONTROLLER_EVENT_INVOKE_DRAW;
 	case UI_BUTTON_EVENT_TWO_PLAYER_MODE:
-		changeGameMode(settings, TWO_PLAYERS);
+		gameSettingsChangeGameMode(settings, TWO_PLAYERS);
 		return UI_CONTROLLER_EVENT_INVOKE_DRAW;
 	case UI_BUTTON_EVENT_AMATEUR_MODE:
-		changeDifficulty(settings, DIFFICULTY_LEVEL_1_INT);
+		gameSettingsChangeDifficulty(settings, DIFFICULTY_LEVEL_1_INT);
 		return UI_CONTROLLER_EVENT_INVOKE_DRAW;
 	case UI_BUTTON_EVENT_EASY_MODE:
-		changeDifficulty(settings, DIFFICULTY_LEVEL_2_INT);
+		gameSettingsChangeDifficulty(settings, DIFFICULTY_LEVEL_2_INT);
 		return UI_CONTROLLER_EVENT_INVOKE_DRAW;
 	case UI_BUTTON_EVENT_MODERATE_MODE:
-		changeDifficulty(settings, DIFFICULTY_LEVEL_3_INT);
+		gameSettingsChangeDifficulty(settings, DIFFICULTY_LEVEL_3_INT);
 		return UI_CONTROLLER_EVENT_INVOKE_DRAW;
 	case UI_BUTTON_EVENT_HARD_MODE:
-		changeDifficulty(settings, DIFFICULTY_LEVEL_4_INT);
+		gameSettingsChangeDifficulty(settings, DIFFICULTY_LEVEL_4_INT);
 		return UI_CONTROLLER_EVENT_INVOKE_DRAW;
 	case UI_BUTTON_EVENT_EXPERT_MODE:
-		changeDifficulty(settings, DIFFICULTY_LEVEL_5_INT);
+		gameSettingsChangeDifficulty(settings, DIFFICULTY_LEVEL_5_INT);
 		return UI_CONTROLLER_EVENT_INVOKE_DRAW;
 	case UI_BUTTON_EVENT_WHITE_COLOR_MODE:
-		changeUserColor(settings, CHESS_WHITE_PLAYER);
+		gameSettingsChangeUserColor(settings, CHESS_WHITE_PLAYER);
 		return UI_CONTROLLER_EVENT_INVOKE_DRAW;
 	case UI_BUTTON_EVENT_BLACK_COLOR_MODE:
-		changeUserColor(settings, CHESS_BLACK_PLAYER);
+		gameSettingsChangeUserColor(settings, CHESS_BLACK_PLAYER);
 		return UI_CONTROLLER_EVENT_INVOKE_DRAW;
 	default:
 
@@ -77,7 +77,7 @@ static void settingsWindowControllerDestroy(WindowController* controller) {
 	if (controller == NULL || controller->window == NULL )
 		return;
 	windowDestroy(controller->window);
-	GameSettingsDestroy((GameSettings*) controller->data);
+	gameSettingsDestroy((GameSettings*) controller->data);
 	free(controller);
 }
 
@@ -89,12 +89,12 @@ static void settingsWindowControllerDestroy(WindowController* controller) {
  * NULL if some error occurred, otherwise a WindowController* of the settings menu.
  */
 WindowController* settingsWindowControllerCreate() {
-	GameSettings* settings = GameSettingsCreate();
+	GameSettings* settings = gameSettingsCreate();
 	if (settings == NULL )
 		return NULL ;
 	Window* window = settingsWindowCreate();
 	if (window == NULL ) {
-		GameSettingsDestroy(settings);
+		gameSettingsDestroy(settings);
 		return NULL ;
 	}
 	WindowController* controller = windowControllerCreate(window, settings,
@@ -102,7 +102,7 @@ WindowController* settingsWindowControllerCreate() {
 			settingsWindowControllerDestroy);
 	if (controller == NULL ) {
 		windowDestroy(window);
-		GameSettingsDestroy(settings);
+		gameSettingsDestroy(settings);
 		return NULL ;
 	}
 	return controller;

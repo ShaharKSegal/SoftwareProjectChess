@@ -11,17 +11,6 @@
 #include "ChessCmdParser.h"
 #include "GameSettings.h"
 
-#define MOVE_DELI ",<>"
-
-
-#define PAWN "pawn"
-#define KNIGHT "knight"
-#define ROOK "rook"
-#define BISHOP "bishop"
-#define QUEEN "queen"
-#define KING "king"
-
-
 #define STARTING_PROGRAM_LINE  " Chess\n-------\n"
 #define SETTINGS_STATE_LINE "Specify game settings or type 'start' to begin a game with the current settings:\n"
 

@@ -3,6 +3,49 @@
 #include <stdlib.h>
 #include <string.h>
 
+
+/*
+ * Converts the user color integer value to its string name.
+ *
+ * @param userColor - the user's color.
+ *
+ * @return
+ * the string compatible with the given int,"white/n" or "black/n";
+ */
+static char* userColorToChar(int userColor) {
+	if (userColor == CHESS_WHITE_PLAYER)
+		return WHITE_USER;
+	return BLACK_USER;
+}
+
+/*
+ * Prints the settings relevant to 1-game mode.
+ */
+static void printSettingOnePlayer(FILE* file, GameSettings* settings) {
+	if (fprintf(file, "%s", GAME_MODE_1_PLAYER_LINE) < 0) {
+		hadFileFailure();
+		return;
+	}
+	if (fprintf(file, "%s %s\n", DIFFICULTY_LEVEL_IINE,
+			gameSettingsDifficultyLevelToString(settings->maxDepth)) < 0) {
+		hadFileFailure();
+		return;
+	}
+	if (fprintf(file, "%s %s", USER_COLOR_LINE,
+			userColorToChar(settings->userColor)) < 0) {
+		hadFileFailure();
+	}
+}
+
+/*
+ * Prints the settings relevant to 2-game mode.
+ */
+static void printSettingTwoPlayers(FILE* file) {
+	if (fprintf(file, "%s", GAME_MODE_2_PLAYER_LINE) < 0) {
+		hadFileFailure();
+	}
+}
+
 /**
  * Creates a new game settings.
  *
@@ -10,7 +53,7 @@
  * NULL if a memory allocation failure occurs.
  * Otherwise, a new game settings instance is returned.
  */
-GameSettings* GameSettingsCreate() {
+GameSettings* gameSettingsCreate() {
 	ChessGame* game = chessGameCreate();
 	if (game == NULL)
 		return NULL;
@@ -60,7 +103,7 @@ GameSettings* gameSettingsCopy(GameSettings* src) {
  *
  * @param settings - the source settings
  */
-void GameSettingsDestroy(GameSettings* settings) {
+void gameSettingsDestroy(GameSettings* settings) {
 	if (settings == NULL)
 		return;
 	chessGameDestroy(settings->chessGame);
@@ -76,7 +119,7 @@ void GameSettingsDestroy(GameSettings* settings) {
  * GAME_SETTINGS_USER_COLOR_SUCCESS  - On success. The user color is updated.
  * GAME_SETTINGS_INVALID_COMMAND     - if the game mode is not one player.
  */
-GAME_SETTINGS_MESSAGE changeUserColor(GameSettings* settings, int userColor) {
+GAME_SETTINGS_MESSAGE gameSettingsChangeUserColor(GameSettings* settings, int userColor) {
 	if (settings->gameMode == ONE_PLAYER) {
 		if (userColor != CHESS_WHITE_PLAYER && userColor != CHESS_BLACK_PLAYER)
 			return GAME_SETTINGS_WRONG_USER_COLOR;
@@ -94,7 +137,7 @@ GAME_SETTINGS_MESSAGE changeUserColor(GameSettings* settings, int userColor) {
  * GAME_SETTINGS_WRONG_GAME_MODE    - if the new game mode is not ONE_PLAYER nor TWO_PLAYERS.
  * GAME_SETTINGS_GAME_MODE_SUCCESS  - On success. The game mode is updated.
  */
-GAME_SETTINGS_MESSAGE changeGameMode(GameSettings* settings, char gameMode) {
+GAME_SETTINGS_MESSAGE gameSettingsChangeGameMode(GameSettings* settings, char gameMode) {
 	if (gameMode == ONE_PLAYER || gameMode == TWO_PLAYERS) {
 		settings->gameMode = gameMode;
 		return GAME_SETTINGS_GAME_MODE_SUCCESS;
@@ -111,7 +154,7 @@ GAME_SETTINGS_MESSAGE changeGameMode(GameSettings* settings, char gameMode) {
  * GAME_SETTINGS_DIFFIVULTY_LEVEL_SUCCESS  - On success. The game difficulty level is updated.
  * GAME_SETTINGS_INVALID_COMMAND           - if the game mode is not one player.
  */
-GAME_SETTINGS_MESSAGE changeDifficulty(GameSettings* settings, int difficulty) {
+GAME_SETTINGS_MESSAGE gameSettingsChangeDifficulty(GameSettings* settings, int difficulty) {
 	if (settings->gameMode == ONE_PLAYER) {
 		if (difficulty < 6 && difficulty > 0) {
 			settings->maxDepth = difficulty;
@@ -123,40 +166,12 @@ GAME_SETTINGS_MESSAGE changeDifficulty(GameSettings* settings, int difficulty) {
 }
 
 /*
- * Prints the settings relevant to 1-game mode.
- */
-static void printSettingOnePlayer(FILE* file, GameSettings* settings) {
-	if (fprintf(file, "%s", GAME_MODE_1_PLAYER_LINE) < 0) {
-		hadFileFailure();
-		return;
-	}
-	if (fprintf(file, "%s %s\n", DIFFICULTY_LEVEL_IINE,
-			gameSettingsDifficultyLevelToString(settings->maxDepth)) < 0) {
-		hadFileFailure();
-		return;
-	}
-	if (fprintf(file, "%s %s", USER_COLOR_LINE,
-			userColorToChar(settings->userColor)) < 0) {
-		hadFileFailure();
-	}
-}
-
-/*
- * Prints the settings relevant to 2-game mode.
- */
-static void printSettingTwoPlayers(FILE* file) {
-	if (fprintf(file, "%s", GAME_MODE_2_PLAYER_LINE) < 0) {
-		hadFileFailure();
-	}
-}
-
-/*
  * Prints the settings that are shared by the two game modes, and handles each separately.
  *
  * @param settings - the current game settings, file - the file to write the settings to.
  *
  */
-void printSettings(FILE* file, GameSettings* settings) {
+void gameSettingsPrint(FILE* file, GameSettings* settings) {
 	if (fprintf(file, "%s\n", SETTINGS_LINE) < 0) {
 		hadFileFailure();
 		return;
@@ -180,7 +195,7 @@ void printSettings(FILE* file, GameSettings* settings) {
  * GAME_SETTINGS_PRINT_SETTINGS_SUCCESS - otherwise.
  */
 GAME_SETTINGS_MESSAGE gameSettingsPrintSettingsToUser(GameSettings* settings) {
-	printSettings(stdout, settings);
+	gameSettingsPrint(stdout, settings);
 	if (getHadFileFailure())
 		return GAME_SETTINGS_FILE_FAILURE;
 	return GAME_SETTINGS_PRINT_SUCCESS;
@@ -210,7 +225,7 @@ GAME_SETTINGS_MESSAGE gameSettingsDefaulter(GameSettings* settings) {
  * GAME_SETTINGS_QUIT_SUCCESS - the program is exiting.
  */
 GAME_SETTINGS_MESSAGE gameSettingsQuitGameSettings(GameSettings* settings) {
-	GameSettingsDestroy(settings);
+	gameSettingsDestroy(settings);
 	return GAME_SETTINGS_QUIT_SUCCESS;
 }
 
@@ -223,7 +238,7 @@ GAME_SETTINGS_MESSAGE gameSettingsQuitGameSettings(GameSettings* settings) {
  * CHESS_GAME_QUIT_SUCCESS - the program is exiting.
  */
 CHESS_GAME_MESSAGE gameSettingsQuitGame(GameSettings* settings) {
-	GameSettingsDestroy(settings);
+	gameSettingsDestroy(settings);
 	return CHESS_GAME_QUIT_SUCCESS;
 }
 
@@ -271,7 +286,7 @@ char* gameSettingsDifficultyLevelToString(unsigned int level) {
  *@return
  * the difficulty level value.
  */
-int charDifficultyLevelToInt(char* level) {
+int gameSettingsCharDifficultyLevelToInt(char* level) {
 	if (strcmp(level, DIFFICULTY_LEVEL_1) == 0)
 		return DIFFICULTY_LEVEL_1_INT;
 	if (strcmp(level, DIFFICULTY_LEVEL_2) == 0)
@@ -283,20 +298,6 @@ int charDifficultyLevelToInt(char* level) {
 	if (strcmp(level, DIFFICULTY_LEVEL_5) == 0)
 		return DIFFICULTY_LEVEL_5_INT;
 	return -1;
-}
-
-/*
- * Converts the user color integer value to its string name.
- *
- * @param userColor - the user's color.
- *
- * @return
- * the string compatible with the given int,"white/n" or "black/n";
- */
-static char* userColorToChar(int userColor) {
-	if (userColor == CHESS_WHITE_PLAYER)
-		return WHITE_USER;
-	return BLACK_USER;
 }
 
 /*

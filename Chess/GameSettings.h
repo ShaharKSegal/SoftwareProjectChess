@@ -99,7 +99,7 @@ typedef struct game_setting_t {
  * NULL if a memory allocation failure occurs.
  * Otherwise, a new game settings instance is returned.
  */
-GameSettings* GameSettingsCreate();
+GameSettings* gameSettingsCreate();
 
 /**
  *	Creates a copy of a given settings.
@@ -118,7 +118,7 @@ GameSettings* gameSettingsCopy(GameSettings* src);
  *
  * @param settings - the source settings
  */
-void GameSettingsDestroy(GameSettings* settings);
+void gameSettingsDestroy(GameSettings* settings);
 
 /**
  * Changes the game settings' game mode.
@@ -128,7 +128,7 @@ void GameSettingsDestroy(GameSettings* settings);
  * GAME_SETTINGS_WRONG_GAME_MODE    - if the new game mode is not ONE_PLAYER nor TWO_PLAYERS.
  * GAME_SETTINGS_GAME_MODE_SUCCESS  - On success. The game mode is updated.
  */
-GAME_SETTINGS_MESSAGE changeGameMode(GameSettings* settings, char gameMode);
+GAME_SETTINGS_MESSAGE gameSettingsChangeGameMode(GameSettings* settings, char gameMode);
 
 /**
  * Changes the game settings' difficulty level.
@@ -139,7 +139,7 @@ GAME_SETTINGS_MESSAGE changeGameMode(GameSettings* settings, char gameMode);
  * GAME_SETTINGS_DIFFIVULTY_LEVEL_SUCCESS  - On success. The game difficulty level is updated.
  * GAME_SETTINGS_INVALID_COMMAND           - if the game mode is not one player.
  */
-GAME_SETTINGS_MESSAGE changeDifficulty(GameSettings* settings, int difficulty);
+GAME_SETTINGS_MESSAGE gameSettingsChangeDifficulty(GameSettings* settings, int difficulty);
 
 /**
  * Changes the user's color.
@@ -150,7 +150,7 @@ GAME_SETTINGS_MESSAGE changeDifficulty(GameSettings* settings, int difficulty);
  * GAME_SETTINGS_USER_COLOR_SUCCESS  - On success. The user color is updated.
  * GAME_SETTINGS_INVALID_COMMAND     - if the game mode is not one player.
  */
-GAME_SETTINGS_MESSAGE changeUserColor(GameSettings* settings, int userColor);
+GAME_SETTINGS_MESSAGE gameSettingsChangeUserColor(GameSettings* settings, int userColor);
 
 /*
  * Prints the current game settings to screen.
@@ -169,7 +169,7 @@ GAME_SETTINGS_MESSAGE gameSettingsPrintSettingsToUser(GameSettings* settings);
  * @param settings - the current game settings, file - the file to write the settings to.
  *
  */
-void printSettings(FILE* file, GameSettings* settings);
+void gameSettingsPrint(FILE* file, GameSettings* settings);
 
 /*
  * Resets all game settings to default values.
@@ -219,7 +219,7 @@ char* gameSettingsDifficultyLevelToString(unsigned int level);
  *@return
  * the difficulty level value.
  */
-int charDifficultyLevelToInt(char* level);
+int gameSettingsCharDifficultyLevelToInt(char* level);
 
 /*
  * Restarts the games, keeps the settings values of the previous game and start a new game.

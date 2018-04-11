@@ -43,38 +43,30 @@
 #define GAME_MESSAGE_EXITING "Exiting..."
 #define GAME_MESSAGE_INVALID_COMMAND "Error: Invalid Command\n"
 
+/*
+ *
+ */
+#define PAWN_STR "pawn"
+#define KNIGHT_STR "knight"
+#define ROOK_STR "rook"
+#define BISHOP_STR "bishop"
+#define QUEEN_STR "queen"
+#define KING_STR "king"
+
+/*
+ * Move command consts
+ */
+#define MOVE_DELI ",<>"
+static const char prefix = '<';
+static const char suffix = '>';
+
 /**
  * Retrieves the column letter according to its column number, between 0-7.
  */
 char columnIntToChar(int column) {
-	switch (column) {
-	case 0:
-		return 'A';
-		break;
-	case 1:
-		return 'B';
-		break;
-	case 2:
-		return 'C';
-		break;
-	case 3:
-		return 'D';
-		break;
-	case 4:
-		return 'E';
-		break;
-	case 5:
-		return 'F';
-		break;
-	case 6:
-		return 'G';
-		break;
-	case 7:
-		return 'H';
-		break;
-	default:
-		return '0';
-	}
+	if (column < 0 || column > CHESS_N_COLUMNS - 1)
+		return 0;
+	return 'A' + column;
 }
 /*
  * Handles with printing the needed messages to the user, given the name of the message by a
@@ -156,7 +148,7 @@ void handlingSettingsCommand(GameSettings* settings, CmdCommand* command) {
 			break;
 		}
 		settingsMessageToOutput(
-				changeGameMode(settings, *((char *) (command->arg))), settings,
+				gameSettingsChangeGameMode(settings, *((char *) (command->arg))), settings,
 				command);
 		break;
 	case CMD_DIFFICULTY:
@@ -166,7 +158,7 @@ void handlingSettingsCommand(GameSettings* settings, CmdCommand* command) {
 			break;
 		}
 		settingsMessageToOutput(
-				changeDifficulty(settings, *((int *) (command->arg))), settings,
+				gameSettingsChangeDifficulty(settings, *((int *) (command->arg))), settings,
 				command);
 		break;
 	case CMD_USER_COLOR:
@@ -176,7 +168,7 @@ void handlingSettingsCommand(GameSettings* settings, CmdCommand* command) {
 			break;
 		}
 		settingsMessageToOutput(
-				changeUserColor(settings, *((int *) (command->arg))), settings,
+				gameSettingsChangeUserColor(settings, *((int *) (command->arg))), settings,
 				command);
 		break;
 	case CMD_LOAD:
@@ -243,28 +235,29 @@ void gameMessageToOutput(CHESS_GAME_MESSAGE message, GameSettings* settings) {
 		printf(GAME_MESSAGE_EMPTY_HISTORY);
 		break;
 	case CHESS_GAME_UNDO_SUCCESS:
-		player = (!settings->chessGame->currentPlayer) ?
+		player = !(settings->chessGame->currentPlayer) ?
 		PRINT_BLACK_USER :
 															PRINT_WHITE_USER;
+
 		printf(GAME_MESSAGE_UNDO_MOVE, player);
 		break;
 	case CHESS_GAME_SUCCESS:
 		break;
 	case CHESS_GAME_CHECK:
-		player = (!settings->chessGame->currentPlayer) ?
+		player = !(settings->chessGame->currentPlayer) ?
 		PRINT_BLACK_USER :
 															PRINT_WHITE_USER;
 		printf(GAME_MESSAGE_CHECK, player);
 		break;
 	case CHESS_GAME_DRAW:
 		printf(GAME_MESSAGE_DRAW_GAME);
-		GameSettingsDestroy(settings);
+		gameSettingsDestroy(settings);
 		break;
 	case CHESS_GAME_CHECKMATE:
 		player = (settings->chessGame->currentPlayer) ?
 		PRINT_BLACK_USER :
 														PRINT_WHITE_USER;
-		GameSettingsDestroy(settings);
+		gameSettingsDestroy(settings);
 		printf(GAME_MESSAGE_CHECKMATE, player); //TODO check if not previous player
 		break;
 	case CHESS_GAME_RESTART:
@@ -287,48 +280,23 @@ void gameMessageToOutput(CHESS_GAME_MESSAGE message, GameSettings* settings) {
 }
 
 /*
- * Checks if a string (str) starts with a specific given string (prefix).
- * @return
- * true if it does, false otherwise.
- */
-bool startsWith(const char *str, const char *prefix) {
-	if (strncmp(str, prefix, strlen(prefix)) == 0)
-		return true;
-	return false;
-}
-
-/*
- * Checks if a string (str) ends with a specific given string (suffix).
- */
-bool endsWith(const char * str, const char * suffix) {
-	int strLen = strlen(str);
-	int suffixLen = strlen(suffix);
-
-	if ((strLen >= suffixLen)
-			&& (0 == strcmp(str + (strLen - suffixLen), suffix)))
-		return true;
-	return false;
-}
-
-/*
  * Checks if the format of the position, presented by a string (str) is correct: starts with '<' symbol,
  * ends with '>' symbol and the string contains one comma in between.
  * @return
  * true if the string's format is correct, false otherwise.
  */
 bool isFormatValid(char* str) {
+	if (!(strlen(str) > 0 && str[0] == prefix))
+		return false;
+	int length = strlen(str);
+	if (!(length > 0 && str[length - 1] == suffix))
+		return false;
 	int count = 0;
-	if (!startsWith(str, "<"))
-		return false;
-	if (!endsWith(str, ">"))
-		return false;
-	for (int i = 0; i < strlen(str); i++) {
+	for (int i = 0; i < length; i++) {
 		if (str[i] == ',')
 			count++;
 	}
-	if (count == 1)
-		return true;
-	return false;
+	return count == 1;
 }
 
 /*
@@ -340,15 +308,16 @@ bool isFormatValid(char* str) {
  */
 bool isPositionValid(char* str, ChessPiecePosition* pos) {
 	//Checking to see if the string contain only one '<' and one '>' symbols.
-	int count1 = 0;
-	int count2 = 0;
-	for (int i = 0; i < strlen(str); i++) {
-		if (str[i] == '>')
-			count1++;
-		else if (str[i] == '<')
-			count2++;
+	int prefixCount = 0;
+	int suffixCount = 0;
+	int length = strlen(str);
+	for (int i = 0; i < length; i++) {
+		if (str[i] == prefix)
+			prefixCount++;
+		else if (str[i] == suffix)
+			suffixCount++;
 	}
-	if (count1 > 1 || count2 > 1)
+	if (prefixCount > 1 || suffixCount > 1)
 		return false;
 
 	char* token;
@@ -391,6 +360,7 @@ bool isPositionValid(char* str, ChessPiecePosition* pos) {
 	pos->column = j;
 	return true;
 }
+
 /**
  * sub function of handleGetMovesCommand function, once a move is approved to be written as a legal move,
  * the function prints it and add the needed supplementary: '^' if the move captures a piece, '*' if the move causes
@@ -606,17 +576,17 @@ CmdCommand* mainAuxGetUserCommand(bool isSettings) {
 char* typeToString(CHESS_PIECE_TYPE type) {
 	switch (type) {
 	case CHESS_PIECE_PAWN:
-		return PAWN;
+		return PAWN_STR;
 	case CHESS_PIECE_BISHOP:
-		return BISHOP;
+		return BISHOP_STR;
 	case CHESS_PIECE_KNIGHT:
-		return KNIGHT;
+		return KNIGHT_STR;
 	case CHESS_PIECE_ROOK:
-		return ROOK;
+		return ROOK_STR;
 	case CHESS_PIECE_QUEEN:
-		return QUEEN;
+		return QUEEN_STR;
 	case CHESS_PIECE_KING:
-		return KING;
+		return KING_STR;
 	default:
 		return NULL;
 
@@ -630,9 +600,9 @@ char* typeToString(CHESS_PIECE_TYPE type) {
  * 0 if else.
  */
 int computerTurn(GameSettings* settings) {
-	TreeNode* root = chessGameMinimax(settings);
-
-	ChessMove move = root->bestMove;
+	ChessMove move = chessGameMinimax(settings);
+	if (getHadCriticalError())
+		return 0;
 	ChessPiece piece = chessGameGetPieceByPosition(
 			&(settings->chessGame->gameBoard), move.previousPosition);
 	CHESS_GAME_MESSAGE message = chessGameSetMove(settings->chessGame,
@@ -643,7 +613,6 @@ int computerTurn(GameSettings* settings) {
 				columnIntToChar(move.previousPosition.column),
 				(move.currentPosition.row) + 1,
 				columnIntToChar(move.currentPosition.column));
-	free(root);
 	message = chessGameGetCurrentState(settings->chessGame);
 	switch (message) {
 	case CHESS_GAME_NONE:
@@ -682,7 +651,7 @@ int handleComputerTurn(GameSettings* settings) {
 		state = computerTurn(settings);
 		if (state) //last move resulted in checkmate or draw
 		{
-			GameSettingsDestroy(settings);
+			gameSettingsDestroy(settings);
 			return 1; //quit game
 		}
 	}
@@ -702,9 +671,8 @@ int handleComputerTurn(GameSettings* settings) {
 int moveCommandResults(GameSettings* settings, int result) { //todo: check if it's okay to pass the result value like this
 	switch (result) {
 	case 0: 	//invalid command, command hasn't been executed.
-		return 0;
 	case 1: 	//move is set, checkmate or draw
-		return 1; //quit game
+		return result; //quit game
 	case 2: //move is set, continue to next move (or computer's move)
 		return (handleComputerTurn(settings));
 	default:
@@ -716,9 +684,7 @@ int moveCommandResults(GameSettings* settings, int result) { //todo: check if it
  * Returns the color of current player.
  */
 char* mainAuxWhichPlayer(GameSettings* settings) {
-	return settings->chessGame->currentPlayer ?
-	PRINT_WHITE_USER :
-												PRINT_BLACK_USER;
+	return settings->chessGame->currentPlayer ? PRINT_WHITE_USER : PRINT_BLACK_USER;
 }
 
 /*

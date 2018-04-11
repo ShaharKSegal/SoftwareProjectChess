@@ -61,7 +61,7 @@ static void destroyLoadGameWindowControllerData(
 		LoadGameWindowControllerData* data) {
 	if (data == NULL )
 		return;
-	GameSettingsDestroy(data->loadedGameSettings);
+	gameSettingsDestroy(data->loadedGameSettings);
 	free(data);
 }
 
@@ -116,17 +116,17 @@ static UI_CONTROLLER_EVENT handleEventActivateSlot(WindowController* controller)
 	sprintf(data->filePath, saveFileTemplate,
 			slot + (data->currentPage * SAVES_IN_PAGE));
 	if (data->currentMode == UI_LOAD_CONTROLLER) {
-		GameSettings* settings = GameSettingsCreate();
+		GameSettings* settings = gameSettingsCreate();
 		if (settings == NULL )
 			return UI_CONTROLLER_EVENT_MINOR_ERROR;
 		GAME_SETTINGS_MESSAGE msg = gameSettingsLoad(settings, data->filePath);
 		// ignore files that do not exist
 		if (msg == GAME_SETTINGS_LOAD_FILE_OPEN_FAIL) {
-			GameSettingsDestroy(settings);
+			gameSettingsDestroy(settings);
 			return UI_CONTROLLER_EVENT_INVOKE_DRAW ;
 		}
 		else if (msg == GAME_SETTINGS_LOAD_FILE_FAIL) {
-			GameSettingsDestroy(settings);
+			gameSettingsDestroy(settings);
 			return UI_CONTROLLER_EVENT_FILE_ERROR;
 		}
 		data->loadedGameSettings = settings;

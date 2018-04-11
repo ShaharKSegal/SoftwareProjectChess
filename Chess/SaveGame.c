@@ -25,7 +25,7 @@ GAME_SETTINGS_MESSAGE gameSettingsSave(char* fileName, GameSettings* settings) {
 		fclose(file);
 		return GAME_SETTINGS_SAVE_GAME_FAIL;
 	}
-	printSettings(file, settings);
+	gameSettingsPrint(file, settings);
 	if (getHadFileFailure()) {
 		fclose(file);
 		return GAME_SETTINGS_FILE_FAILURE;

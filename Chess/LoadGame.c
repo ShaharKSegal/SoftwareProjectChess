@@ -27,7 +27,7 @@ static void checkKingPosition(ChessGame* chessGame, char symbol, int place,
 static unsigned int loadDifficulty(char* line) {
 	char* token = strtok(line, DELIMETER);
 	token = strtok(NULL, DELIMETER);
-	int maxDepth = charDifficultyLevelToInt(token);
+	int maxDepth = gameSettingsCharDifficultyLevelToInt(token);
 	return maxDepth;
 }
 

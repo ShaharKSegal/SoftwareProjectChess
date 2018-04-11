@@ -40,7 +40,7 @@ static GameWindowControllerData* createGameWindowControllerData(
 static void destroyGameWindowControllerData(GameWindowControllerData* data) {
 	if (data == NULL)
 		return;
-	GameSettingsDestroy(data->gameSettings);
+	gameSettingsDestroy(data->gameSettings);
 	free(data);
 }
 
@@ -192,10 +192,9 @@ static UI_CONTROLLER_EVENT handleEventPieceDrag(WindowController* controller) {
 		msg = chessGameStatePopup(game);
 		if (msg == CHESS_GAME_NONE || msg == CHESS_GAME_CHECK) {
 			if (data->gameSettings->gameMode == ONE_PLAYER) {
-				TreeNode* root = chessGameMinimax(data->gameSettings);
-				if (root == NULL)
+				ChessMove move = chessGameMinimax(data->gameSettings);
+				if (getHadCriticalError())
 					return UI_CONTROLLER_EVENT_ERROR;
-				ChessMove move = root->bestMove;
 				chessGameSetMove(game, move.previousPosition,
 						move.currentPosition);
 				msg = chessGameStatePopup(game);
