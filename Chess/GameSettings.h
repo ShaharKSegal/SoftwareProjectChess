@@ -45,6 +45,15 @@ typedef enum game_settings_message_t {
 #define DIFFICULTY_LEVEL_4_INT 4
 #define DIFFICULTY_LEVEL_5_INT 5
 
+/*
+ typedef enum {
+	CHESS_DIFFICULTY_AMATEUR = 1,
+	CHESS_DIFFICULTY_EASY = 2,
+	CHESS_DIFFICULTY_MODERATE = 3,
+	CHESS_DIFFICULTY_HARD = 4,
+	CHESS_DIFFICULTY_EXPERT = 5
+} CHESS_DIFFICULTY;
+*/
 
 /*
  * Definitions for game modes
@@ -62,7 +71,7 @@ typedef enum game_settings_message_t {
 #define PRINT_BLACK_USER "black"
 
 /*
- * save/load line definitions
+ * Save/Load line definitions
  */
 #define GAME_MODE_1_PLAYER_LINE "GAME_MODE: 1-player\n"
 #define GAME_MODE_2_PLAYER_LINE "GAME_MODE: 2-player\n"
@@ -155,7 +164,7 @@ GAME_SETTINGS_MESSAGE changeUserColor(GameSettings* settings, int userColor);
 GAME_SETTINGS_MESSAGE gameSettingsPrintSettingsToUser(GameSettings* settings);
 
 /*
- * Prints the current game settings.
+ * Prints the settings that are shared by the two game modes, and handles each separately.
  *
  * @param settings - the current game settings, file - the file to write the settings to.
  *
@@ -173,7 +182,7 @@ void printSettings(FILE* file, GameSettings* settings);
 GAME_SETTINGS_MESSAGE gameSettingsDefaulter (GameSettings* settings);
 
 /*
- * Terminates the program. All memory resources will be freed.
+ * Terminates the program. All memory resources will be freed (a settings command).
  *
  * @param settings - the current game settings
  *
@@ -183,17 +192,27 @@ GAME_SETTINGS_MESSAGE gameSettingsDefaulter (GameSettings* settings);
 GAME_SETTINGS_MESSAGE gameSettingsQuitGameSettings(GameSettings* settings);
 
 /*
- * Converts difficulty level value to difficulty level name.
+ * Terminates the program. All memory resources will be freed (a game command).
+ *
+ * @param settings - the current game settings
+ *
+ *@return
+ * CHESS_GAME_QUIT_SUCCESS - the program is exiting.
+ */
+CHESS_GAME_MESSAGE gameSettingsQuitGame(GameSettings* settings);
+
+/*
+ * Converts the integer value of the difficulty level to its name.
  *
  * @param level - the difficulty level value.
  *
  *@return
  * the difficulty level name.
  */
-char* difficultyLevelToMessage(unsigned int level);
+char* gameSettingsDifficultyLevelToString(unsigned int level);
 
 /*
- * Converts difficulty level name to difficulty level value.
+ * Converts the name of the difficulty level to its integer value.
  *
  * @param level - the difficulty level name.
  *
@@ -203,34 +222,15 @@ char* difficultyLevelToMessage(unsigned int level);
 int charDifficultyLevelToInt(char* level);
 
 /*
- * Converts user color from int to string.
- *
- * @param userColor - the user's color.
- *
- * @return
- * the string compatible with the given int,"white/n" or "black/n";
- */
-char* userColorToChar (int userColor);
-
-/*
- * Resets all game settings to default values.
+ * Restarts the games, keeps the settings values of the previous game and start a new game.
  *
  * @param settings - the current game settings
  *
  *@return
- * GAME_SETTINGS_DEFAULT_SUCCESS - all values are default.
+ * CHESS_GAME_ERROR - if an error has occurred in creating the game.
+ * CHESS_GAME_RESTART - if the game restarted successfully.
  */
 CHESS_GAME_MESSAGE gameSettingsRestart(GameSettings* settings);
-
-/*
- * Terminates the program. All memory resources will be freed.
- *
- * @param settings - the current game settings
- *
- *@return
- * GAME_SETTINGS_QUIT_SUCCESS - the program is exiting.
- */
-CHESS_GAME_MESSAGE gameSettingsQuitGame(GameSettings* settings);
 
 /*
  * Starts the game. Once this command is asked, the state is shifted to game state.

@@ -15,23 +15,15 @@
 #define QUEEN_SCORE 9
 #define KING_SCORE 100
 
-/*
- * Board states definitions
- */
-#define DRAW 0
-#define BLACK_CHECKMATE -1000
-#define WHITE_CHECKMATE 1000
-#define NO_SPECIAL_SITUATION 2000; //random big number
-
 typedef struct tree_node_t {
 	ChessMove move;
-	ChessPiece piece;
-	int depth;
 	int score;
 	ChessMove bestMove;
-	ChessPiece bestPiece;
 } TreeNode;
 
+/*
+ * Returns a tree node that holds the computer's ideal move for the relevant difficulty level.
+ */
 TreeNode* chessGameMinimax(GameSettings* settings);
 
 #endif /* MINIMAX_H_ */

@@ -7,6 +7,9 @@
 
 #define LINE_LENGTH 22
 
+/*
+ * Updates the positions of the white and black kings in the game fields while loading the board.
+ */
 static void checkKingPosition(ChessGame* chessGame, char symbol, int place,
 		int lineNumber) {
 	if (symbol == WHITE_KING_SYMBOL) {
@@ -18,6 +21,9 @@ static void checkKingPosition(ChessGame* chessGame, char symbol, int place,
 	}
 }
 
+/*
+ * Updates the difficulty level from a loaded file.
+ */
 static unsigned int loadDifficulty(char* line) {
 	char* token = strtok(line, DELIMETER);
 	token = strtok(NULL, DELIMETER);
@@ -25,6 +31,9 @@ static unsigned int loadDifficulty(char* line) {
 	return maxDepth;
 }
 
+/*
+ * Updates the user color from a loaded file.
+ */
 static int loadUserColor(char* line) {
 	if (strcmp(USER_COLOR_WHITE_LINE, line) == 0)
 		return CHESS_WHITE_PLAYER;
@@ -32,6 +41,9 @@ static int loadUserColor(char* line) {
 		return CHESS_BLACK_PLAYER;
 }
 
+/*
+ * Updates the game mode from a loaded file.
+ */
 static char loadGameMode(char* line) {
 	if (strcmp(GAME_MODE_1_PLAYER_LINE, line) == 0)
 		return ONE_PLAYER;
@@ -39,6 +51,9 @@ static char loadGameMode(char* line) {
 		return TWO_PLAYERS;
 }
 
+/*
+ * Updates the current player from a loaded file.
+ */
 static int loadPlayer(char* line) {
 	if (strcmp(WHITE_USER, line) == 0)
 		return CHESS_WHITE_PLAYER;
@@ -47,6 +62,9 @@ static int loadPlayer(char* line) {
 
 }
 
+/*
+ * Updates the settings from a loaded file.
+ */
 static void loadSettings(GameSettings* settings, FILE* file) {
 	ChessGame* game = settings->chessGame;
 	char line[LINE_LENGTH];

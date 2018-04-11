@@ -3,7 +3,17 @@
 #include "Minimax.h"
 #include "ChessErrorHandler.h"
 
-static int fromCharToScore(CHESS_PIECE_TYPE type) {
+/*
+ * Special scores
+ */
+#define DRAW_SCORE 0
+#define BLACK_CHECKMATE_SCORE -1000
+#define WHITE_CHECKMATE_SCORE 1000
+
+/*
+ * Defines the score for each piece.
+ */
+static int pieceTypeToScore(CHESS_PIECE_TYPE type) {
 	int score = 0;
 	switch (type) {
 	case CHESS_PIECE_PAWN:
@@ -31,46 +41,56 @@ static int fromCharToScore(CHESS_PIECE_TYPE type) {
 	return (score);
 }
 
+/*
+ * Calculated the board score according to the pieces on it.
+ */
 static int scoringFunction(ChessBoard* gameBoard) {
 	int score = 0;
 	for (int i = 0; i < CHESS_N_ROWS; i++) {
 		for (int j = 0; j < CHESS_N_COLUMNS; j++) {
 			if (gameBoard->position[i][j].player)
-				score += fromCharToScore(gameBoard->position[i][j].type);
+				score += pieceTypeToScore(gameBoard->position[i][j].type);
 			else
-				score -= fromCharToScore(gameBoard->position[i][j].type);
+				score -= pieceTypeToScore(gameBoard->position[i][j].type);
 		}
 	}
 	return score;
 }
 
-static TreeNode* createTreeNode(int depth) {
+/*
+ * Creates a tree node.
+ * @return
+ * NULL - if a memory failte occurred.
+ * TreeNode* instance otherwise.
+ */
+static TreeNode* createTreeNode() {
 	TreeNode* node = malloc(sizeof(TreeNode));
 	if (node == NULL) {
 		hadMemoryFailure();
 		return NULL;
 	}
-	node->depth = depth;
 	return node;
 }
 
+/*
+ * Checks if the new score is better than the current one.
+ * @return
+ * true - if the new score is higher and the player is white, or lower and the player is black.
+ * false - otherwise.
+ */
 static bool isBetterScore(int newScore, int oldScore, int player) {
 	return player == CHESS_WHITE_PLAYER ?
 			newScore > oldScore : newScore < oldScore;
-	/*
-	 if (player == CHESS_WHITE_PLAYER) {
-	 if (newScore > oldScore)
-	 return true;
-	 else
-	 return false;
-	 } else {
-	 if (newScore < oldScore)
-	 return true;
-	 else
-	 return false;
-	 }*/
 }
 
+/*
+ * Checks if the new move has the same score as the current chosen move. if so, checks if it's source position
+ * is the more to the left and the lower. if it's the same, checks whether the destination position is the more
+ * to the left and the lower.
+ * @return
+ * true - if the move is better by the above mentioned definitions.
+ * false - otherwise.
+ */
 static bool isBetterLocation(ChessMove new_move, ChessMove current_move,
 bool initialized, int newScore, int idealScore) {
 	if (initialized) {
@@ -106,28 +126,43 @@ bool initialized, int newScore, int idealScore) {
 	return true;
 }
 
+/*
+ * Checks the state before executing another round of the recursion.
+ * @return
+ * 1000 - white player wins.
+ * -1000 - black player wins.
+ * 0 - the game ends in a draw.
+ * the board score - if depth > maxDepth.
+ */
 static int MinimaxValidation(int depth, int maxDepth, ChessGame* game,
 		int player) {
 	CHESS_GAME_MESSAGE msg = chessGameGetCurrentState(game);
-	if (depth > maxDepth)
-		return scoringFunction(&(game->gameBoard));
+	if (msg == CHESS_GAME_CHECKMATE)
+		return player == CHESS_WHITE_PLAYER ? BLACK_CHECKMATE_SCORE : WHITE_CHECKMATE_SCORE;
 	else if (msg == CHESS_GAME_DRAW)
-		return DRAW;
-	else if (msg == CHESS_GAME_CHECKMATE)
-		return player == CHESS_WHITE_PLAYER ? WHITE_CHECKMATE : BLACK_CHECKMATE; //TODO: check correctness
+		return DRAW_SCORE;
+	else if (depth > maxDepth)
+		return scoringFunction(&(game->gameBoard));
 	return INT_MAX;
 }
 
+/*
+ * The recursive algorithm, once called updates the parent node with the best move and returns the score of the said
+ * move.
+ */
 static int MinimaxRec(TreeNode* parent, ChessGame* game, int maxDepth,
 		int depth, int player, int parentIdealScore) {
+	//Checking whether before entering the recursive part, we've already reached max depth, checkmate or draw.
 	if (depth > maxDepth
 			|| (chessGameGetCurrentState(game) != CHESS_GAME_NONE
 					&& chessGameGetCurrentState(game) != CHESS_GAME_CHECK))
 		return MinimaxValidation(depth, maxDepth, game, player);
 
+	//initializing the node score to be the "worst" score for the player.
 	int idealScore = player == CHESS_WHITE_PLAYER ? INT_MIN : INT_MAX;
 	bool initialized = false;
 
+	//Going through all of the curent player's pieces.
 	for (int i = 0; i < CHESS_N_ROWS; i++) {
 		for (int j = 0; j < CHESS_N_COLUMNS; j++) {
 			ChessPiece piece = game->gameBoard.position[i][j];
@@ -137,16 +172,15 @@ static int MinimaxRec(TreeNode* parent, ChessGame* game, int maxDepth,
 				continue;
 			}
 			ChessPiecePosition position = { .row = i, .column = j };
-			ArrayList* moves = chessGameGetMoves(game, position); //all possible player moves for a specific piece
+			ArrayList* moves = chessGameGetMoves(game, position);
 
 			//going through all moves of a specific piece
-			for (int move = 0; move < moves->actualSize; move++) {
-				TreeNode* node = createTreeNode(depth);
+			for (int k = 0; k < moves->actualSize; k++) {
+				TreeNode* node = createTreeNode();
 				if (node == NULL)
 					return 0;
-				node->piece = piece;
 				node->move.currentPosition =
-						arrayListGetAt(moves, move).currentPosition;
+						arrayListGetAt(moves, k).currentPosition;
 				node->move.previousPosition = position;
 
 				chessGameSetMove(game, position, node->move.currentPosition);
@@ -154,13 +188,15 @@ static int MinimaxRec(TreeNode* parent, ChessGame* game, int maxDepth,
 						chessGameGetOpponentByPlayer(player), idealScore);
 				chessGameUndoMove(game);
 
+				//Checking whether this move is a better move than the last one chosen.
 				if (isBetterScore(node->score, idealScore, player)
 						|| isBetterLocation(node->move, parent->bestMove,
 								initialized, node->score, idealScore)) {
 					initialized = true;
 					idealScore = node->score;
 					parent->bestMove = node->move; //only relevant if parent is root
-					parent->bestPiece = node->piece;
+
+					//Pruning - if the current node's score is not better than the parent's current score, return.
 					if (isBetterScore(parentIdealScore, idealScore,
 							chessGameGetOpponentByPlayer(player))) {
 						free(node);
@@ -177,14 +213,17 @@ static int MinimaxRec(TreeNode* parent, ChessGame* game, int maxDepth,
 	return idealScore;
 }
 
+/*
+ * Returns a tree node that holds the computer's ideal move for the relevant difficulty level.
+ */
 TreeNode* chessGameMinimax(GameSettings* settings) {
-	TreeNode* root = createTreeNode(0);
+	TreeNode* root = createTreeNode();
 	ChessGame* copiedGame = chessGameCopyEmptyHistory(settings->chessGame,
 			settings->maxDepth);
 	int player = copiedGame->currentPlayer;
 	int worstScore = player == CHESS_WHITE_PLAYER ? INT_MAX : INT_MIN;
-	root->score = MinimaxRec(root, copiedGame, settings->maxDepth,
-			root->depth + 1, player, worstScore);
+	root->score = MinimaxRec(root, copiedGame, settings->maxDepth, 1, player, worstScore);
+	//printf("%d\n", root->score);
 	if (getHadMemoryFailure())
 		return NULL;
 	chessGameDestroy(copiedGame);

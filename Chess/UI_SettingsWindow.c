@@ -3,7 +3,7 @@
 #include "UI_SettingsWindow.h"
 #include "UI_Button.h"
 #include "ChessErrorHandler.h"
-
+#include "GameSettings.h"
 /**
  * Constants for the widgets location.
  */
@@ -196,13 +196,13 @@ static void handleEventUserColor(Window* window, bool isUserWhite) {
  * If window->data (isOnePlayerMode) == false, then all the difficulty buttons
  * will be disabled.
  */
-static void handleEventDifficulty(Window* window, CHESS_DIFFICULTY difficulty) {
+static void handleEventDifficulty(Window* window, int difficulty) {
 	bool isOnePlayerMode = *(bool*) window->data;
-	for (int i = 1; i <= CHESS_DIFFICULTY_EXPERT; i++) {
+	for (int i = 1; i <= DIFFICULTY_LEVEL_5_INT; i++) {
 		Button* difficultyButton =
 				(Button*) window->widgets[DIFFICULTY_AMATEUR_WIDGET_ID + i - 1]->data;
 		buttonSetActive(difficultyButton,
-				isOnePlayerMode && ((int) difficulty == i));
+				isOnePlayerMode && difficulty == i);
 	}
 }
 
@@ -226,7 +226,7 @@ static void handleEventGameMode(Window* window, bool isOnePlayerMode) {
 	if (wasInOnePlayerMode && isOnePlayerMode)
 		return;
 	handleEventUserColor(window, true);
-	handleEventDifficulty(window, CHESS_DIFFICULTY_EASY);
+	handleEventDifficulty(window, DIFFICULTY_LEVEL_2_INT);
 }
 
 /**
@@ -258,19 +258,19 @@ static UI_EVENT settingsWindowHandleEvent(Window* window, SDL_Event* event) {
 			handleEventUserColor(window, false);
 			break;
 		case UI_BUTTON_EVENT_AMATEUR_MODE:
-			handleEventDifficulty(window, CHESS_DIFFICULTY_AMATEUR);
+			handleEventDifficulty(window, DIFFICULTY_LEVEL_1_INT);
 			break;
 		case UI_BUTTON_EVENT_EASY_MODE:
-			handleEventDifficulty(window, CHESS_DIFFICULTY_EASY);
+			handleEventDifficulty(window, DIFFICULTY_LEVEL_2_INT);
 			break;
 		case UI_BUTTON_EVENT_MODERATE_MODE:
-			handleEventDifficulty(window, CHESS_DIFFICULTY_MODERATE);
+			handleEventDifficulty(window, DIFFICULTY_LEVEL_3_INT);
 			break;
 		case UI_BUTTON_EVENT_HARD_MODE:
-			handleEventDifficulty(window, CHESS_DIFFICULTY_HARD);
+			handleEventDifficulty(window, DIFFICULTY_LEVEL_4_INT);
 			break;
 		case UI_BUTTON_EVENT_EXPERT_MODE:
-			handleEventDifficulty(window, CHESS_DIFFICULTY_EXPERT);
+			handleEventDifficulty(window, DIFFICULTY_LEVEL_5_INT);
 			break;
 		case UI_EVENT_NONE:
 			continue;

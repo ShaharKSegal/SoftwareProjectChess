@@ -26,22 +26,21 @@
 #define SETTINGS_STATE_LINE "Specify game settings or type 'start' to begin a game with the current settings:\n"
 
 /*
- * receives an input from a former process function
+ * Receives an input from a former process function
  * and parses it to create the user's command.
  */
 CmdCommand* mainAuxGetUserCommand(bool isSettings);
 
 /*
- * distinguishes between different game function and handles each one.
+ * Distinguishes between different game function and handles each one separately.
  * @return
- * -1  - if memory failure occurred.
  *  1  - if it's needed to end the game after the command.
  *  0  - else.
  */
 int mainAuxGameState(GameSettings* settings, CmdCommand* command, bool* isSettings);
 
 /*
- * distinguishes between different settings function and handles each one.
+ * Distinguishes between different settings function and handles each one separately.
  * @return
  * 1 - if it's needed to end the game after the command.
  * 0 - else.
@@ -49,7 +48,7 @@ int mainAuxGameState(GameSettings* settings, CmdCommand* command, bool* isSettin
 int mainAuxSettingsState(GameSettings* settings, CmdCommand* command, bool* isSettings);
 
 /*
- * returns the color of current player.
+ * Returns the color of current player.
  */
 char* mainAuxWhichPlayer(GameSettings* settings);
 

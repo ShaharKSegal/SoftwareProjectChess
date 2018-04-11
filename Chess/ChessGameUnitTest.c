@@ -336,7 +336,7 @@ static bool ChessGameMinimaxTest(){
 		printf("root is null :(");
 	printf("success!\n");
 	printf("%d\n", root->score);
-	printf("%c\n", root->bestPiece.representation);
+	//printf("%c\n", root->bestPiece.representation);
 	return true;
 }
 

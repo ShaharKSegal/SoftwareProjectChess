@@ -43,6 +43,9 @@
 #define GAME_MESSAGE_EXITING "Exiting..."
 #define GAME_MESSAGE_INVALID_COMMAND "Error: Invalid Command\n"
 
+/**
+ * Retrieves the column letter according to its column number, between 0-7.
+ */
 char columnIntToChar(int column) {
 	switch (column) {
 	case 0:
@@ -73,7 +76,10 @@ char columnIntToChar(int column) {
 		return '0';
 	}
 }
-
+/*
+ * Handles with printing the needed messages to the user, given the name of the message by a
+ * settings-related command, the command and the general settings.
+ */
 void settingsMessageToOutput(GAME_SETTINGS_MESSAGE message,
 		GameSettings* settings, CmdCommand* command) {
 	char* difficultyLevel;
@@ -87,7 +93,8 @@ void settingsMessageToOutput(GAME_SETTINGS_MESSAGE message,
 		printf(SETTINGS_MESSAGE_WRONG_MODE);
 		break;
 	case GAME_SETTINGS_DIFFICULTY_LEVEL_SUCCESS:
-		difficultyLevel = difficultyLevelToMessage(settings->maxDepth);
+		difficultyLevel = gameSettingsDifficultyLevelToString(
+				settings->maxDepth);
 		printf(SETTINGS_MESSAGE_DIFFICULTY_LEVEL, difficultyLevel);
 		break;
 	case GAME_SETTINGS_WRONG_DIFFICULTY_LEVEL:
@@ -136,6 +143,10 @@ void settingsMessageToOutput(GAME_SETTINGS_MESSAGE message,
 	}
 }
 
+/*
+ * Handles with a settings-related command. Once given a command, the function deals with it according
+ * to the command's type and sends the proper message to be printed if needed.
+ */
 void handlingSettingsCommand(GameSettings* settings, CmdCommand* command) {
 	switch (command->cmd) {
 	case CMD_GAME_MODE:
@@ -202,6 +213,10 @@ void handlingSettingsCommand(GameSettings* settings, CmdCommand* command) {
 	return;
 }
 
+/*
+ * Prints the needed messages to the user, given the name of the message sent by a
+ * game-related command, and the general settings.
+ */
 void gameMessageToOutput(CHESS_GAME_MESSAGE message, GameSettings* settings) {
 	char* player;
 
@@ -272,16 +287,20 @@ void gameMessageToOutput(CHESS_GAME_MESSAGE message, GameSettings* settings) {
 }
 
 /*
- * checks is a string starts with a specific given string.
- */bool startsWith(const char *a, const char *b) {
-	if (strncmp(a, b, strlen(b)) == 0)
+ * Checks if a string (str) starts with a specific given string (prefix).
+ * @return
+ * true if it does, false otherwise.
+ */
+bool startsWith(const char *str, const char *prefix) {
+	if (strncmp(str, prefix, strlen(prefix)) == 0)
 		return true;
 	return false;
 }
 
 /*
- * checks is a string ends with a specific given string.
- */bool endsWith(const char * str, const char * suffix) {
+ * Checks if a string (str) ends with a specific given string (suffix).
+ */
+bool endsWith(const char * str, const char * suffix) {
 	int strLen = strlen(str);
 	int suffixLen = strlen(suffix);
 
@@ -292,37 +311,91 @@ void gameMessageToOutput(CHESS_GAME_MESSAGE message, GameSettings* settings) {
 }
 
 /*
- * receives the added arg to the command and uninitialized chessPiecePosition instance, and initializes the position if the arg is defined as needed.
+ * Checks if the format of the position, presented by a string (str) is correct: starts with '<' symbol,
+ * ends with '>' symbol and the string contains one comma in between.
  * @return
- * true - if pos is initialized with the correct position values.
- * false - else.
- */bool isPositionValid(char* str, ChessPiecePosition* pos) {
+ * true if the string's format is correct, false otherwise.
+ */
+bool isFormatValid(char* str) {
+	int count = 0;
 	if (!startsWith(str, "<"))
 		return false;
 	if (!endsWith(str, ">"))
 		return false;
-	char* token;
-	token = strtok(str, MOVE_DELI);
-	if (token == NULL) {
-		hadMemoryFailure();
-		return false;
+	for (int i = 0; i < strlen(str); i++) {
+		if (str[i] == ',')
+			count++;
 	}
+	if (count == 1)
+		return true;
+	return false;
+}
 
+/*
+ * receives the added arg to the command and uninitialized chessPiecePosition instance, and initializes the
+ * position if the arg is defined as needed.
+ * @return
+ * true - if pos is initialized with the correct position values.
+ * false - the string doesn't contain a legal position on the board, thus pos is not initialized.
+ */
+bool isPositionValid(char* str, ChessPiecePosition* pos) {
+	//Checking to see if the string contain only one '<' and one '>' symbols.
+	int count1 = 0;
+	int count2 = 0;
+	for (int i = 0; i < strlen(str); i++) {
+		if (str[i] == '>')
+			count1++;
+		else if (str[i] == '<')
+			count2++;
+	}
+	if (count1 > 1 || count2 > 1)
+		return false;
+
+	char* token;
+	token = strtok(str, MOVE_DELI); //first token - the row's number.
+
+	//Checks to see if the string representing the row of the move is not an empty string.
+	if (token == NULL)
+		return false;
+
+	//Checks to see if the string representing the row is an integer.
 	if (!parserCmdIsInt(token))
 		return false;
-	int i = *token - '0';
-	pos->row = i - 1;
-	token = strtok(NULL, MOVE_DELI);
-	if (token == NULL) {
-		hadMemoryFailure();
-		return false;
-	}
 
+	//Checks to see if the string representing the row is an integer below 10 (is a single digit).
+	if (strlen(token) > 1)
+		return false;
+	int i = *token - '0';
+	if (i > 8 || i < 1)
+		return false;
+
+	//Populates the position's row.
+	pos->row = i - 1;
+
+	token = strtok(NULL, MOVE_DELI); //next token - the column's char.
+
+	//Checks to see if the string representing the column of the move is not an empty string.
+	if (token == NULL)
+		return false;
+
+	//Checks to see if the string representing the column is one character.
+	if (strlen(token) > 1)
+		return false;
 	int j = *token - 'A';
+
+	//Checks to see if the string representing the column is one letter between 'A'-'H'.
+	if (j > 7 || j < 0)
+		return false;
+
+	//Populates the position's column.
 	pos->column = j;
 	return true;
 }
-
+/**
+ * sub function of handleGetMovesCommand function, once a move is approved to be written as a legal move,
+ * the function prints it and add the needed supplementary: '^' if the move captures a piece, '*' if the move causes
+ * the opponent's king to be threatened.
+ */
 void printMove(ChessMove move) {
 	printf("<%d,%c>", (move.currentPosition.row) + 1,
 			columnIntToChar(move.currentPosition.column));
@@ -333,12 +406,31 @@ void printMove(ChessMove move) {
 	printf("\n");
 }
 
+/**
+ * Fully handles with the getMoves command.
+ * First, checks to see if the format of the position is valid. then, checks to see if the position is valid and if so,
+ * populates the position's instance it creates with the correct row and column.
+ * Then, it gets the piece in the position and checks if it is indeed the current player's piece.
+ * If it is, it prints all legal moves of the piece from its current position.
+ *
+ * @return
+ * 0 if the function won't be executed and the next messages will be sent:
+ * CHESS_GAME_INVALID_COMMAND - if the position's format is invalid.
+ * CHESS_GAME_INVALID_POSITION - if the position's format is valid but the position on the board is not.
+ * CHESS_GAME_NO_PLAYER_PIECE_FOUND - if the position on the board is valid but the player has no
+ * piece in this position.
+ * 1 - if the function will be executed, and legal moves will be printed to the user (it there are any).
+ *
+ */
 int handleGetMovesCommand(GameSettings* settings, CmdCommand* command) {
+	if (!isFormatValid(((char*) command->arg))) {
+		gameMessageToOutput(CHESS_GAME_INVALID_COMMAND, settings);
+		return 0;
+	}
+
 	ChessPiece piece;
 	ChessPiecePosition pos = { .row = -1, .column = -1 };
 	if (!isPositionValid(((char*) command->arg), &pos)) {
-		if (getHadMemoryFailure())
-			return -1;
 		gameMessageToOutput(CHESS_GAME_INVALID_POSITION, settings);
 		return 0;
 	}
@@ -354,9 +446,13 @@ int handleGetMovesCommand(GameSettings* settings, CmdCommand* command) {
 	return 1;
 
 }
-/*
+/* Fully handles with the move command.
+ * First, checks to see if the format of the positions are valid. then, checks whether the positiona are
+ * valid and if so, populates the positions' instances it creates with the correct rows and columns.
+ * Then, if the move is set, the state of the board is checked and the return value is according to the state.
+ * A proper message is printed in addition.
+ *
  * @return
- * -1 if NULL - memory failure occurred.
  * 0 if CHESS_GAME_INVALID_POSITION - if cur_pos or next_pos are out-of-range.
  * 		CHESS_GAME_INVALID_MOVE - if the given next_pos is illegal for this piece.
  * 		CHESS_GAME_MOVE_THREATEN_KING - if the move will cause your king to be threatened.
@@ -368,20 +464,24 @@ int handleGetMovesCommand(GameSettings* settings, CmdCommand* command) {
  *
  */
 int handleMoveCommand(GameSettings* settings, CmdCommand* command) {
+	if (!isFormatValid(((char**) command->arg)[0])
+			|| (!isFormatValid(((char**) command->arg)[1]))) {
+		gameMessageToOutput(CHESS_GAME_INVALID_COMMAND, settings);
+		return 0;
+	}
+
 	ChessPiecePosition fromPosition = { .row = -1, .column = -1 };
 	ChessPiecePosition toPosition = { .row = -1, .column = -1 };
 
 	if (!isPositionValid(((char**) command->arg)[0], &fromPosition)
 			|| (!isPositionValid(((char**) command->arg)[1], &toPosition))) {
-		if (getHadMemoryFailure())
-			return -1;
 		gameMessageToOutput(CHESS_GAME_INVALID_POSITION, settings);
 		return 0;
 	}
 	CHESS_GAME_MESSAGE message = chessGameSetMove(settings->chessGame,
 			fromPosition, toPosition);
 	int res;
-	if (message == CHESS_GAME_SUCCESS) {
+	if (message == CHESS_GAME_SUCCESS) { //the move is set
 		message = chessGameGetCurrentState(settings->chessGame);
 		if (message == CHESS_GAME_CHECKMATE || message == CHESS_GAME_DRAW)
 			res = 1;
@@ -394,7 +494,7 @@ int handleMoveCommand(GameSettings* settings, CmdCommand* command) {
 
 }
 /*
- * carries out the undo function and prints the relevant message;
+ * Carries out the undo function and prints the relevant message;
  */
 void handleUndoCommand(GameSettings* settings, ChessMove* move) {
 	chessGameUndoMove(settings->chessGame);
@@ -405,6 +505,13 @@ void handleUndoCommand(GameSettings* settings, ChessMove* move) {
 			columnIntToChar(move->previousPosition.column));
 }
 
+/*
+ * Handles with a game-related command. Once given a command, the function deals with it according
+ * to the command's type and sends the proper message to be printed if needed.
+ * @return
+ * 1 - if the command was fully executed.
+ * 0 - otherwise.
+ */
 int handlingGameCommand(GameSettings* settings, CmdCommand* command) {
 	ChessMove move;
 	switch (command->cmd) {
@@ -458,7 +565,7 @@ int handlingGameCommand(GameSettings* settings, CmdCommand* command) {
 }
 
 /*
- * receives an input from the user and saves it in a variable.
+ * Receives an input from the user and saves it in a variable.
  * @return
  * the saved string input from the user.
  */
@@ -476,7 +583,7 @@ char* getUserInput() {
 }
 
 /*
- * receives an input from a former process function
+ * Receives an input from a former process function
  * and parses it to create the user's command.
  */
 CmdCommand* mainAuxGetUserCommand(bool isSettings) {
@@ -494,7 +601,7 @@ CmdCommand* mainAuxGetUserCommand(bool isSettings) {
 }
 
 /*
- * returns the name of the piece based on its type.
+ * Returns the name of the piece based on its type.
  */
 char* typeToString(CHESS_PIECE_TYPE type) {
 	switch (type) {
@@ -517,18 +624,20 @@ char* typeToString(CHESS_PIECE_TYPE type) {
 }
 
 /*
- * carries out the computer move according to the minimax function
+ * Carries out the computer move according to the minimax function
  * @return
- * 1 if the last move resulted in checkmate or draw.
+ * 1 if the last move resulted in checkmate or draw (and the game needs to be ended).
  * 0 if else.
  */
 int computerTurn(GameSettings* settings) {
 	TreeNode* root = chessGameMinimax(settings);
+
 	ChessMove move = root->bestMove;
-	ChessPiece piece = root->bestPiece;
+	ChessPiece piece = chessGameGetPieceByPosition(
+			&(settings->chessGame->gameBoard), move.previousPosition);
 	CHESS_GAME_MESSAGE message = chessGameSetMove(settings->chessGame,
-			move.previousPosition, move.currentPosition);
-	if (message == CHESS_GAME_SUCCESS)
+			move.previousPosition, move.currentPosition); //sets the  move
+	if (message == CHESS_GAME_SUCCESS) //if the move was successfully set
 		printf("Computer: move %s at <%d,%c> to <%d,%c>\n",
 				typeToString(piece.type), (move.previousPosition.row) + 1,
 				columnIntToChar(move.previousPosition.column),
@@ -551,10 +660,22 @@ int computerTurn(GameSettings* settings) {
 	return 0;
 }
 
+/*
+ * Returns true if this is the user's turn (relevant only in 1-game mode).
+ */
 bool isUserTurn(GameSettings* settings) {
 	return settings->userColor == settings->chessGame->currentPlayer;
 }
 
+/*
+ * Handles with the situation where the user has set the move, and if its a 1-game-mode it's now the computer's turn.
+ * Once the computer's move is set, the state of the game is retrieved. if it's checkmate or draw -
+ * the function destroys the settings and the game. Otherwise, the function prints the board after the computer's
+ * move is set.
+ * @return
+ * 1 - if the game needs to be over since the computer's last move resulted in checkmate or draw.
+ * 0 - otherwise.
+ */
 int handleComputerTurn(GameSettings* settings) {
 	int state;
 	if (settings->gameMode == ONE_PLAYER && !isUserTurn(settings)) {
@@ -569,15 +690,22 @@ int handleComputerTurn(GameSettings* settings) {
 	return 0;
 }
 
+/*
+ * After the user's move is set, the result determines whether to end the game (in case of draw or checkmate),
+ * proceed to the next player's move(2-game mode) or to continue to the computer's move (1-game mode only).
+ * @return
+ * 0 - if the move hasn't been set.
+ * 1 - if the move has been set and resulted in checkmate or draw and the game needs the end.
+ * 2 - if the move has been set, and the game continues.
+ *
+ */
 int moveCommandResults(GameSettings* settings, int result) { //todo: check if it's okay to pass the result value like this
 	switch (result) {
-	case -1: //memory failure
-		return -1;
-	case 0: 	//invalid command
+	case 0: 	//invalid command, command hasn't been executed.
 		return 0;
 	case 1: 	//move is set, checkmate or draw
 		return 1; //quit game
-	case 2: //move is set
+	case 2: //move is set, continue to next move (or computer's move)
 		return (handleComputerTurn(settings));
 	default:
 		return 0;
@@ -585,7 +713,7 @@ int moveCommandResults(GameSettings* settings, int result) { //todo: check if it
 }
 
 /*
- * returns the color of current player.
+ * Returns the color of current player.
  */
 char* mainAuxWhichPlayer(GameSettings* settings) {
 	return settings->chessGame->currentPlayer ?
@@ -594,7 +722,7 @@ char* mainAuxWhichPlayer(GameSettings* settings) {
 }
 
 /*
- * distinguishes between different settings function and handles each one.
+ * Distinguishes between different settings function and handles each one separately.
  * @return
  * 1 - if it's needed to end the game after the command.
  * 0 - else.
@@ -620,9 +748,8 @@ bool* isSettings) {
 }
 
 /*
- * distinguishes between different game function and handles each one.
+ * Distinguishes between different game function and handles each one separately.
  * @return
- * -1  - if memory failure occurred.
  *  1  - if it's needed to end the game after the command.
  *  0  - else.
  */
@@ -636,7 +763,7 @@ bool* isSettings) {
 	case CMD_RESET:
 		printf(SETTINGS_STATE_LINE);
 		*isSettings = true;
-		break;
+		return 0;
 	case CMD_UNDO: //undo move executed successfully
 		if (result && settings->gameMode == ONE_PLAYER && !isUserTurn(settings))
 			return handleComputerTurn(settings);
@@ -644,7 +771,7 @@ bool* isSettings) {
 	case CMD_MOVE:
 		return moveCommandResults(settings, result);
 	default: //save, get_moves
-		break;
+		return 0;
 	}
 	return 0;
 }
