@@ -94,7 +94,8 @@ static bool isKingThreatened(ChessGame* game, int player);
  * Sets the the given piece in the given position of the game's board.
  * Updates king position field if piece is king.
  */
-static void setPieceInPosition(ChessGame* game, ChessPiecePosition pos, ChessPiece piece) {
+static void setPieceInPosition(ChessGame* game, ChessPiecePosition pos,
+		ChessPiece piece) {
 	if (piece.type == CHESS_PIECE_KING) {
 		if (piece.player == CHESS_WHITE_PLAYER)
 			game->whiteKingPosition = pos;
@@ -124,10 +125,11 @@ static ChessPiece getPieceByPosition(ChessGame* game, ChessPiecePosition pos) {
  * CHESS_GAME_INVALID_MOVE - if the given next_pos is illegal for this piece.
  * CHESS_GAME_SUCCESS - otherwise
  */
-static CHESS_GAME_MESSAGE chessGameIsValidMove(ChessGame* game, ChessPiecePosition cur_pos,
-		ChessPiecePosition next_pos) {
+static CHESS_GAME_MESSAGE chessGameIsValidMove(ChessGame* game,
+		ChessPiecePosition cur_pos, ChessPiecePosition next_pos) {
 	// Checks if positions are valid
-	if (!chessGameIsValidPosition(cur_pos) || !chessGameIsValidPosition(next_pos))
+	if (!chessGameIsValidPosition(cur_pos)
+			|| !chessGameIsValidPosition(next_pos))
 		return CHESS_GAME_INVALID_POSITION;
 
 	//Checks if the position contains a piece of the current player
@@ -164,7 +166,8 @@ bool checkKing) {
 			if (chessMoveIsValidMove(&(game->gameBoard), threatPos, pos)) {
 				// need to perform the move in order to check king threats
 				if (checkKing) {
-					ChessPiece threatPiece = getPieceByPosition(game, threatPos);
+					ChessPiece threatPiece = getPieceByPosition(game,
+							threatPos);
 					// Change board to test for threats
 					setPieceInPosition(game, pos, threatPiece);
 					setPieceInPosition(game, threatPos, EMPTY_ENTRY);
@@ -194,7 +197,8 @@ bool checkKing) {
  */
 static bool isKingThreatened(ChessGame* game, int player) {
 	ChessPiecePosition kingPos =
-			player == CHESS_WHITE_PLAYER ? game->whiteKingPosition : game->blackKingPosition;
+			player == CHESS_WHITE_PLAYER ?
+					game->whiteKingPosition : game->blackKingPosition;
 	return isPositionThreatened(game, kingPos, false);
 }
 
@@ -203,8 +207,8 @@ static bool isKingThreatened(ChessGame* game, int player) {
  */
 static short getCurrentOpponent(ChessGame* game) {
 	return chessGameGetCurrentPlayer(game) == CHESS_WHITE_PLAYER ?
-	CHESS_BLACK_PLAYER :
-																	CHESS_WHITE_PLAYER;
+			CHESS_BLACK_PLAYER :
+			CHESS_WHITE_PLAYER;
 }
 
 /**
@@ -428,7 +432,9 @@ CHESS_GAME_MESSAGE chessGameSetMove(ChessGame* game, ChessPiecePosition cur_pos,
 	if (isKingThreatened(game, chessGameGetCurrentPlayer(game))) {
 		setPieceInPosition(game, cur_pos, piece);
 		setPieceInPosition(game, next_pos, capturedPiece);
-		return game->isCheck ? CHESS_GAME_UNRESOLVED_THREATENED_KING : CHESS_GAME_MOVE_THREATEN_KING;
+		return game->isCheck ?
+				CHESS_GAME_UNRESOLVED_THREATENED_KING :
+				CHESS_GAME_MOVE_THREATEN_KING;
 	}
 
 	// Update current player
@@ -436,8 +442,8 @@ CHESS_GAME_MESSAGE chessGameSetMove(ChessGame* game, ChessPiecePosition cur_pos,
 
 	// Update history
 	ArrayList* history = game->history;
-	ChessMove move = { .previousPosition = cur_pos, .currentPosition = next_pos, .capturedPiece =
-			capturedPiece };
+	ChessMove move = { .previousPosition = cur_pos, .currentPosition = next_pos,
+			.capturedPiece = capturedPiece };
 	if (arrayListIsFull(history))
 		arrayListRemoveFirst(history);
 	arrayListAddLast(history, move);
@@ -496,7 +502,8 @@ void chessGamePrintBoard(ChessGame* game, FILE* file) {
 			return;
 		}
 	}
-	if (fprintf(file, PRINT_GAME_BEFORE_LAST_LINE) < 0 || fprintf(file, PRINT_GAME_LAST_LINE) < 0) {
+	if (fprintf(file, PRINT_GAME_BEFORE_LAST_LINE) < 0
+			|| fprintf(file, PRINT_GAME_LAST_LINE) < 0) {
 		hadFileFailure();
 	}
 }
@@ -519,7 +526,8 @@ int chessGameGetCurrentPlayer(ChessGame* game) {
  * CHESS_BLACK_PLAYER if player == CHESS_WHITE_PLAYER.
  */
 int chessGameGetOpponentByPlayer(int player) {
-	return player == CHESS_WHITE_PLAYER ? CHESS_BLACK_PLAYER : CHESS_WHITE_PLAYER;
+	return player == CHESS_WHITE_PLAYER ?
+			CHESS_BLACK_PLAYER : CHESS_WHITE_PLAYER;
 }
 
 /**
@@ -538,6 +546,7 @@ void chessGameUpdateIsCheck(ChessGame* game) {
  *  CHESS_GAME_CHECK		- if the game is in check.
  * 	CHESS_GAME_DRAW 		- if the game is draw.
  *	CHESS_GAME_CHECKMATE	- if their's a checkmate.
+ *	CHESS_GAME_ERROR		- if an error occurred.
  *	CHESS_GAME_NONE			- if none of the above is true.
  */
 CHESS_GAME_MESSAGE chessGameGetCurrentState(ChessGame* game) {
@@ -546,14 +555,15 @@ CHESS_GAME_MESSAGE chessGameGetCurrentState(ChessGame* game) {
 	for (int i = 0; i < CHESS_N_ROWS; i++)
 		for (int j = 0; j < CHESS_N_COLUMNS; j++) {
 			pos = (ChessPiecePosition ) { .row = i, .column = j };
-			if (chessGameGetCurrentPlayer(game) == getPieceByPosition(game, pos).player) {
+			if (chessGameGetCurrentPlayer(game)
+					== getPieceByPosition(game, pos).player) {
 				ArrayList* moves = chessGameGetMoves(game, pos);
-				if (moves != NULL) {
-					int size = moves->actualSize;
-					arrayListDestroy(moves);
-					if (size > 0)
-						return game->isCheck ? CHESS_GAME_CHECK : CHESS_GAME_NONE;
-				}
+				if (moves == NULL)
+					return CHESS_GAME_ERROR;
+				int size = moves->actualSize;
+				arrayListDestroy(moves);
+				if (size > 0)
+					return game->isCheck ? CHESS_GAME_CHECK : CHESS_GAME_NONE;
 			}
 		}
 	return game->isCheck ? CHESS_GAME_CHECKMATE : CHESS_GAME_DRAW;;

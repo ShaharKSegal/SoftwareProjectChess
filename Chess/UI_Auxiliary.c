@@ -10,6 +10,7 @@
 static const char* TITLE_GAME_STATE = "Game State";
 static const char* TITLE_WARNING = "Warning";
 static const char* TITLE_ERROR = "ERROR!";
+
 static const char* MESSAGE_UNSAVED =
 		"Unsaved changes detected, would you like to save the game?";
 static const char* MESSAGE_FILE_FAILURE =
@@ -17,6 +18,7 @@ static const char* MESSAGE_FILE_FAILURE =
 static const char* MESSAGE_CHECK = "Check!";
 static const char* MESSAGE_CHECKMATE = "Checkmate!";
 static const char* MESSAGE_DRAW = "Draw!";
+
 static const SDL_MessageBoxButtonData BUTTONS[] = { { 0, UI_MSGBOX_EVENT_NO,
 		"no" }, { 0, UI_MSGBOX_EVENT_YES, "yes" }, { 0, UI_MSGBOX_EVENT_CANCEL,
 		"cancel" }, };

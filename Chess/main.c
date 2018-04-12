@@ -5,7 +5,6 @@
 #include <stdlib.h>
 #include <stdbool.h>
 #include <string.h>
-#include "Bufferset.h"
 #include "UI_Window.h"
 #include "UI_Auxiliary.h"
 #include "UI_WindowController.h"
@@ -14,16 +13,27 @@
 #include "MainAux.h"
 #include "GameSettings.h"
 
+/*
+ * Arguments
+ */
 #define CHESS_FLAG_MAIN_CONSOLE "-c"
 #define CHESS_FLAG_MAIN_GUI "-g"
 
+/*
+ * Printable strs
+ */
+#define INVALID_NUM_ARGUMENTS_ERR "ERROR: Too many arguments!\n"
+#define INVALID_FIRST_ARGUMENT_ERR "ERROR: First argument must be %s or %s"
+#define SDL_INIT_ERR "ERROR: unable to init SDL: %s\n"
+#define ENTER_MOVE_STR "Enter your move (%s player):\n"
+
 static int guiMain() {
 	if (SDL_Init(SDL_INIT_VIDEO) < 0) { //SDL2 INIT
-		printf("ERROR: unable to init SDL: %s\n", SDL_GetError());
+		printf(SDL_INIT_ERR, SDL_GetError());
 		return EXIT_FAILURE;
 	}
 	WindowController* controller = mainWindowControllerCreate();
-	if (controller == NULL ) {
+	if (controller == NULL) {
 		if (getHadCriticalError()) {
 			printCriticalError();
 		}
@@ -68,18 +78,19 @@ static int guiMain() {
 }
 
 static int consoleMain() {
-	bool isSettings = true;
 	printf(STARTING_PROGRAM_LINE);
-	GameSettings* settings = gameSettingsCreate();
 	printf(SETTINGS_STATE_LINE);
-	int quitGame = false;
+
+	bool isSettings = true;
+	int quitGame = 0;
+	GameSettings* settings = gameSettingsCreate();
 
 	if (settings == NULL || getHadMemoryFailure()) {
 		printCriticalError();
 		return 0;
 	}
 	CmdCommand* command = mainAuxGetUserCommand(isSettings);
-	if (command == NULL ) {
+	if (command == NULL) {
 		gameSettingsDestroy(settings);
 		printCriticalError();
 		return EXIT_FAILURE;
@@ -93,11 +104,17 @@ static int consoleMain() {
 		parserCmdCommandDestroy(command);
 		if (!quitGame) {
 			if (!isSettings) {
-				printf("Enter your move (%s player):\n",
-						mainAuxWhichPlayer(settings));
+				printf(ENTER_MOVE_STR, mainAuxWhichPlayer(settings));
 			}
 			command = mainAuxGetUserCommand(isSettings);
+			if (command == NULL) {
+				gameSettingsDestroy(settings);
+				printCriticalError();
+				return EXIT_FAILURE;
+			}
 		}
+		if (getHadFileFailure())
+			unsetFileFailure(); // remove file failure flag at the end of command.
 	}
 	if (getHadMemoryFailure()) {
 		printCriticalError();
@@ -108,24 +125,21 @@ static int consoleMain() {
 }
 
 int main(int argc, char** argv) {
-	BUFF_SET();
 	int res;
 	if (argc > 2) {
-		printf("ERROR: Too many arguments!\n");
+		printf(INVALID_NUM_ARGUMENTS_ERR);
 		res = EXIT_FAILURE;
-	}
-	else if (argc == 2) {
+	} else if (argc == 2) {
 		if (!strcmp(argv[1], CHESS_FLAG_MAIN_GUI))
 			res = guiMain();
 		else if (!strcmp(argv[1], CHESS_FLAG_MAIN_CONSOLE))
 			res = consoleMain();
 		else {
-			printf("ERROR: First argument must be %s or %s",
-					CHESS_FLAG_MAIN_GUI, CHESS_FLAG_MAIN_CONSOLE);
+			printf(INVALID_FIRST_ARGUMENT_ERR,
+			CHESS_FLAG_MAIN_GUI, CHESS_FLAG_MAIN_CONSOLE);
 			res = EXIT_FAILURE;
 		}
-	}
-	else
+	} else
 		res = consoleMain();
 	return res;
 }

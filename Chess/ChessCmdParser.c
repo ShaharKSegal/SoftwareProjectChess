@@ -15,7 +15,6 @@
 #define DEFAULT "default"
 #define PRINT_SETTINGS "print_settings"
 #define START "start"
-#define QUIT "quit"
 
 /**
  * Commands in game state
@@ -204,7 +203,7 @@ static void parseGameCommand(char* cmdStr, CmdCommand* command) {
  *   arg - the arguments in case there should be one.
  */
 static CmdCommand* parseCommand(char* cmdStr, bool isSettings) {
-	CmdCommand* command = malloc(sizeof(CmdCommand));
+	CmdCommand* command = calloc(1, sizeof(CmdCommand));
 	if (command == NULL ) {
 		hadMemoryFailure();
 		return NULL ;
@@ -216,7 +215,7 @@ static CmdCommand* parseCommand(char* cmdStr, bool isSettings) {
 	}
 	setArgTypeValid(command, true);
 	command->arg = NULL;
-	if (!strcmp(cmdStr, QUIT))
+	if (!strcmp(cmdStr, QUIT_COMMAND_STR))
 		command->cmd = CMD_QUIT;
 	else if (isSettings)
 		parseSettingsCommand(cmdStr, command);

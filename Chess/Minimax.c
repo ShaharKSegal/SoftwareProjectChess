@@ -169,6 +169,9 @@ static int MinimaxRec(TreeNode* parent, ChessGame* game, int maxDepth,
 			ChessPiecePosition position = { .row = i, .column = j };
 			ArrayList* moves = chessGameGetMoves(game, position);
 
+			if (moves == NULL) {
+				return idealScore;
+			}
 			//going through all moves of a specific piece
 			for (int k = 0; k < moves->actualSize; k++) {
 				ChessMove move = arrayListGetAt(moves, k);

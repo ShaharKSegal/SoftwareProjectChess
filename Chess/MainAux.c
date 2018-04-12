@@ -8,6 +8,12 @@
 #include "MainAux.h"
 
 /*
+ * Definitions of general messages
+ */
+#define MESSAGE_INVALID_COMMAND "ERROR: invalid command\n"
+#define MESSAGE_EXITING "Exiting..."
+
+/*
  * Definitions of settings messages
  */
 #define SETTINGS_MESSAGE_GAME_MODE "Game mode is set to %c-player\n"
@@ -16,12 +22,10 @@
 #define SETTINGS_MESSAGE_WRONG_DIFFICULTY_LEVEL "Wrong difficulty level. The value should be between 1 to 5\n"
 #define SETTINGS_MESSAGE_USER_COLOR "User color is set to %s"
 #define SETTINGS_MESSAGE_WRONG_USER_COLOR "Wrong user color. The value should be 0 or 1\n"
-#define SETTINGS_MESSAGE_INVALID_COMMAND "ERROR: invalid command\n"
 #define SETTINGS_MESSAGE_FILE_LOAD_FAILURE "Error: File doesn’t exist or cannot be opened\n"
 #define SETTINGS_MESSAGE_FILE_SAVE_FAILURE "File cannot be created or modified\n"
 #define SETTINGS_MESSAGE_SAVE_FILE "Game saved to: %s\n"
 #define SETTINGS_MESSAGE_DEFAULT "All settings reset to default\n"
-#define SETTINGS_MESSAGE_EXITING "Exiting..."
 #define SETTINGS_MESSAGE_STARTING_GAME "Starting game...\n"
 #define SETTINGS_MESSAGE_FILE_ERROR "ERROR: executing the asked function on the relevant file has failed, please try again\n"
 
@@ -40,8 +44,6 @@
 #define GAME_MESSAGE_DRAW_GAME "The game ends in a draw\n"
 #define GAME_MESSAGE_CHECKMATE "Checkmate! %s player wins the game\n"
 #define GAME_MESSAGE_RESTARTING "Restarting...\n"
-#define GAME_MESSAGE_EXITING "Exiting..."
-#define GAME_MESSAGE_INVALID_COMMAND "Error: Invalid Command\n"
 
 /*
  *
@@ -68,8 +70,8 @@ char columnIntToChar(int column) {
 		return 0;
 	return 'A' + column;
 }
-/*
- * Handles with printing the needed messages to the user, given the name of the message by a
+
+/* Handles with printing the needed messages to the user, given the name of the message by a
  * settings-related command, the command and the general settings.
  */
 void settingsMessageToOutput(GAME_SETTINGS_MESSAGE message,
@@ -102,7 +104,7 @@ void settingsMessageToOutput(GAME_SETTINGS_MESSAGE message,
 		printf(SETTINGS_MESSAGE_WRONG_USER_COLOR);
 		break;
 	case GAME_SETTINGS_INVALID_COMMAND:
-		printf(SETTINGS_MESSAGE_INVALID_COMMAND);
+		printf(MESSAGE_INVALID_COMMAND);
 		break;
 	case GAME_SETTINGS_PRINT_SUCCESS:
 		break;
@@ -124,7 +126,7 @@ void settingsMessageToOutput(GAME_SETTINGS_MESSAGE message,
 		printf(SETTINGS_MESSAGE_DEFAULT);
 		break;
 	case GAME_SETTINGS_QUIT_SUCCESS:
-		printf(SETTINGS_MESSAGE_EXITING);
+		printf(MESSAGE_EXITING);
 		break;
 	case GAME_SETTINGS_START_SUCCESS:
 		printf(SETTINGS_MESSAGE_STARTING_GAME);
@@ -142,14 +144,14 @@ void settingsMessageToOutput(GAME_SETTINGS_MESSAGE message,
 void handlingSettingsCommand(GameSettings* settings, CmdCommand* command) {
 	switch (command->cmd) {
 	case CMD_GAME_MODE:
-		if (!command->argTypeValid) {
+		if (!command->argTypeValid || strlen((char*) command->arg) != 1) {
 			settingsMessageToOutput(GAME_SETTINGS_WRONG_GAME_MODE, settings,
 					command);
 			break;
 		}
 		settingsMessageToOutput(
-				gameSettingsChangeGameMode(settings, *((char *) (command->arg))), settings,
-				command);
+				gameSettingsChangeGameMode(settings,
+						*((char *) (command->arg))), settings, command);
 		break;
 	case CMD_DIFFICULTY:
 		if (!command->argTypeValid) {
@@ -158,8 +160,8 @@ void handlingSettingsCommand(GameSettings* settings, CmdCommand* command) {
 			break;
 		}
 		settingsMessageToOutput(
-				gameSettingsChangeDifficulty(settings, *((int *) (command->arg))), settings,
-				command);
+				gameSettingsChangeDifficulty(settings,
+						*((int *) (command->arg))), settings, command);
 		break;
 	case CMD_USER_COLOR:
 		if (!command->argTypeValid) {
@@ -168,8 +170,8 @@ void handlingSettingsCommand(GameSettings* settings, CmdCommand* command) {
 			break;
 		}
 		settingsMessageToOutput(
-				gameSettingsChangeUserColor(settings, *((int *) (command->arg))), settings,
-				command);
+				gameSettingsChangeUserColor(settings,
+						*((int *) (command->arg))), settings, command);
 		break;
 	case CMD_LOAD:
 		if (!command->argTypeValid) {
@@ -266,10 +268,10 @@ void gameMessageToOutput(CHESS_GAME_MESSAGE message, GameSettings* settings) {
 	case CHESS_GAME_NONE:
 		break;
 	case CHESS_GAME_QUIT_SUCCESS:
-		printf(GAME_MESSAGE_EXITING);
+		printf(MESSAGE_EXITING);
 		break;
 	case CHESS_GAME_INVALID_COMMAND:
-		printf(GAME_MESSAGE_INVALID_COMMAND);
+		printf(MESSAGE_INVALID_COMMAND);
 		break;
 	case CHESS_GAME_ERROR:
 		printCriticalError();
@@ -410,12 +412,15 @@ int handleGetMovesCommand(GameSettings* settings, CmdCommand* command) {
 		return 0;
 	}
 	ArrayList* moves = chessGameGetMoves(settings->chessGame, pos);
+	if (moves == NULL)
+		return 0;
 	for (int i = 0; i < moves->actualSize; i++)
 		printMove(arrayListGetAt(moves, i));
 	arrayListDestroy(moves);
 	return 1;
 
 }
+
 /* Fully handles with the move command.
  * First, checks to see if the format of the positions are valid. then, checks whether the positiona are
  * valid and if so, populates the positions' instances it creates with the correct rows and columns.
@@ -463,6 +468,7 @@ int handleMoveCommand(GameSettings* settings, CmdCommand* command) {
 	return res;
 
 }
+
 /*
  * Carries out the undo function and prints the relevant message;
  */
@@ -546,7 +552,10 @@ char* getUserInput() {
 		return NULL;
 	}
 	cmdStr[0] = 0; //Ensure empty line if no input delivered
-	fgets(cmdStr, CMD_MAX_LINE_LENGTH, stdin);
+	char* res = fgets(cmdStr, CMD_MAX_LINE_LENGTH, stdin);
+	if (res == NULL && feof(stdin)) {
+		strcpy(cmdStr, QUIT_COMMAND_STR);
+	}
 	if (cmdStr == NULL)
 		return NULL;
 	return cmdStr;
@@ -564,7 +573,7 @@ CmdCommand* mainAuxGetUserCommand(bool isSettings) {
 		return NULL;
 	}
 	command = parserCmdParseLine(cmdStr, isSettings);
-	if (getHadMemoryFailure())
+	if (getHadMemoryFailure()|| command == NULL)
 		return NULL;
 	free(cmdStr);
 	return command;
@@ -684,7 +693,9 @@ int moveCommandResults(GameSettings* settings, int result) { //todo: check if it
  * Returns the color of current player.
  */
 char* mainAuxWhichPlayer(GameSettings* settings) {
-	return settings->chessGame->currentPlayer ? PRINT_WHITE_USER : PRINT_BLACK_USER;
+	return settings->chessGame->currentPlayer ?
+	PRINT_WHITE_USER :
+												PRINT_BLACK_USER;
 }
 
 /*

@@ -31,6 +31,8 @@ typedef struct command_t {
 	void* arg;
 } CmdCommand;
 
+#define QUIT_COMMAND_STR "quit"
+
 /**
  * Checks if a specified string represents a valid integer.
  *

@@ -118,7 +118,7 @@ static UI_CONTROLLER_EVENT handleEventActivateSlot(WindowController* controller)
 	if (data->currentMode == UI_LOAD_CONTROLLER) {
 		GameSettings* settings = gameSettingsCreate();
 		if (settings == NULL )
-			return UI_CONTROLLER_EVENT_MINOR_ERROR;
+			return UI_CONTROLLER_EVENT_ERROR;
 		GAME_SETTINGS_MESSAGE msg = gameSettingsLoad(settings, data->filePath);
 		// ignore files that do not exist
 		if (msg == GAME_SETTINGS_LOAD_FILE_OPEN_FAIL) {

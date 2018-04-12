@@ -52,22 +52,39 @@ static void gameWindowControllerDestroy(WindowController* controller) {
 	free(controller);
 }
 
+static UI_CONTROLLER_EVENT doComputerMove(WindowController* controller) {
+	GameWindowControllerData* data = getGameWindowControllerData(controller);
+	ChessGame* game = data->gameSettings->chessGame;
+	//Check if computer should do move.
+	if (data->gameSettings->gameMode != ONE_PLAYER
+			|| data->gameSettings->userColor == game->currentPlayer)
+		return UI_CONTROLLER_EVENT_INVOKE_DRAW;
+	// do computer move.
+	ChessMove move = chessGameMinimax(data->gameSettings);
+	if (getHadCriticalError())
+		return UI_CONTROLLER_EVENT_ERROR;
+	chessGameSetMove(game, move.previousPosition, move.currentPosition);
+	chessGameStatePopup(game);
+	bool res = gameWindowRefreshWidgets(controller->window);
+	return res ? UI_CONTROLLER_EVENT_INVOKE_DRAW : UI_CONTROLLER_EVENT_ERROR;
+}
+
 static UI_CONTROLLER_EVENT handleEventRestart(WindowController* controller) {
 	GameSettings* settings =
 			getGameWindowControllerData(controller)->gameSettings;
-	ChessGame* game = chessGameCreate();
-	if (game == NULL)
+	CHESS_GAME_MESSAGE msg = gameSettingsRestart(settings);
+	if (msg == CHESS_GAME_ERROR)
 		return UI_CONTROLLER_EVENT_ERROR;
 	Window* window = controller->window;
 	GameWindowData* winData = gameWindowGetData(controller->window);
-	winData->game = game;
+	winData->game = settings->chessGame;
+	UI_CONTROLLER_EVENT event = doComputerMove(controller);
+	if (event == UI_CONTROLLER_EVENT_ERROR)
+		return UI_CONTROLLER_EVENT_ERROR;
 	bool res = gameWindowRefreshWidgets(window);
 	if (!res) {
-		chessGameDestroy(game);
 		return UI_CONTROLLER_EVENT_ERROR;
 	}
-	chessGameDestroy(settings->chessGame);
-	settings->chessGame = game;
 	setUnsavedChanges(controller, false);
 	return UI_CONTROLLER_EVENT_INVOKE_DRAW;
 }
@@ -107,8 +124,15 @@ static UI_CONTROLLER_EVENT handleEventSave(WindowController** controllerPtr,
 static UI_CONTROLLER_EVENT handleEventUndo(WindowController* controller) {
 	ChessGame* game =
 			getGameWindowControllerData(controller)->gameSettings->chessGame;
-	CHESS_GAME_MESSAGE msg = chessGameUndoMove(game);
-	if (msg == CHESS_GAME_SUCCESS) {
+	CHESS_GAME_MESSAGE first_undo_msg = chessGameUndoMove(game);
+	CHESS_GAME_MESSAGE second_undo_msg = chessGameUndoMove(game);
+	if (first_undo_msg == CHESS_GAME_SUCCESS) {
+		//Handle case that this is the first move of the computer
+		if (second_undo_msg == CHESS_GAME_EMPTY_HISTORY) {
+			UI_CONTROLLER_EVENT event = doComputerMove(controller);
+			if (event == UI_CONTROLLER_EVENT_ERROR)
+				return UI_CONTROLLER_EVENT_ERROR;
+		}
 		bool res = gameWindowRefreshWidgets(controller->window);
 		if (!res)
 			return UI_CONTROLLER_EVENT_ERROR;
@@ -192,12 +216,9 @@ static UI_CONTROLLER_EVENT handleEventPieceDrag(WindowController* controller) {
 		msg = chessGameStatePopup(game);
 		if (msg == CHESS_GAME_NONE || msg == CHESS_GAME_CHECK) {
 			if (data->gameSettings->gameMode == ONE_PLAYER) {
-				ChessMove move = chessGameMinimax(data->gameSettings);
-				if (getHadCriticalError())
+				UI_CONTROLLER_EVENT event = doComputerMove(controller);
+				if (event == UI_CONTROLLER_EVENT_ERROR)
 					return UI_CONTROLLER_EVENT_ERROR;
-				chessGameSetMove(game, move.previousPosition,
-						move.currentPosition);
-				msg = chessGameStatePopup(game);
 			}
 		}
 	}
@@ -252,5 +273,6 @@ WindowController* gameWindowControllerCreate(GameSettings* settings) {
 		destroyGameWindowControllerData(data);
 		return NULL;
 	}
-	return controller;
+	UI_CONTROLLER_EVENT event = doComputerMove(controller);
+	return event == UI_CONTROLLER_EVENT_ERROR ? NULL : controller;
 }

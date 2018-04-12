@@ -9,11 +9,6 @@
  * a Window type with the relevant widgets and operations regarding the settings menu.
  */
 
-//TODO: move to settings header when liran give it to me.
-
-
-
-
 /**
  * Creates a Window type with widgets and operations of the settings menu
  * Can have memory failures or SDL errors
