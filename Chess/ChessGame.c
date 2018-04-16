@@ -566,7 +566,7 @@ CHESS_GAME_MESSAGE chessGameGetCurrentState(ChessGame* game) {
 					return game->isCheck ? CHESS_GAME_CHECK : CHESS_GAME_NONE;
 			}
 		}
-	return game->isCheck ? CHESS_GAME_CHECKMATE : CHESS_GAME_DRAW;;
+	return game->isCheck ? CHESS_GAME_CHECKMATE : CHESS_GAME_DRAW;
 }
 
 /**

@@ -147,7 +147,7 @@ static int MinimaxValidation(int depth, int maxDepth, ChessGame* game,
  * move.
  */
 static int MinimaxRec(TreeNode* parent, ChessGame* game, int maxDepth,
-		int depth, int parentIdealScore) {
+		int depth, int alpha, int beta) {
 	int player = game->currentPlayer;
 	//Checking whether before entering the recursive part, we've already reached max depth, checkmate or draw.
 	if (depth > maxDepth
@@ -179,8 +179,8 @@ static int MinimaxRec(TreeNode* parent, ChessGame* game, int maxDepth,
 				node.move = move;
 
 				chessGameSetMove(game, position, node.move.currentPosition);
-				node.score = MinimaxRec(&node, game, maxDepth, depth + 1,
-						idealScore);
+				node.score = MinimaxRec(&node, game, maxDepth, depth + 1, alpha,
+						beta);
 				chessGameUndoMove(game);
 
 				//Checking whether this move is a better move than the last one chosen.
@@ -191,9 +191,12 @@ static int MinimaxRec(TreeNode* parent, ChessGame* game, int maxDepth,
 					idealScore = node.score;
 					parent->bestMove = node.move; //only relevant if parent is root
 
-					//Pruning - if the current node's score is not better than the parent's current score, return.
-					if (isBetterScore(parentIdealScore, idealScore,
-							chessGameGetOpponentByPlayer(player))) {
+					//Pruning
+					if (player && isBetterScore(idealScore, alpha, player))
+						alpha = idealScore;
+					else if (!player && isBetterScore(idealScore, beta, player))
+						beta = idealScore;
+					if (beta <= alpha) {
 						arrayListDestroy(moves);
 						return idealScore;
 					}
@@ -214,10 +217,9 @@ ChessMove chessGameMinimax(GameSettings* settings) {
 			settings->maxDepth);
 	if (copiedGame == NULL) //Failure to copy game
 		return root.move;
-	int player = copiedGame->currentPlayer;
-	int worstScore = player == CHESS_WHITE_PLAYER ? INT_MAX : INT_MIN;
-	root.score = MinimaxRec(&root, copiedGame, settings->maxDepth, 1,
-			worstScore);
+
+	root.score = MinimaxRec(&root, copiedGame, settings->maxDepth, 1, INT_MIN,
+	INT_MAX);
 	chessGameDestroy(copiedGame);
 	return root.bestMove;
 }

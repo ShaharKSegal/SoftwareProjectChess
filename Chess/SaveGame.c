@@ -7,8 +7,10 @@
  *
  *	@param fileName - the route of the needed file, settings - the settings instance.
  *	@return
- *	GAME_SETTINGS_SAVE_GAME_FAIL -  if either the file can't be opened or nodified or a memory allocation failure occurred.
- *	GAME_SETTINGS_SAVE_GAME_FAIL - otherwise.
+ *	GAME_SETTINGS_SAVE_GAME_FAIL -  if either the file can't be opened or modified or a memory allocation
+ *	failure occurred.
+ *	GAME_SETTINGS_FILE_FAILURE - if a printing problem occurred after the file opening.
+ *	GAME_SETTINGS_SAVE_GAME_SUCCESS - otherwise.
  *
  */
 GAME_SETTINGS_MESSAGE gameSettingsSave(char* fileName, GameSettings* settings) {
@@ -23,7 +25,7 @@ GAME_SETTINGS_MESSAGE gameSettingsSave(char* fileName, GameSettings* settings) {
 	if (fprintf(file, "%s", currentColor) < 0) {
 		hadFileFailure();
 		fclose(file);
-		return GAME_SETTINGS_SAVE_GAME_FAIL;
+		return GAME_SETTINGS_FILE_FAILURE;
 	}
 	gameSettingsPrint(file, settings);
 	if (getHadFileFailure()) {
@@ -33,7 +35,6 @@ GAME_SETTINGS_MESSAGE gameSettingsSave(char* fileName, GameSettings* settings) {
 
 	chessGamePrintBoard(settings->chessGame, file);
 	fclose(file);
-	return getHadFileFailure() ?
-			GAME_SETTINGS_FILE_FAILURE : GAME_SETTINGS_SAVE_GAME_SUCCESS;
+	return getHadFileFailure() ? GAME_SETTINGS_FILE_FAILURE : GAME_SETTINGS_SAVE_GAME_SUCCESS;
 }
 
